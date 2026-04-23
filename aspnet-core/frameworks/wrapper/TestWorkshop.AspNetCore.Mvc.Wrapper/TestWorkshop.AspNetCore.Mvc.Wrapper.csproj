@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <AssemblyName>TestWorkshop.AspNetCore.Mvc.Wrapper</AssemblyName>
+    <RootNamespace />
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <PackageReference Include="Volo.Abp.AspNetCore.Mvc" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\TestWorkshop.AspNetCore.Wrapper\TestWorkshop.AspNetCore.Wrapper.csproj" />
+    <ProjectReference Include="..\TestWorkshop.Wrapper\TestWorkshop.Wrapper.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="TestWorkshop\AspNetCore\Mvc\Wrapper\Localization\Resources\*.json" />
+  </ItemGroup>
+
+</Project>
