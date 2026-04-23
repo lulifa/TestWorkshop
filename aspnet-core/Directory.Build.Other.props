@@ -22,7 +22,7 @@
     <PackageReference Update="DistributedLock.Redis" Version="1.1.1"/>
     <PackageReference Update="DotNetCore.CAP" Version="$(DotNetCoreCAPPackageVersion)"/>
     <PackageReference Update="DotNetCore.CAP.Dashboard" Version="$(DotNetCoreCAPPackageVersion)"/>
-    <PackageReference Update="DotNetCore.CAP.MySql" Version="$(DotNetCoreCAPPackageVersion)" />
+    <PackageReference Update="DotNetCore.CAP.PostgreSql" Version="$(DotNetCoreCAPPackageVersion)" />
     <PackageReference Update="DotNetCore.CAP.RabbitMQ" Version="$(DotNetCoreCAPPackageVersion)"/>
     <PackageReference Update="DotNetCore.CAP.InMemoryStorage" Version="$(DotNetCoreCAPPackageVersion)"/>
     <PackageReference Update="DotNetCore.CAP.RedisStreams " Version="$(DotNetCoreCAPPackageVersion)"/>
