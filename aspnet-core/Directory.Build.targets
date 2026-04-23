@@ -1,0 +1,38 @@
+﻿<Project>
+  <!-- 引入全局版本统一管理 -->
+  <Import Project="Directory.Build.Other.props" />
+  <Import Project="Directory.Build.Volo.props" />
+
+  <PropertyGroup>
+    <!-- 基础编译与项目信息 -->
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <AbpProjectType>app</AbpProjectType>
+
+    <!-- 全局忽略无用警告 -->
+    <NoWarn>$(NoWarn);CS1591;CS0436;CS8618;NU1803</NoWarn>
+
+    <!-- ABP / 依赖 全局统一版本 -->
+    <VoloAbpPackageVersion>9.3.5</VoloAbpPackageVersion>
+    <MicrosoftPackageVersion>9.0.10</MicrosoftPackageVersion>
+    <AspNetCorePackageVersion>9.0.0</AspNetCorePackageVersion>
+    <AspNetSecurityOAuthPackageVersion>9.4.1</AspNetSecurityOAuthPackageVersion>
+    <DotNetCoreCAPPackageVersion>8.4.1</DotNetCoreCAPPackageVersion>
+  </PropertyGroup>
+
+  <!-- 全局统一注入 Fody 插件，所有项目自动继承 -->
+  <ItemGroup>
+    <PackageReference Include="Fody" Version="6.8.0" PrivateAssets="All">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="ConfigureAwait.Fody" Version="3.3.2" PrivateAssets="All"/>
+  </ItemGroup>
+
+  <!-- 清理 ABP 打包残留缓存文件 -->
+  <ItemGroup>
+    <None Remove="**\*.abppkg" />
+    <None Remove="**\*.abppkg.analyze.json" />
+    <Content Remove="$(UserProfile)\.nuget\packages\*\*\contentFiles\any\*\*.abppkg*" />
+  </ItemGroup>
+
+</Project>

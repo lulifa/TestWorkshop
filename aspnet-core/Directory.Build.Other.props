@@ -1,0 +1,45 @@
+﻿<Project>
+  <ItemGroup>
+
+    <PackageReference Update="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="$(MicrosoftPackageVersion)"/>
+    <PackageReference Update="Microsoft.EntityFrameworkCore" Version="$(MicrosoftPackageVersion)"/>
+    <PackageReference Update="Microsoft.EntityFrameworkCore.Tools" Version="$(MicrosoftPackageVersion)"/>
+    <PackageReference Update="Microsoft.Extensions.FileProviders.Embedded" Version="$(MicrosoftPackageVersion)"/>
+    <PackageReference Update="Microsoft.Extensions.Hosting" Version="$(MicrosoftPackageVersion)"/>
+
+    <PackageReference Update="AspNetCore.HealthChecks.UI" Version="$(AspNetCorePackageVersion)"/>
+    <PackageReference Update="AspNetCore.HealthChecks.UI.Client" Version="$(AspNetCorePackageVersion)" />
+    <PackageReference Update="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="$(AspNetCorePackageVersion)"/>
+
+    <PackageReference Update="AspNet.Security.OAuth.GitHub" Version="$(AspNetSecurityOAuthPackageVersion)"/>
+    <PackageReference Update="AspNet.Security.OAuth.Gitee" Version="$(AspNetSecurityOAuthPackageVersion)"/>
+    <PackageReference Update="AspNet.Security.OAuth.QQ" Version="$(AspNetSecurityOAuthPackageVersion)"/>
+    <PackageReference Update="AspNet.Security.OAuth.WeiXin" Version="$(AspNetSecurityOAuthPackageVersion)"/>
+    <PackageReference Update="AspNet.Security.OAuth.WorkWeixin" Version="$(AspNetSecurityOAuthPackageVersion)"/>
+    <PackageReference Update="AspNet.Security.OAuth.Bilibili" Version="$(AspNetSecurityOAuthPackageVersion)"/>
+
+    <PackageReference Update="DistributedLock.Redis" Version="1.1.1"/>
+    <PackageReference Update="DotNetCore.CAP" Version="$(DotNetCoreCAPPackageVersion)"/>
+    <PackageReference Update="DotNetCore.CAP.Dashboard" Version="$(DotNetCoreCAPPackageVersion)"/>
+    <PackageReference Update="DotNetCore.CAP.MySql" Version="$(DotNetCoreCAPPackageVersion)" />
+    <PackageReference Update="DotNetCore.CAP.RabbitMQ" Version="$(DotNetCoreCAPPackageVersion)"/>
+    <PackageReference Update="DotNetCore.CAP.InMemoryStorage" Version="$(DotNetCoreCAPPackageVersion)"/>
+    <PackageReference Update="DotNetCore.CAP.RedisStreams " Version="$(DotNetCoreCAPPackageVersion)"/>
+
+
+    <PackageReference Update="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Update="Serilog.AspNetCore" Version="9.0.0"/>
+    <PackageReference Update="Serilog.Extensions.Logging" Version="9.0.0"/>
+    <PackageReference Update="Serilog.Sinks.Async" Version="2.1.0"/>
+    <PackageReference Update="Serilog.Sinks.File" Version="6.0.0" />
+    <PackageReference Update="Serilog.Sinks.Console" Version="6.0.0"/>
+
+    <PackageReference Update="MySqlConnector" Version="2.4.0" />
+    <PackageReference Update="Oracle.ManagedDataAccess.Core" Version="23.6.1" />
+    <PackageReference Update="Npgsql" Version="9.0.2" />
+    <PackageReference Update="Microsoft.Data.SqlClient" Version="5.1.6" />
+    <PackageReference Update="Microsoft.Data.Sqlite.Core" Version="9.0.5" />
+
+
+  </ItemGroup>
+</Project>
