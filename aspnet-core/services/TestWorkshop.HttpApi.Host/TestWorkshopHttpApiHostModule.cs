@@ -37,14 +37,12 @@ using Volo.Abp.AspNetCore.Serilog;
 using Volo.Abp.Identity;
 using Volo.Abp.OpenIddict;
 using Volo.Abp.Swashbuckle;
-using Volo.Abp.Studio.Client.AspNetCore;
 using Volo.Abp.Security.Claims;
 
 namespace TestWorkshop;
 
 [DependsOn(
     typeof(TestWorkshopHttpApiModule),
-    typeof(AbpStudioClientAspNetCoreModule),
     typeof(AbpAspNetCoreMvcUiLeptonXLiteThemeModule),
     typeof(AbpAutofacModule),
     typeof(AbpAspNetCoreMultiTenancyModule),
@@ -250,7 +248,6 @@ public class TestWorkshopHttpApiHostModule : AbpModule
 
         app.UseRouting();
         app.MapAbpStaticAssets();
-        app.UseAbpStudioLink();
         app.UseAbpSecurityHeaders();
         app.UseCors();
         app.UseAuthentication();
