@@ -52,7 +52,7 @@ namespace TestWorkshop;
     typeof(AbpSwashbuckleModule),
     typeof(AbpAspNetCoreSerilogModule)
     )]
-public class TestWorkshopHttpApiHostModule : AbpModule
+public partial class TestWorkshopHttpApiHostModule : AbpModule
 {
     public override void PreConfigureServices(ServiceConfigurationContext context)
     {
@@ -116,6 +116,9 @@ public class TestWorkshopHttpApiHostModule : AbpModule
         ConfigureSwagger(context, configuration);
         ConfigureVirtualFileSystem(context);
         ConfigureCors(context, configuration);
+
+        ConfigureLocalization(configuration);
+
     }
 
     private void ConfigureAuthentication(ServiceConfigurationContext context)

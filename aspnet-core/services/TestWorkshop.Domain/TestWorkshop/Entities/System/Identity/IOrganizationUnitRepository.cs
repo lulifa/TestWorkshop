@@ -1,0 +1,16 @@
+﻿namespace TestWorkshop;
+
+public interface IOrganizationUnitRepository : Volo.Abp.Identity.IOrganizationUnitRepository
+{
+    Task<int> GetCountAsync(
+        ISpecification<OrganizationUnit> specification,
+        CancellationToken cancellationToken = default);
+
+    Task<List<OrganizationUnit>> GetListAsync(
+        ISpecification<OrganizationUnit> specification,
+        string sorting = nameof(OrganizationUnit.Code),
+        int maxResultCount = 10,
+        int skipCount = 0,
+        bool includeDetails = false,
+        CancellationToken cancellationToken = default);
+}

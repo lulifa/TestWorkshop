@@ -20,26 +20,24 @@ namespace TestWorkshop.EntityFrameworkCore;
 [ReplaceDbContext(typeof(IIdentityDbContext))]
 [ReplaceDbContext(typeof(ITenantManagementDbContext))]
 [ConnectionStringName("Default")]
-public class TestWorkshopDbContext :
-    AbpDbContext<TestWorkshopDbContext>,
-    ITenantManagementDbContext,
-    IIdentityDbContext
+public class TestWorkshopDbContext : AbpDbContext<TestWorkshopDbContext>, ITenantManagementDbContext, IIdentityDbContext
 {
-    /* Add DbSet properties for your Aggregate Roots / Entities here. */
+
+    
 
 
-    #region Entities from the modules
+    #region 内置相关表
 
-    /* Notice: We only implemented IIdentityProDbContext and ISaasDbContext
-     * and replaced them for this DbContext. This allows you to perform JOIN
-     * queries for the entities of these modules over the repositories easily. You
-     * typically don't need that for other modules. But, if you need, you can
-     * implement the DbContext interface of the needed module and use ReplaceDbContext
-     * attribute just like IIdentityProDbContext and ISaasDbContext.
-     *
-     * More info: Replacing a DbContext of a module ensures that the related module
-     * uses this DbContext on runtime. Otherwise, it will use its own DbContext class.
-     */
+
+    // Platform
+    public DbSet<RoleMenu> RoleMenus { get; set; }
+    public DbSet<UserMenu> UserMenus { get; set; }
+    public DbSet<UserFavoriteMenu> UserFavoriteMenus { get; set; }
+    public DbSet<Menu> Menus { get; set; }
+    public DbSet<Layout> Layouts { get; set; }
+    public DbSet<Data> Datas { get; set; }
+    public DbSet<DataItem> DataItems { get; set; }
+
 
     // Identity
     public DbSet<IdentityUser> Users { get; set; }
@@ -55,7 +53,9 @@ public class TestWorkshopDbContext :
     public DbSet<Tenant> Tenants { get; set; }
     public DbSet<TenantConnectionString> TenantConnectionStrings { get; set; }
 
+
     #endregion
+
 
     public TestWorkshopDbContext(DbContextOptions<TestWorkshopDbContext> options)
         : base(options)
@@ -67,8 +67,6 @@ public class TestWorkshopDbContext :
     {
         base.OnModelCreating(builder);
 
-        /* Include modules to your migration db context */
-
         builder.ConfigurePermissionManagement();
         builder.ConfigureSettingManagement();
         builder.ConfigureBackgroundJobs();
@@ -78,14 +76,8 @@ public class TestWorkshopDbContext :
         builder.ConfigureOpenIddict();
         builder.ConfigureTenantManagement();
         builder.ConfigureBlobStoring();
-        
-        /* Configure your own tables/entities inside here */
 
-        //builder.Entity<YourEntity>(b =>
-        //{
-        //    b.ToTable(TestWorkshopConsts.DbTablePrefix + "YourEntities", TestWorkshopConsts.DbSchema);
-        //    b.ConfigureByConvention(); //auto configure for the base class props
-        //    //...
-        //});
+        builder.ConfigureTestWorkshop();
+
     }
 }
