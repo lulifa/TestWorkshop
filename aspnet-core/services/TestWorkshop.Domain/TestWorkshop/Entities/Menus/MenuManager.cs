@@ -35,7 +35,7 @@ public class MenuManager : DomainService
         var code = await GetNextChildCodeAsync(parentId);
         if (code.Length > TestWorkshopConsts.MaxCodeLength)
         {
-            throw new BusinessException(TestWorkshopDomainErrorCodes.MenuAchieveMaxDepth)
+            throw new BusinessException(TestWorkshopErrorCodes.MenuAchieveMaxDepth)
                 .WithData("Depth", TestWorkshopConsts.MaxDepth);
         }
         var menu = new Menu(
@@ -265,7 +265,7 @@ public class MenuManager : DomainService
 
         if (siblings.Any(x => x.Name == menu.Name))
         {
-            throw new BusinessException(TestWorkshopDomainErrorCodes.DuplicateMenu)
+            throw new BusinessException(TestWorkshopErrorCodes.DuplicateMenu)
                 .WithData("Name", menu.Name);
         }
     }

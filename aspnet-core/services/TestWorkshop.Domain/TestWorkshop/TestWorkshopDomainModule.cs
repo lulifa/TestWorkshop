@@ -53,6 +53,11 @@ public class TestWorkshopDomainModule : AbpModule
             options.ProviderPolicies[OrganizationUnitPermissionValueProvider.ProviderName] = "AbpIdentity.OrganizationUnits.ManagePermissions";
         });
 
+        Configure<TenantConnectionStringCheckOptions>(options =>
+        {
+            options.ConnectionStringCheckers["postgres"] = new NpgsqlConnectionStringChecker();
+        });
+
 
     }
 }

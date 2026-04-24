@@ -57,3 +57,4 @@ global using Volo.Abp.Uow;
 global using IdentityRole = Volo.Abp.Identity.IdentityRole;
 global using IdentityUser = Volo.Abp.Identity.IdentityUser;
 global using UserManager = Volo.Abp.Identity.IdentityUserManager;
+global using Npgsql;

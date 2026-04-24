@@ -1,6 +1,6 @@
 ﻿namespace TestWorkshop;
 
-public static class TestWorkshopDomainErrorCodes
+public static class TestWorkshopErrorCodes
 {
     public const string Namespace = "TestWorkshop";
 

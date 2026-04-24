@@ -47,7 +47,7 @@ public class DataItemMappingOptions
                 }
                 return joinString.EndsWith(",") ? joinString[..^1] : joinString;
             }
-            throw new BusinessException(TestWorkshopDomainErrorCodes.MetaFormatMissMatch);
+            throw new BusinessException(TestWorkshopErrorCodes.MetaFormatMissMatch);
         });
         SetMapping(ValueType.Boolean, value =>
         {
@@ -67,7 +67,7 @@ public class DataItemMappingOptions
                     }
                 }
             }
-            throw new BusinessException(TestWorkshopDomainErrorCodes.MetaFormatMissMatch);
+            throw new BusinessException(TestWorkshopErrorCodes.MetaFormatMissMatch);
         });
         SetMapping(ValueType.Date, value =>
         {
@@ -75,7 +75,7 @@ public class DataItemMappingOptions
             {
                 return date.ToString("yyyy-MM-dd");
             }
-            throw new BusinessException(TestWorkshopDomainErrorCodes.MetaFormatMissMatch);
+            throw new BusinessException(TestWorkshopErrorCodes.MetaFormatMissMatch);
         });
         SetMapping(ValueType.DateTime, value =>
         {
@@ -83,7 +83,7 @@ public class DataItemMappingOptions
             {
                 return date.ToString("yyyy-MM-dd HH:mm:ss");
             }
-            throw new BusinessException(TestWorkshopDomainErrorCodes.MetaFormatMissMatch);
+            throw new BusinessException(TestWorkshopErrorCodes.MetaFormatMissMatch);
         });
         SetMapping(ValueType.Numeic, value =>
         {
@@ -95,7 +95,7 @@ public class DataItemMappingOptions
                     return value.ToString();
                 }
             }
-            throw new BusinessException(TestWorkshopDomainErrorCodes.MetaFormatMissMatch);
+            throw new BusinessException(TestWorkshopErrorCodes.MetaFormatMissMatch);
         });
         SetMapping(ValueType.String, value =>
         {
