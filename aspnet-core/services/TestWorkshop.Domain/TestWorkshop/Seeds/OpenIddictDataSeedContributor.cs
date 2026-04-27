@@ -7,7 +7,7 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
 {
     public static HashSet<string> InitializeScopes = new HashSet<string>
     {
-        "ruichenshuxin-TestWorkshop-application"
+        "testworkshop-application"
     };
 
     private readonly IOpenIddictApplicationManager _applicationManager;

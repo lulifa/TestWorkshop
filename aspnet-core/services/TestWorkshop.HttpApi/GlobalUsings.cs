@@ -2,9 +2,9 @@
 
 global using Localization.Resources.AbpUi;
 global using Microsoft.AspNetCore.Mvc;
+global using Microsoft.Extensions.DependencyInjection;
 global using System;
 global using System.Threading.Tasks;
-global using Volo.Abp;
 global using Volo.Abp.Account;
 global using Volo.Abp.Application.Dtos;
 global using Volo.Abp.Application.Services;

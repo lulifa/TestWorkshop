@@ -2,6 +2,7 @@
 
  [DependsOn(
     typeof(TestWorkshopApplicationContractsModule),
+    typeof(AbpAspNetCoreMvcModule),
     typeof(AbpPermissionManagementHttpApiModule),
     typeof(AbpSettingManagementHttpApiModule),
     typeof(AbpAccountHttpApiModule),
@@ -11,12 +12,15 @@
     )]
 public class TestWorkshopHttpApiModule : AbpModule
 {
-    public override void ConfigureServices(ServiceConfigurationContext context)
+    public override void PreConfigureServices(ServiceConfigurationContext context)
     {
-        ConfigureLocalization();
+        PreConfigure<IMvcBuilder>(mvcBuilder =>
+        {
+            mvcBuilder.AddApplicationPartIfNotExists(typeof(TestWorkshopHttpApiModule).Assembly);
+        });
     }
 
-    private void ConfigureLocalization()
+    public override void ConfigureServices(ServiceConfigurationContext context)
     {
         Configure<AbpLocalizationOptions>(options =>
         {

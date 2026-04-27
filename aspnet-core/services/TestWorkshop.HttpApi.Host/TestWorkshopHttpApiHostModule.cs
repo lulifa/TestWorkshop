@@ -50,9 +50,9 @@ public partial class TestWorkshopHttpApiHostModule : AbpModule
         var configuration = context.Services.GetConfiguration();
         var hostingEnvironment = context.Services.GetHostingEnvironment();
 
-        ConfigureSecurity(configuration);
-
         ConfigureWrapper();
+
+        ConfigureSecurity(configuration);
 
         ConfigureAuthentication(context);
 
@@ -117,8 +117,10 @@ public partial class TestWorkshopHttpApiHostModule : AbpModule
             options.SwaggerEndpoint("/swagger/v1/swagger.json", "TestWorkshop API");
 
             var configuration = context.ServiceProvider.GetRequiredService<IConfiguration>();
+            var scopes = configuration.GetSection("AuthServer:Scopes").Get<string[]>();
             options.OAuthClientId(configuration["AuthServer:SwaggerClientId"]);
-            options.OAuthScopes(configuration["AuthServer:Scopes"]);
+            options.OAuthScopes(scopes);
+
         });
 
         app.UseAuditing();
