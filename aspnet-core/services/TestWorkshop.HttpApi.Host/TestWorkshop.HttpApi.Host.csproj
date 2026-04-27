@@ -4,10 +4,7 @@
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
     <RootNamespace>TestWorkshop</RootNamespace>
-    <PreserveCompilationReferences>true</PreserveCompilationReferences>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'TestWorkshop.HttpApi.Host' " />

@@ -1,5 +1,4 @@
-﻿using TestWorkshop.Localization;
-using Volo.Abp.Application.Services;
+﻿using Volo.Abp.Application.Services;
 
 namespace TestWorkshop;
 

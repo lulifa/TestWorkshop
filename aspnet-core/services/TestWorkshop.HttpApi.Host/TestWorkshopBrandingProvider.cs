@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Localization;
-using TestWorkshop.Localization;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Ui.Branding;
 

@@ -1,15 +1,4 @@
-﻿using Localization.Resources.AbpUi;
-using TestWorkshop.Localization;
-using Volo.Abp.Account;
-using Volo.Abp.SettingManagement;
-using Volo.Abp.FeatureManagement;
-using Volo.Abp.Identity;
-using Volo.Abp.Modularity;
-using Volo.Abp.PermissionManagement.HttpApi;
-using Volo.Abp.Localization;
-using Volo.Abp.TenantManagement;
-
-namespace TestWorkshop;
+﻿namespace TestWorkshop;
 
  [DependsOn(
     typeof(TestWorkshopApplicationContractsModule),

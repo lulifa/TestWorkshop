@@ -48,39 +48,7 @@ public class SystemDefaultDataSeederContributor : IDataSeedContributor, ITransie
                 IsDefault = true,
             };
             (await IdentityRoleManager.CreateAsync(defaultRole)).CheckErrors();
-
-            var grantedPermissions = new List<string>()
-            {
-                IdentityPermissions.UserLookup.Default,
-                IdentityPermissions.Users.Default,
-            };
-
-            grantedPermissions.AddRange(await GetDefaultPermissions());
-
-            await PermissionDataSeeder.SeedAsync(
-                RolePermissionValueProvider.ProviderName,
-                defaultRole.Name,
-                grantedPermissions,
-                tenantId: tenantId);
         }
-    }
-
-    private async Task<List<string>> GetDefaultPermissions()
-    {
-        var allPermissions = await PermissionManager.GetAllForRoleAsync("admin");
-
-        var allowedPermissionsPrefix = new[]
-           {
-                AbpProCoreConsts.ApplicationName,
-                AbpProCoreConsts.ModulePlatform
-            };
-
-        var allowedPermissions = allPermissions
-            .Where(p => allowedPermissionsPrefix.Any(prefix => p.Name.StartsWith(prefix)))
-            .Select(p => p.Name)
-            .ToList();
-
-        return allowedPermissions;
     }
 
 }
