@@ -181,6 +181,7 @@ namespace TestWorkshop
 
         private void ConfigureLocalization(IConfiguration configuration)
         {
+
             Configure<AbpLocalizationOptions>(options =>
             {
                 options.Languages.Add(new LanguageInfo("en", "en", "English"));

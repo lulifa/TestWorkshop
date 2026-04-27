@@ -64,8 +64,6 @@ public partial class TestWorkshopHttpApiHostModule : AbpModule
 
         ConfigureCors(services, configuration);
 
-        ConfigureCors(services, configuration);
-
         ConfigureLocalization(configuration);
 
         ConfigureCache(services, configuration, hostingEnvironment);
