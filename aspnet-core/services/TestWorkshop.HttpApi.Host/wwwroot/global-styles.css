@@ -6,3 +6,9 @@
     --lpx-logo: url('/images/logo/leptonxlite/logo-dark.png');
     background-position: left;
 }
+:root .abp-account-layout .lpx-content-container{
+    background-image: url('/images/share/login-bg.svg') !important;
+}
+:root .abp-account-layout .lpx-brand-name{
+    color:white;
+}

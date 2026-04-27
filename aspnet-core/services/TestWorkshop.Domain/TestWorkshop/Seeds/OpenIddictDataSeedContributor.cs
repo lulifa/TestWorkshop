@@ -7,7 +7,7 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
 {
     public static HashSet<string> InitializeScopes = new HashSet<string>
     {
-        "ruichenshuxin-abppro-application"
+        "ruichenshuxin-TestWorkshop-application"
     };
 
     private readonly IOpenIddictApplicationManager _applicationManager;
@@ -78,17 +78,17 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
     {
         var configurationSection = _configuration.GetSection("OpenIddict:Applications");
 
-        var vueClientId = configurationSection["AbpPro_App:ClientId"];
+        var vueClientId = configurationSection["TestWorkshop_App:ClientId"];
         if (!vueClientId.IsNullOrWhiteSpace())
         {
-            var vueClientRootUrl = configurationSection["AbpPro_App:RootUrl"].EnsureEndsWith('/');
+            var vueClientRootUrl = configurationSection["TestWorkshop_App:RootUrl"].EnsureEndsWith('/');
 
             if (await _applicationRepository.FindByClientIdAsync(vueClientId) == null)
             {
                 var application = new AbpApplicationDescriptor
                 {
                     ClientId = vueClientId,
-                    ClientSecret = configurationSection["AbpPro_App:ClientSecret"],
+                    ClientSecret = configurationSection["TestWorkshop_App:ClientSecret"],
                     ApplicationType = OpenIddictConstants.ApplicationTypes.Web,
                     ConsentType = OpenIddictConstants.ConsentTypes.Explicit,
                     DisplayName = "Abp Vue Admin Client",
@@ -152,10 +152,10 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
             }
         }
 
-        var swaggerClientId = configurationSection["AbpPro_Swagger:ClientId"];
+        var swaggerClientId = configurationSection["TestWorkshop_Swagger:ClientId"];
         if (!swaggerClientId.IsNullOrWhiteSpace())
         {
-            var swaggerClientRootUrl = configurationSection["AbpPro_Swagger:RootUrl"].EnsureEndsWith('/');
+            var swaggerClientRootUrl = configurationSection["TestWorkshop_Swagger:RootUrl"].EnsureEndsWith('/');
 
             if (await _applicationRepository.FindByClientIdAsync(swaggerClientId) == null)
             {
@@ -221,10 +221,10 @@ public class OpenIddictDataSeedContributor : IDataSeedContributor, ITransientDep
             }
         }
 
-        var oauthClientId = configurationSection["AbpPro_OAuth:ClientId"];
+        var oauthClientId = configurationSection["TestWorkshop_OAuth:ClientId"];
         if (!oauthClientId.IsNullOrWhiteSpace())
         {
-            var oauthClientRootUrl = configurationSection["AbpPro_OAuth:RootUrl"].EnsureEndsWith('/');
+            var oauthClientRootUrl = configurationSection["TestWorkshop_OAuth:RootUrl"].EnsureEndsWith('/');
 
             if (await _applicationRepository.FindByClientIdAsync(oauthClientId) == null)
             {

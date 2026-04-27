@@ -16,6 +16,9 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
     <PackageReference Include="Serilog.AspNetCore" />
     <PackageReference Include="Serilog.Sinks.Async" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" />
+    <PackageReference Include="DistributedLock.Redis" />
+    <PackageReference Include="Volo.Abp.Caching.StackExchangeRedis" />
   </ItemGroup>
 
   <ItemGroup>
@@ -34,6 +37,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\frameworks\wrapper\TestWorkshop.AspNetCore.Mvc.Wrapper\TestWorkshop.AspNetCore.Mvc.Wrapper.csproj" />
     <ProjectReference Include="..\TestWorkshop.Application\TestWorkshop.Application.csproj" />
     <ProjectReference Include="..\TestWorkshop.HttpApi\TestWorkshop.HttpApi.csproj" />
     <ProjectReference Include="..\TestWorkshop.EntityFrameworkCore\TestWorkshop.EntityFrameworkCore.csproj" />
