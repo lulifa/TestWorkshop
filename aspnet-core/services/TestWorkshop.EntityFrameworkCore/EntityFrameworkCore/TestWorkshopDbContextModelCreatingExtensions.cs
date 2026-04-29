@@ -47,12 +47,12 @@ public static class TestWorkshopDbContextModelCreatingExtensions
                 .IsRequired();
             b.Property(p => p.Timestamp)
                 .HasColumnName(nameof(DeviceTelemetry.Timestamp))
+                .HasColumnType("timestamp with time zone")
                 .IsRequired();
-
+            b.Property(p => p.DeviceId).IsRequired();
+            b.Property(p => p.Value).IsRequired();
 
             b.ConfigureByConvention();
-
-            b.HasIndex(x => new { x.DeviceId, x.Timestamp });
 
         });
     }
