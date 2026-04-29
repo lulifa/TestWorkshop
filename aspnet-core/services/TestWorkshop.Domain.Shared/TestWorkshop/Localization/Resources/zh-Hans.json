@@ -1,6 +1,7 @@
 {
   "culture": "zh-Hans",
   "texts": {
+    "AppName": "TestWorkshop",
     "TestWorkshop:01403": "包 {Name} 版本 {Version} 不能降级!",
     "TestWorkshop:01404": "文件: {FileName}, 版本号: {FileVersion} 不存在!",
     "TestWorkshop:02001": "同级目录下存在相同的菜单: {Name}!",

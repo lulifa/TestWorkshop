@@ -1,6 +1,7 @@
 {
   "culture": "en",
   "texts": {
+    "AppName": "TestWorkshop",
     "TestWorkshop:01403": "Package {Name} Version {Version} cannot be degraded!",
     "TestWorkshop:01404": "File not found, name: {FileName}, version:{FileVersion}!",
     "TestWorkshop:02001": "The same menu exists in the sibling directory: {Name}!",
