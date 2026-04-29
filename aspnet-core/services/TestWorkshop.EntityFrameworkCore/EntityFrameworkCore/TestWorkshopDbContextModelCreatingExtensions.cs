@@ -1,9 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Volo.Abp;
-using Volo.Abp.EntityFrameworkCore.Modeling;
-
-namespace TestWorkshop.EntityFrameworkCore;
+﻿namespace TestWorkshop.EntityFrameworkCore;
 
 public static class TestWorkshopDbContextModelCreatingExtensions
 {
@@ -14,7 +9,6 @@ public static class TestWorkshopDbContextModelCreatingExtensions
         builder.ConfigurePlatform();
 
     }
-
 
     public static void ConfigurePlatform(
         this ModelBuilder builder)
@@ -169,7 +163,6 @@ public static class TestWorkshopDbContextModelCreatingExtensions
             x.HasIndex(i => new { i.Name });
         });
     }
-
 
     public static EntityTypeBuilder<TRoute> ConfigureRoute<TRoute>(
         this EntityTypeBuilder<TRoute> builder)

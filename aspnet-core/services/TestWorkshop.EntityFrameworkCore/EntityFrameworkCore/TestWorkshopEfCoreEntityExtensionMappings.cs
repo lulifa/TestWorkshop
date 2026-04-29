@@ -1,9 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Volo.Abp.Identity;
-using Volo.Abp.ObjectExtending;
-using Volo.Abp.Threading;
-
-namespace TestWorkshop.EntityFrameworkCore;
+﻿namespace TestWorkshop.EntityFrameworkCore;
 
 public static class TestWorkshopEfCoreEntityExtensionMappings
 {

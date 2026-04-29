@@ -1,10 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Threading.Tasks;
-using Volo.Abp.DependencyInjection;
-
-namespace TestWorkshop.EntityFrameworkCore;
+﻿namespace TestWorkshop.EntityFrameworkCore;
 
 public class EntityFrameworkCoreTestWorkshopDbSchemaMigrator
     : ITestWorkshopDbSchemaMigrator, ITransientDependency

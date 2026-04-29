@@ -1,20 +1,36 @@
 ﻿// Global using directives
 
 global using Microsoft.EntityFrameworkCore;
+global using Microsoft.EntityFrameworkCore.Design;
 global using Microsoft.EntityFrameworkCore.Metadata.Builders;
+global using Microsoft.Extensions.Configuration;
 global using Microsoft.Extensions.DependencyInjection;
 global using System;
 global using System.Collections.Generic;
+global using System.IO;
 global using System.Linq;
 global using System.Linq.Dynamic.Core;
 global using System.Threading;
 global using System.Threading.Tasks;
 global using Volo.Abp;
+global using Volo.Abp.AuditLogging.EntityFrameworkCore;
+global using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
+global using Volo.Abp.BlobStoring.Database.EntityFrameworkCore;
 global using Volo.Abp.Data;
+global using Volo.Abp.DependencyInjection;
 global using Volo.Abp.Domain.Repositories.EntityFrameworkCore;
 global using Volo.Abp.EntityFrameworkCore;
 global using Volo.Abp.EntityFrameworkCore.Modeling;
+global using Volo.Abp.EntityFrameworkCore.PostgreSql;
+global using Volo.Abp.FeatureManagement.EntityFrameworkCore;
 global using Volo.Abp.Identity;
 global using Volo.Abp.Identity.EntityFrameworkCore;
 global using Volo.Abp.Modularity;
+global using Volo.Abp.OpenIddict.EntityFrameworkCore;
+global using Volo.Abp.PermissionManagement.EntityFrameworkCore;
+global using Volo.Abp.SettingManagement.EntityFrameworkCore;
 global using Volo.Abp.Specifications;
+global using Volo.Abp.Studio;
+global using Volo.Abp.TenantManagement;
+global using Volo.Abp.TenantManagement.EntityFrameworkCore;
+global using Volo.Abp.Threading;
