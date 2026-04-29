@@ -1,8 +1,4 @@
-﻿using Microsoft.Extensions.Localization;
-using Volo.Abp.DependencyInjection;
-using Volo.Abp.Ui.Branding;
-
-namespace TestWorkshop;
+﻿namespace TestWorkshop;
 
 [Dependency(ReplaceServices = true)]
 public class TestWorkshopBrandingProvider : DefaultBrandingProvider

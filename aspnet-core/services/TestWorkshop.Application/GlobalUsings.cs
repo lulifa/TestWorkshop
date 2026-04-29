@@ -15,6 +15,7 @@ global using System.Threading.Tasks;
 global using Volo.Abp;
 global using Volo.Abp.Account;
 global using Volo.Abp.Application.Dtos;
+global using Volo.Abp.Application.Services;
 global using Volo.Abp.AspNetCore.Mvc.ApplicationConfigurations;
 global using Volo.Abp.AspNetCore.Mvc.MultiTenancy;
 global using Volo.Abp.AutoMapper;
@@ -32,3 +33,4 @@ global using Volo.Abp.TenantManagement;
 global using Volo.Abp.Users;
 global using IdentityRole = Volo.Abp.Identity.IdentityRole;
 global using IdentityUser = Volo.Abp.Identity.IdentityUser;
+

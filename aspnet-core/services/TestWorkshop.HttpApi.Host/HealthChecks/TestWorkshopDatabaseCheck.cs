@@ -1,11 +1,4 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Volo.Abp.DependencyInjection;
-using Volo.Abp.Identity;
-
-namespace TestWorkshop.HealthChecks;
+﻿namespace TestWorkshop.HealthChecks;
 
 public class TestWorkshopDatabaseCheck : IHealthCheck, ITransientDependency
 {

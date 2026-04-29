@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Cors.Infrastructure;
-using TestWorkshop.Wrapper;
-
-namespace Microsoft.AspNetCore.Cors;
+﻿namespace Microsoft.AspNetCore.Cors;
 
 public static class AbpCorsPolicyBuilderExtensions
 {

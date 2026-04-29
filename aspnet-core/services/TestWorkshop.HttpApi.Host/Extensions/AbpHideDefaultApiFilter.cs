@@ -1,9 +1,4 @@
-﻿using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.SwaggerGen;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace TestWorkshop;
+﻿namespace TestWorkshop;
 
 public class AbpHideDefaultApiFilter : IDocumentFilter
 {

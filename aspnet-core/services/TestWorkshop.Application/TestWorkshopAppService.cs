@@ -1,6 +1,4 @@
-﻿using Volo.Abp.Application.Services;
-
-namespace TestWorkshop;
+﻿namespace TestWorkshop;
 
 /* Inherit your application services from this class.
  */

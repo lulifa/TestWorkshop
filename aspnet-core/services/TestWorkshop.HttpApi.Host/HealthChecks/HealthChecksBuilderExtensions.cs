@@ -1,12 +1,4 @@
-﻿using System;
-using HealthChecks.UI.Client;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.DependencyInjection;
-
-namespace TestWorkshop.HealthChecks;
+﻿namespace TestWorkshop.HealthChecks;
 
 public static class HealthChecksBuilderExtensions
 {

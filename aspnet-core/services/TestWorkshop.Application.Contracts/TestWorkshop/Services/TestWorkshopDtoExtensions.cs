@@ -1,5 +1,3 @@
-using Volo.Abp.Threading;
-
 namespace TestWorkshop;
 
 public static class TestWorkshopDtoExtensions

@@ -1,8 +1,4 @@
-﻿using Volo.Abp.Identity.Settings;
-using Volo.Abp.Localization;
-using Volo.Abp.Settings;
-
-namespace TestWorkshop;
+﻿namespace TestWorkshop;
 
 public class AbpSettingDefinitionProvider : Volo.Abp.Settings.SettingDefinitionProvider
 {

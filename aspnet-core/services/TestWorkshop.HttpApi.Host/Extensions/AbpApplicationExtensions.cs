@@ -1,8 +1,4 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Localization;
-using System.Collections.Generic;
-
-namespace TestWorkshop;
+﻿namespace TestWorkshop;
 
 public static class AbpApplicationExtensions
 {
