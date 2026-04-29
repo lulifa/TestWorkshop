@@ -7,6 +7,7 @@
     <PackageReference Update="Microsoft.EntityFrameworkCore.Tools" Version="$(MicrosoftPackageVersion)"/>
     <PackageReference Update="Microsoft.Extensions.FileProviders.Embedded" Version="$(MicrosoftPackageVersion)"/>
     <PackageReference Update="Microsoft.Extensions.Hosting" Version="$(MicrosoftPackageVersion)"/>
+    <PackageReference Update="Microsoft.Extensions.Hosting.Abstractions" Version="$(MicrosoftPackageVersion)"/>
 
     <PackageReference Update="AspNetCore.HealthChecks.UI" Version="$(AspNetCorePackageVersion)"/>
     <PackageReference Update="AspNetCore.HealthChecks.UI.Client" Version="$(AspNetCorePackageVersion)" />

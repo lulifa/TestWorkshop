@@ -58,6 +58,12 @@ public class TestWorkshopEntityFrameworkCoreModule : AbpModule
             options.UseNpgsql();
 
         });
-        
+
+
+
+        context.Services.AddSingleton<TelemetryChannel>();
+        context.Services.AddHostedService<TelemetryBackgroundService>();
+
+
     }
 }

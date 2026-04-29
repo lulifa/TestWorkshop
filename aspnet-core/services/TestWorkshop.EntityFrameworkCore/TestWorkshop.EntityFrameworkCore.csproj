@@ -17,6 +17,7 @@
     <PackageReference Include="Volo.Abp.AuditLogging.EntityFrameworkCore" />
     <PackageReference Include="Volo.Abp.FeatureManagement.EntityFrameworkCore" />
     <PackageReference Include="Volo.Abp.BlobStoring.Database.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
   </ItemGroup>
 
   <ItemGroup>

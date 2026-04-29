@@ -5,16 +5,60 @@ public static class TestWorkshopDbContextModelCreatingExtensions
 
     public static void ConfigureTestWorkshop(this ModelBuilder builder)
     {
+        Check.NotNull(builder, nameof(builder));
+
+        builder.ConfigureTimeScale();
 
         builder.ConfigurePlatform();
 
     }
 
-    public static void ConfigurePlatform(
-        this ModelBuilder builder)
+    public static void ConfigureTimeScale(this ModelBuilder builder)
     {
-        Check.NotNull(builder, nameof(builder));
+        builder.Entity<Device>(b =>
+        {
+            b.ToTable(TestWorkshopDbProperties.DbTablePrefix + "Devices", TestWorkshopDbProperties.DbSchema);
 
+            b.HasKey(x => x.Id);
+
+            b.Property(p => p.Code)
+                .HasMaxLength(TestWorkshopConsts.MaxLength64)
+                .HasColumnName(nameof(Device.Code))
+                .IsRequired();
+            b.Property(p => p.Name)
+                .HasMaxLength(TestWorkshopConsts.MaxLength128)
+                .HasColumnName(nameof(Device.Name))
+                .IsRequired();
+
+            b.ConfigureByConvention();
+
+            b.HasIndex(x => x.Code).IsUnique();
+        });
+
+        builder.Entity<DeviceTelemetry>(b =>
+        {
+            b.ToTable(TestWorkshopDbProperties.DbTablePrefix + "DeviceTelemetries", TestWorkshopDbProperties.DbSchema);
+
+            b.HasKey(x => x.Id);
+
+            b.Property(p => p.Metric)
+                .HasMaxLength(TestWorkshopConsts.MaxLength128)
+                .HasColumnName(nameof(DeviceTelemetry.Metric))
+                .IsRequired();
+            b.Property(p => p.Timestamp)
+                .HasColumnName(nameof(DeviceTelemetry.Timestamp))
+                .IsRequired();
+
+
+            b.ConfigureByConvention();
+
+            b.HasIndex(x => new { x.DeviceId, x.Timestamp });
+
+        });
+    }
+
+    public static void ConfigurePlatform(this ModelBuilder builder)
+    {
         builder.Entity<Layout>(b =>
         {
             b.ToTable(TestWorkshopDbProperties.DbTablePrefix + "Layouts", TestWorkshopDbProperties.DbSchema);
@@ -26,7 +70,6 @@ public static class TestWorkshopDbContextModelCreatingExtensions
 
             b.ConfigureRoute();
         });
-
 
         builder.Entity<Menu>(b =>
         {
@@ -48,124 +91,123 @@ public static class TestWorkshopDbContextModelCreatingExtensions
                 .IsRequired();
         });
 
-        builder.Entity<RoleMenu>(x =>
+        builder.Entity<RoleMenu>(b =>
         {
-            x.ToTable(TestWorkshopDbProperties.DbTablePrefix + "RoleMenus", TestWorkshopDbProperties.DbSchema);
+            b.ToTable(TestWorkshopDbProperties.DbTablePrefix + "RoleMenus", TestWorkshopDbProperties.DbSchema);
 
-            x.Property(p => p.RoleName)
+            b.Property(p => p.RoleName)
                 .IsRequired()
                 .HasMaxLength(TestWorkshopConsts.MaxLength256)
                 .HasColumnName(nameof(RoleMenu.RoleName));
 
-            x.ConfigureByConvention();
+            b.ConfigureByConvention();
 
-            x.HasIndex(i => new { i.RoleName, i.MenuId });
+            b.HasIndex(i => new { i.RoleName, i.MenuId });
         });
 
-        builder.Entity<UserMenu>(x =>
+        builder.Entity<UserMenu>(b =>
         {
-            x.ToTable(TestWorkshopDbProperties.DbTablePrefix + "UserMenus", TestWorkshopDbProperties.DbSchema);
+            b.ToTable(TestWorkshopDbProperties.DbTablePrefix + "UserMenus", TestWorkshopDbProperties.DbSchema);
 
-            x.ConfigureByConvention();
+            b.ConfigureByConvention();
 
-            x.HasIndex(i => new { i.UserId, i.MenuId });
+            b.HasIndex(i => new { i.UserId, i.MenuId });
         });
 
-        builder.Entity<UserFavoriteMenu>(x =>
+        builder.Entity<UserFavoriteMenu>(b =>
         {
-            x.ToTable(TestWorkshopDbProperties.DbTablePrefix + "UserFavoriteMenus", TestWorkshopDbProperties.DbSchema);
+            b.ToTable(TestWorkshopDbProperties.DbTablePrefix + "UserFavoriteMenus", TestWorkshopDbProperties.DbSchema);
 
-            x.Property(p => p.Framework)
+            b.Property(p => p.Framework)
                 .HasMaxLength(TestWorkshopConsts.MaxLength64)
                 .HasColumnName(nameof(Menu.Framework))
                 .IsRequired();
-            x.Property(p => p.DisplayName)
+            b.Property(p => p.DisplayName)
                 .HasMaxLength(TestWorkshopConsts.MaxLength128)
                 .HasColumnName(nameof(Route.DisplayName))
                 .IsRequired();
-            x.Property(p => p.Name)
+            b.Property(p => p.Name)
                 .HasMaxLength(TestWorkshopConsts.MaxLength64)
                 .HasColumnName(nameof(Route.Name))
                 .IsRequired();
-            x.Property(p => p.Path)
+            b.Property(p => p.Path)
                 .HasMaxLength(TestWorkshopConsts.MaxLength256)
                 .HasColumnName(nameof(Route.Path))
                 .IsRequired();
 
-            x.Property(p => p.Icon)
+            b.Property(p => p.Icon)
                 .HasMaxLength(TestWorkshopConsts.MaxLength512)
                 .HasColumnName(nameof(UserFavoriteMenu.Icon));
-            x.Property(p => p.Color)
+            b.Property(p => p.Color)
                 .HasMaxLength(TestWorkshopConsts.MaxLength64)
                 .HasColumnName(nameof(UserFavoriteMenu.Color));
-            x.Property(p => p.AliasName)
+            b.Property(p => p.AliasName)
                 .HasMaxLength(TestWorkshopConsts.MaxLength128)
                 .HasColumnName(nameof(UserFavoriteMenu.AliasName));
 
-            x.ConfigureByConvention();
+            b.ConfigureByConvention();
 
-            x.HasIndex(i => new { i.UserId, i.MenuId });
+            b.HasIndex(i => new { i.UserId, i.MenuId });
         });
 
-        builder.Entity<Data>(x =>
+        builder.Entity<Data>(b =>
         {
-            x.ToTable(TestWorkshopDbProperties.DbTablePrefix + "Datas", TestWorkshopDbProperties.DbSchema);
+            b.ToTable(TestWorkshopDbProperties.DbTablePrefix + "Datas", TestWorkshopDbProperties.DbSchema);
 
-            x.Property(p => p.Code)
+            b.Property(p => p.Code)
                 .HasMaxLength(TestWorkshopConsts.MaxLength1024)
                 .HasColumnName(nameof(Data.Code))
                 .IsRequired();
-            x.Property(p => p.Name)
+            b.Property(p => p.Name)
                 .HasMaxLength(TestWorkshopConsts.MaxLength64)
                 .HasColumnName(nameof(Data.Name))
                 .IsRequired();
-            x.Property(p => p.DisplayName)
+            b.Property(p => p.DisplayName)
                .HasMaxLength(TestWorkshopConsts.MaxLength128)
                .HasColumnName(nameof(Data.DisplayName))
                .IsRequired();
-            x.Property(p => p.Description)
+            b.Property(p => p.Description)
                 .HasMaxLength(TestWorkshopConsts.MaxLength1024)
                 .HasColumnName(nameof(Data.Description));
 
-            x.ConfigureByConvention();
+            b.ConfigureByConvention();
 
-            x.HasMany(p => p.Items)
+            b.HasMany(p => p.Items)
                 .WithOne()
                 .HasForeignKey(fk => fk.DataId)
                 .IsRequired();
 
-            x.HasIndex(i => new { i.Name });
+            b.HasIndex(i => new { i.Name });
         });
 
-        builder.Entity<DataItem>(x =>
+        builder.Entity<DataItem>(b =>
         {
-            x.ToTable(TestWorkshopDbProperties.DbTablePrefix + "DataItems", TestWorkshopDbProperties.DbSchema);
+            b.ToTable(TestWorkshopDbProperties.DbTablePrefix + "DataItems", TestWorkshopDbProperties.DbSchema);
 
-            x.Property(p => p.DefaultValue)
+            b.Property(p => p.DefaultValue)
                 .HasMaxLength(TestWorkshopConsts.MaxLength128)
                 .HasColumnName(nameof(DataItem.DefaultValue));
-            x.Property(p => p.Name)
+            b.Property(p => p.Name)
                 .HasMaxLength(TestWorkshopConsts.MaxLength64)
                 .HasColumnName(nameof(DataItem.Name))
                 .IsRequired();
-            x.Property(p => p.DisplayName)
+            b.Property(p => p.DisplayName)
                .HasMaxLength(TestWorkshopConsts.MaxLength128)
                .HasColumnName(nameof(DataItem.DisplayName))
                .IsRequired();
-            x.Property(p => p.Description)
+            b.Property(p => p.Description)
                 .HasMaxLength(TestWorkshopConsts.MaxLength1024)
                 .HasColumnName(nameof(DataItem.Description));
 
-            x.Property(p => p.AllowBeNull).HasDefaultValue(true);
+            b.Property(p => p.AllowBeNull).HasDefaultValue(true);
 
-            x.ConfigureByConvention();
+            b.ConfigureByConvention();
 
-            x.HasIndex(i => new { i.Name });
+            b.HasIndex(i => new { i.Name });
         });
     }
 
-    public static EntityTypeBuilder<TRoute> ConfigureRoute<TRoute>(
-        this EntityTypeBuilder<TRoute> builder)
+    public static EntityTypeBuilder<TRoute> ConfigureRoute<TRoute>(this EntityTypeBuilder<TRoute> builder)
         where TRoute : Route
     {
         builder

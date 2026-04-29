@@ -1,8 +1,3 @@
-using Volo.Abp.Authorization.Permissions;
-using Volo.Abp.Identity;
-using Volo.Abp.Identity.Localization;
-using Volo.Abp.Localization;
-
 namespace TestWorkshop;
 
 public class TestWorkshopPermissionDefinitionProvider : PermissionDefinitionProvider

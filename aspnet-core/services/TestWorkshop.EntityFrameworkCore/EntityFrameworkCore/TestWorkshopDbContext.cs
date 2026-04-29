@@ -6,8 +6,8 @@ namespace TestWorkshop.EntityFrameworkCore;
 public class TestWorkshopDbContext : AbpDbContext<TestWorkshopDbContext>, ITenantManagementDbContext, IIdentityDbContext
 {
 
-    
 
+    public DbSet<Device> Devices { get; set; }
 
     #region 内置相关表
 
