@@ -263,16 +263,18 @@ namespace TestWorkshop
                 });
         }
 
-        private void ConfigureBlob()
+        private void ConfigureBlob(IConfiguration configuration)
         {
             Configure<AbpBlobStoringOptions>(options =>
             {
-                var basePath = Path.Combine(AppContext.BaseDirectory, "BlobStorage", "Telemetry");
+                var basePath = configuration["Blob:Path"];
 
-                if (!Directory.Exists(basePath))
+                if (string.IsNullOrEmpty(basePath))
                 {
-                    Directory.CreateDirectory(basePath);
+                    throw new InvalidOperationException("Blob:Path must be configured in appsettings.json");
                 }
+
+                Directory.CreateDirectory(basePath);
 
                 options.Containers.ConfigureDefault(container =>
                 {

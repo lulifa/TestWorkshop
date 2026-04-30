@@ -57,7 +57,7 @@ public partial class TestWorkshopHttpApiHostModule : AbpModule
 
         ConfigureSwagger(services, configuration);
 
-        ConfigureBlob();
+        ConfigureBlob(configuration);
 
     }
 
