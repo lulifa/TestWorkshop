@@ -5,7 +5,6 @@ global using System.Collections.Generic;
 global using System.Linq;
 global using Volo.Abp.AuditLogging;
 global using Volo.Abp.BackgroundJobs;
-global using Volo.Abp.BlobStoring.Database;
 global using Volo.Abp.EventBus;
 global using Volo.Abp.FeatureManagement;
 global using Volo.Abp.Identity;

@@ -1,3 +1,6 @@
+using Volo.Abp.BlobStoring;
+using Volo.Abp.BlobStoring.FileSystem;
+
 namespace TestWorkshop;
 
 [DependsOn(
@@ -10,7 +13,7 @@ namespace TestWorkshop;
     typeof(AbpAccountWebOpenIddictModule),
     typeof(AbpSwashbuckleModule),
 
-
+    typeof(AbpBlobStoringFileSystemModule),
     typeof(AbpAuthorizationOrganizationUnitsModule),
     typeof(AbpAspNetCoreMvcWrapperModule),
 
@@ -53,6 +56,8 @@ public partial class TestWorkshopHttpApiHostModule : AbpModule
         ConfigureCache(services, configuration, hostingEnvironment);
 
         ConfigureSwagger(services, configuration);
+
+        ConfigureBlob();
 
     }
 

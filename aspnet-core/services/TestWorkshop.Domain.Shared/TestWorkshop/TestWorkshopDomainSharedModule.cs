@@ -8,8 +8,7 @@ namespace TestWorkshop;
     typeof(AbpSettingManagementDomainSharedModule),
     typeof(AbpIdentityDomainSharedModule),
     typeof(AbpOpenIddictDomainSharedModule),
-    typeof(AbpTenantManagementDomainSharedModule),
-    typeof(BlobStoringDatabaseDomainSharedModule)
+    typeof(AbpTenantManagementDomainSharedModule)
     )]
 public class TestWorkshopDomainSharedModule : AbpModule
 {

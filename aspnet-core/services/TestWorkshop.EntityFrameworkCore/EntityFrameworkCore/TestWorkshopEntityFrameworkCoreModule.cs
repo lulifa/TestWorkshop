@@ -1,3 +1,5 @@
+using Volo.Abp.BackgroundWorkers;
+
 namespace TestWorkshop.EntityFrameworkCore;
 
 [DependsOn(
@@ -10,8 +12,7 @@ namespace TestWorkshop.EntityFrameworkCore;
     typeof(AbpFeatureManagementEntityFrameworkCoreModule),
     typeof(AbpIdentityEntityFrameworkCoreModule),
     typeof(AbpOpenIddictEntityFrameworkCoreModule),
-    typeof(AbpTenantManagementEntityFrameworkCoreModule),
-    typeof(BlobStoringDatabaseEntityFrameworkCoreModule)
+    typeof(AbpTenantManagementEntityFrameworkCoreModule)
     )]
 public class TestWorkshopEntityFrameworkCoreModule : AbpModule
 {
@@ -58,12 +59,11 @@ public class TestWorkshopEntityFrameworkCoreModule : AbpModule
             options.UseNpgsql();
 
         });
-
-
-
-        context.Services.AddSingleton<TelemetryChannel>();
-        context.Services.AddHostedService<TelemetryBackgroundService>();
-
-
     }
+
+    public override void OnApplicationInitialization(ApplicationInitializationContext context)
+    {
+        context.AddBackgroundWorkerAsync<TelemetryWorker>();
+    }
+
 }

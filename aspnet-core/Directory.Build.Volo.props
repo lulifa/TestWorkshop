@@ -47,9 +47,8 @@
     <PackageReference Update="Volo.Abp.BackgroundJobs.Domain.Shared" Version="$(VoloAbpPackageVersion)"/>
     <PackageReference Update="Volo.Abp.BackgroundJobs.EntityFrameworkCore" Version="$(VoloAbpPackageVersion)"/>
 
-    <PackageReference Update="Volo.Abp.BlobStoring.Database.Domain" Version="$(VoloAbpPackageVersion)"/>
-    <PackageReference Update="Volo.Abp.BlobStoring.Database.Domain.Shared" Version="$(VoloAbpPackageVersion)"/>
-    <PackageReference Update="Volo.Abp.BlobStoring.Database.EntityFrameworkCore" Version="$(VoloAbpPackageVersion)"/>
+    <PackageReference Update="Volo.Abp.BlobStoring" Version="$(VoloAbpPackageVersion)"/>
+    <PackageReference Update="Volo.Abp.BlobStoring.FileSystem" Version="$(VoloAbpPackageVersion)"/>
 
 
     <PackageReference Update="Volo.Abp.Ddd.Application" Version="$(VoloAbpPackageVersion)"/>

@@ -9,6 +9,8 @@ public class TestWorkshopDbContext : AbpDbContext<TestWorkshopDbContext>, ITenan
 
     public DbSet<Device> Devices { get; set; }
 
+    public DbSet<TelemetryTask> TelemetryTasks { get; set; }
+
     #region 内置相关表
 
 
@@ -58,7 +60,6 @@ public class TestWorkshopDbContext : AbpDbContext<TestWorkshopDbContext>, ITenan
         builder.ConfigureIdentity();
         builder.ConfigureOpenIddict();
         builder.ConfigureTenantManagement();
-        builder.ConfigureBlobStoring();
 
         builder.ConfigureTestWorkshop();
 

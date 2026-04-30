@@ -29,7 +29,6 @@ global using Volo.Abp;
 global using Volo.Abp.AuditLogging;
 global using Volo.Abp.Authorization.Permissions;
 global using Volo.Abp.BackgroundJobs;
-global using Volo.Abp.BlobStoring.Database;
 global using Volo.Abp.Caching;
 global using Volo.Abp.Data;
 global using Volo.Abp.DependencyInjection;

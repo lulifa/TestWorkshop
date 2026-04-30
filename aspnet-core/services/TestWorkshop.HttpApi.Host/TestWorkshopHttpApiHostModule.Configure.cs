@@ -25,6 +25,8 @@ using Volo.Abp.Account;
 using Volo.Abp.AspNetCore.Mvc.AntiForgery;
 using Volo.Abp.AspNetCore.Mvc.UI.Bundling;
 using Volo.Abp.AspNetCore.Mvc.UI.Theme.LeptonXLite.Bundling;
+using Volo.Abp.BlobStoring;
+using Volo.Abp.BlobStoring.FileSystem;
 using Volo.Abp.Caching;
 using Volo.Abp.Localization;
 using Volo.Abp.Modularity;
@@ -259,6 +261,27 @@ namespace TestWorkshop
                     }
 
                 });
+        }
+
+        private void ConfigureBlob()
+        {
+            Configure<AbpBlobStoringOptions>(options =>
+            {
+                var basePath = Path.Combine(AppContext.BaseDirectory, "BlobStorage", "Telemetry");
+
+                if (!Directory.Exists(basePath))
+                {
+                    Directory.CreateDirectory(basePath);
+                }
+
+                options.Containers.ConfigureDefault(container =>
+                {
+                    container.UseFileSystem(fileSystem =>
+                    {
+                        fileSystem.BasePath = basePath;
+                    });
+                });
+            });
         }
 
     }

@@ -18,7 +18,7 @@ global using TestWorkshop.TimeScale;
 global using Volo.Abp;
 global using Volo.Abp.AuditLogging.EntityFrameworkCore;
 global using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
-global using Volo.Abp.BlobStoring.Database.EntityFrameworkCore;
+global using Volo.Abp.BlobStoring.FileSystem;
 global using Volo.Abp.Data;
 global using Volo.Abp.DependencyInjection;
 global using Volo.Abp.Domain.Repositories.EntityFrameworkCore;

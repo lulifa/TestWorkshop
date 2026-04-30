@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.AutoMapper;
+using Volo.Abp.BlobStoring;
 
 namespace TestWorkshop;
 
@@ -15,7 +16,7 @@ namespace TestWorkshop;
     typeof(AbpIdentityDomainModule),
     typeof(AbpOpenIddictDomainModule),
     typeof(AbpTenantManagementDomainModule),
-    typeof(BlobStoringDatabaseDomainModule)
+    typeof(AbpBlobStoringModule)
     )]
 public class TestWorkshopDomainModule : AbpModule
 {
