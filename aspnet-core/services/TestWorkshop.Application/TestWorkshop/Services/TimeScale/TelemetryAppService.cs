@@ -143,6 +143,10 @@ public class TelemetryAppService : TestWorkshopAppService, ITelemetryAppService
 
         if (task != null)
         {
+            // ✅ 禁止删除正在处理的任务
+            if (task.Status == 1)
+                throw new UserFriendlyException("Cannot delete a task that is currently being processed");
+
             // 删除 Blob 存储中的文件
             if (!string.IsNullOrEmpty(task.BlobName))
             {
