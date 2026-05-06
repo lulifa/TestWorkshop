@@ -26,6 +26,7 @@ global using System.Threading;
 global using System.Threading.Tasks;
 global using TestWorkshop.Authorization.OrganizationUnits;
 global using Volo.Abp;
+global using Volo.Abp.Application.Dtos;
 global using Volo.Abp.AuditLogging;
 global using Volo.Abp.Authorization.Permissions;
 global using Volo.Abp.BackgroundJobs;

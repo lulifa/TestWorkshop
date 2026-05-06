@@ -28,9 +28,12 @@ public class TestWorkshopEntityFrameworkCoreModule : AbpModule
     {
         context.Services.AddAbpDbContext<TestWorkshopDbContext>(options =>
         {
-                /* Remove "includeAllEntities: true" to create
-                 * default repositories only for aggregate roots */
+            /* Remove "includeAllEntities: true" to create
+             * default repositories only for aggregate roots */
             options.AddDefaultRepositories(includeAllEntities: true);
+
+            options.AddRepository<Device, DeviceRepository>();
+            options.AddRepository<TelemetryTask, TelemetryTaskRepository>();
 
             options.AddRepository<Menu, EfCoreMenuRepository>();
             options.AddRepository<UserMenu, EfCoreUserMenuRepository>();
@@ -64,6 +67,7 @@ public class TestWorkshopEntityFrameworkCoreModule : AbpModule
     public override void OnApplicationInitialization(ApplicationInitializationContext context)
     {
         context.AddBackgroundWorkerAsync<TelemetryWorker>();
+        context.AddBackgroundWorkerAsync<TelemetryFileCleanupWorker>();
     }
 
 }

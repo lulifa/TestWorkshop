@@ -53,6 +53,111 @@ public static class TestWorkshopDbContextModelCreatingExtensions
             b.Property(p => p.Value).IsRequired();
 
             b.ConfigureByConvention();
+        });
+
+        // ✅ 新增：TelemetryTask 配置
+        builder.Entity<TelemetryTask>(b =>
+        {
+            b.ToTable(TestWorkshopDbProperties.DbTablePrefix + "TelemetryTasks", TestWorkshopDbProperties.DbSchema);
+
+            b.HasKey(x => x.Id);
+
+            b.Property(p => p.FileId)
+                .HasColumnName(nameof(TelemetryTask.FileId))
+                .IsRequired()
+                .HasComment("文件ID");
+
+            b.Property(p => p.FileName)
+                .HasMaxLength(TestWorkshopConsts.MaxLength256)
+                .HasColumnName(nameof(TelemetryTask.FileName))
+                .IsRequired()
+                .HasComment("原始文件名");
+
+            b.Property(p => p.FileSize)
+                .HasColumnName(nameof(TelemetryTask.FileSize))
+                .IsRequired()
+                .HasComment("文件大小（字节）");
+
+            b.Property(p => p.BlobName)
+                .HasMaxLength(TestWorkshopConsts.MaxLength256)
+                .HasColumnName(nameof(TelemetryTask.BlobName))
+                .HasComment("Blob存储文件名");
+
+            b.Property(p => p.Status)
+                .HasColumnName(nameof(TelemetryTask.Status))
+                .IsRequired()
+                .HasComment("处理状态 (0=Pending 1=Processing 2=Success 3=Failed)");
+
+            b.Property(p => p.RetryCount)
+                .HasColumnName(nameof(TelemetryTask.RetryCount))
+                .IsRequired()
+                .HasDefaultValue(0)
+                .HasComment("重试次数");
+
+            b.Property(p => p.NextRetryTime)
+                .HasColumnName(nameof(TelemetryTask.NextRetryTime))
+                .HasColumnType("timestamp with time zone")
+                .HasComment("下次重试时间");
+
+            b.Property(p => p.Error)
+                .HasColumnName(nameof(TelemetryTask.Error))
+                .HasComment("错误信息");
+
+            b.Property(p => p.RecordCount)
+                .HasColumnName(nameof(TelemetryTask.RecordCount))
+                .HasComment("解析的记录数");
+
+            b.Property(p => p.CreatedAt)
+                .HasColumnName(nameof(TelemetryTask.CreatedAt))
+                .HasColumnType("timestamp with time zone")
+                .IsRequired()
+                .HasComment("创建时间");
+
+            b.Property(p => p.ProcessedAt)
+                .HasColumnName(nameof(TelemetryTask.ProcessedAt))
+                .HasColumnType("timestamp with time zone")
+                .HasComment("处理完成时间");
+
+            b.Property(p => p.ProcessingStartedAt)
+                .HasColumnName(nameof(TelemetryTask.ProcessingStartedAt))
+                .HasColumnType("timestamp with time zone")
+                .HasComment("任务开始处理的时间，用于判断是否卡死");
+
+            b.Property(p => p.ExpiresAt)
+                .HasColumnName(nameof(TelemetryTask.ExpiresAt))
+                .HasColumnType("timestamp with time zone")
+                .IsRequired()
+                .HasComment("过期时间");
+
+            b.Property(p => p.IsDeleted)
+                .HasColumnName(nameof(TelemetryTask.IsDeleted))
+                .IsRequired()
+                .HasDefaultValue(false)
+                .HasComment("是否已删除");
+
+            b.Property(p => p.DeletedAt)
+                .HasColumnName(nameof(TelemetryTask.DeletedAt))
+                .HasColumnType("timestamp with time zone")
+                .HasComment("删除时间");
+
+            b.Property(p => p.TenantId)
+                .HasColumnName(nameof(TelemetryTask.TenantId))
+                .HasComment("租户ID");
+
+            b.ConfigureByConvention();
+
+            // ✅ 创建索引以提高查询性能
+            b.HasIndex(x => x.FileName);
+
+            b.HasIndex(x => x.Status);
+
+            b.HasIndex(x => new { x.ExpiresAt, x.IsDeleted });
+
+            b.HasIndex(x => x.CreatedAt);
+
+            b.HasIndex(x => x.FileId).IsUnique();
+
+            b.HasIndex(x => new { x.Status, x.NextRetryTime, x.CreatedAt });
 
         });
     }

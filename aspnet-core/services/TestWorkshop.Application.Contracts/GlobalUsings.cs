@@ -1,5 +1,6 @@
 ﻿// Global using directives
 
+global using Microsoft.AspNetCore.Http;
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Localization;
 global using System;

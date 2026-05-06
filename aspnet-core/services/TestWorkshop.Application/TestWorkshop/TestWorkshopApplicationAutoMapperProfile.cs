@@ -1,9 +1,15 @@
+using TestWorkshop.TimeScale;
+
 namespace TestWorkshop;
 
 public class TestWorkshopApplicationAutoMapperProfile : Profile
 {
     public TestWorkshopApplicationAutoMapperProfile()
     {
+        CreateMap<TelemetryTask, TelemetryTaskDto>();
+        CreateMap<TelemetryTaskCreateDto, TelemetryTask>();
+
+
         CreateMap<DataItem, DataItemDto>();
         CreateMap<Data, DataDto>();
         CreateMap<Menu, MenuDto>()
