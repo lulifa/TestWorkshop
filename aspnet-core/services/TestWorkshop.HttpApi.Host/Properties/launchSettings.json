@@ -3,7 +3,7 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "https://localhost:44349",
+      "applicationUrl": "http://localhost:44349",
       "sslPort": 44349
     }
   },
@@ -18,7 +18,7 @@
     "TestWorkshop.HttpApi.Host": {
       "commandName": "Project",
       "launchBrowser": true,
-      "applicationUrl": "https://localhost:44349",
+      "applicationUrl": "http://localhost:44349",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

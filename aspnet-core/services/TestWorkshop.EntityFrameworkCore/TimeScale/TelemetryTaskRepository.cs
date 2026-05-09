@@ -25,13 +25,21 @@ public class TelemetryTaskRepository :
         var dbContext = await GetDbContextAsync();
 
         // FOR UPDATE SKIP LOCKED 防止并发重复获取
-        var sql = @"
-                SELECT * FROM ""TelemetryTasks""
-                WHERE ""Status"" = 0
-                  AND (""NextRetryTime"" IS NULL OR ""NextRetryTime"" <= @Now)
-                ORDER BY ""CreatedAt""
-                LIMIT @Take
-                FOR UPDATE SKIP LOCKED";
+        var entityType = dbContext.Model.FindEntityType(typeof(TelemetryTask));
+        var tableName = entityType?.GetTableName();
+        var schema = entityType?.GetSchema();
+
+        var fullTableName = string.IsNullOrWhiteSpace(schema)
+            ? $@"""{tableName}"""
+            : $@"""{schema}"".""{tableName}""";
+
+        var sql = $@"
+            SELECT * FROM {fullTableName}
+            WHERE ""Status"" = 0
+              AND (""NextRetryTime"" IS NULL OR ""NextRetryTime"" <= @Now)
+            ORDER BY ""CreatedAt""
+            LIMIT @Take
+            FOR UPDATE SKIP LOCKED";
 
         var tasks = await dbContext.TelemetryTasks
             .FromSqlRaw(sql,

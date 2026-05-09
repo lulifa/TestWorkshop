@@ -26,6 +26,9 @@
     "#/*": "./src/*"
   },
   "dependencies": {
+    "@abp/core": "workspace:*",
+    "@ant-design/icons-vue": "catalog:",
+    "@vben-core/shadcn-ui": "workspace:*",
     "@vben/access": "workspace:*",
     "@vben/common-ui": "workspace:*",
     "@vben/constants": "workspace:*",
@@ -43,8 +46,15 @@
     "@vueuse/core": "catalog:",
     "ant-design-vue": "catalog:",
     "dayjs": "catalog:",
+    "lodash.clonedeep": "catalog:",
     "pinia": "catalog:",
+    "universal-cookie": "catalog:",
     "vue": "catalog:",
-    "vue-router": "catalog:"
+    "vue-router": "catalog:",
+    "vue3-colorpicker": "catalog:",
+    "vxe-table": "catalog:"
+  },
+  "devDependencies": {
+    "@types/lodash.clonedeep": "catalog:"
   }
 }

@@ -6,6 +6,9 @@ settings:
 
 catalogs:
   default:
+    '@ant-design/icons-vue':
+      specifier: ^7.0.1
+      version: 7.0.1
     '@changesets/changelog-github':
       specifier: ^0.5.2
       version: 0.5.2
@@ -510,6 +513,9 @@ catalogs:
     vue-tsc:
       specifier: ^3.2.4
       version: 3.2.4
+    vue3-colorpicker:
+      specifier: ^2.3.0
+      version: 2.3.0
     vxe-pc-ui:
       specifier: ^4.12.16
       version: 4.12.35
@@ -641,6 +647,15 @@ importers:
 
   apps/web-antd:
     dependencies:
+      '@abp/core':
+        specifier: workspace:*
+        version: link:../../packages/@abp/core
+      '@ant-design/icons-vue':
+        specifier: 'catalog:'
+        version: 7.0.1(vue@3.5.27(typescript@5.9.3))
+      '@vben-core/shadcn-ui':
+        specifier: workspace:*
+        version: link:../../packages/@core/ui-kit/shadcn-ui
       '@vben/access':
         specifier: workspace:*
         version: link:../../packages/effects/access
@@ -692,15 +707,31 @@ importers:
       dayjs:
         specifier: 'catalog:'
         version: 1.11.19
+      lodash.clonedeep:
+        specifier: 'catalog:'
+        version: 4.5.0
       pinia:
         specifier: ^3.0.4
         version: 3.0.4(typescript@5.9.3)(vue@3.5.27(typescript@5.9.3))
+      universal-cookie:
+        specifier: 'catalog:'
+        version: 8.1.2
       vue:
         specifier: ^3.5.27
         version: 3.5.27(typescript@5.9.3)
       vue-router:
         specifier: 'catalog:'
         version: 4.6.4(vue@3.5.27(typescript@5.9.3))
+      vue3-colorpicker:
+        specifier: 'catalog:'
+        version: 2.3.0(@aesoper/normal-utils@0.1.5)(@popperjs/core@2.11.8)(@vueuse/core@14.2.0(vue@3.5.27(typescript@5.9.3)))(gradient-parser@1.2.0)(lodash-es@4.17.23)(tinycolor2@1.6.0)(vue-types@3.0.2(vue@3.5.27(typescript@5.9.3)))(vue@3.5.27(typescript@5.9.3))
+      vxe-table:
+        specifier: 'catalog:'
+        version: 4.17.48(vue@3.5.27(typescript@5.9.3))
+    devDependencies:
+      '@types/lodash.clonedeep':
+        specifier: 'catalog:'
+        version: 4.5.9
 
   docs:
     dependencies:
@@ -1810,6 +1841,9 @@ importers:
         version: 0.3.17
 
 packages:
+
+  '@aesoper/normal-utils@0.1.5':
+    resolution: {integrity: sha512-LFF/6y6h5mfwhnJaWqqxuC8zzDaHCG62kMRkd8xhDtq62TQj9dM17A9DhE87W7DhiARJsHLgcina/9P4eNCN1w==}
 
   '@algolia/abtesting@1.14.0':
     resolution: {integrity: sha512-cZfj+1Z1dgrk3YPtNQNt0H9Rr67P8b4M79JjUKGS0d7/EbFbGxGgSu6zby5f22KXo3LT0LZa4O2c6VVbupJuDg==}
@@ -6774,6 +6808,10 @@ packages:
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
 
+  gradient-parser@1.2.0:
+    resolution: {integrity: sha512-6ABGa9CR7WR/0pAJicBy5SJkiikbFM6kf/JjykwX7x+t+s8ORWVnlbi6FkHeFFb36yWsjUpHqSYrygd7ofEUqA==}
+    engines: {node: '>=0.10.0'}
+
   graph-cycles@3.0.0:
     resolution: {integrity: sha512-9qxd8BQK0tZJ3cRUW0Yn2q6P/9h+bgz/4UYuscpdxPz6851NNBA1IwoYDRHDpKzCqmr1UHlGHcp5+0WzpY9F7A==}
     engines: {node: ^14.13.1 || >=16.0.0}
@@ -9633,6 +9671,9 @@ packages:
   tinybench@2.9.0:
     resolution: {integrity: sha512-0+DUvqWMValLmha6lr4kD8iAMK1HzV0/aKnCtWb9v9641TnP/MFb7Pc2bxoxQjTXAErryXVgUOfv2YqNllqGeg==}
 
+  tinycolor2@1.6.0:
+    resolution: {integrity: sha512-XPaBkWQJdsf3pLKJV9p4qN/S+fm2Oj8AIPo1BTUhg5oxkvm9+SVEGFdhyOz7tTdUTfvxMiAs4sp6/eZO2Ew+pw==}
+
   tinyexec@0.3.2:
     resolution: {integrity: sha512-KQQR9yN7R5+OSwaK0XQoj22pwHoTlgYqmUscPYoknOoWCWfj/5/ABTMRi69FrKU5ffPVh5QcFikpWJI/P1ocHA==}
 
@@ -10275,6 +10316,18 @@ packages:
     peerDependencies:
       vue: ^3.5.27
 
+  vue3-colorpicker@2.3.0:
+    resolution: {integrity: sha512-e3lLmBcy7mkRrNQVeUny1DjOd6E11L8H5ok5Bx4MdXmrG+RzyacRF7KkhrEWmRYPhKAsaoUrWsFkmpPAaYnE5A==}
+    peerDependencies:
+      '@aesoper/normal-utils': ^0.1.5
+      '@popperjs/core': ^2.11.8
+      '@vueuse/core': ^10.1.2
+      gradient-parser: ^1.0.2
+      lodash-es: ^4.17.21
+      tinycolor2: ^1.4.2
+      vue: ^3.5.27
+      vue-types: ^4.1.0
+
   vue@3.5.27:
     resolution: {integrity: sha512-aJ/UtoEyFySPBGarREmN4z6qNKpbEguYHMmXSiOGk69czc+zhs0NF6tEFrY8TZKAl8N/LYAkd4JHVd5E/AsSmw==}
     peerDependencies:
@@ -10570,6 +10623,8 @@ packages:
     hasBin: true
 
 snapshots:
+
+  '@aesoper/normal-utils@0.1.5': {}
 
   '@algolia/abtesting@1.14.0':
     dependencies:
@@ -16242,6 +16297,8 @@ snapshots:
 
   graceful-fs@4.2.11: {}
 
+  gradient-parser@1.2.0: {}
+
   graph-cycles@3.0.0:
     dependencies:
       fast-string-compare: 3.0.0
@@ -19206,6 +19263,8 @@ snapshots:
 
   tinybench@2.9.0: {}
 
+  tinycolor2@1.6.0: {}
+
   tinyexec@0.3.2: {}
 
   tinyexec@1.0.2: {}
@@ -20031,6 +20090,17 @@ snapshots:
     dependencies:
       is-plain-object: 3.0.1
       vue: 3.5.27(typescript@5.9.3)
+
+  vue3-colorpicker@2.3.0(@aesoper/normal-utils@0.1.5)(@popperjs/core@2.11.8)(@vueuse/core@14.2.0(vue@3.5.27(typescript@5.9.3)))(gradient-parser@1.2.0)(lodash-es@4.17.23)(tinycolor2@1.6.0)(vue-types@3.0.2(vue@3.5.27(typescript@5.9.3)))(vue@3.5.27(typescript@5.9.3)):
+    dependencies:
+      '@aesoper/normal-utils': 0.1.5
+      '@popperjs/core': 2.11.8
+      '@vueuse/core': 14.2.0(vue@3.5.27(typescript@5.9.3))
+      gradient-parser: 1.2.0
+      lodash-es: 4.17.23
+      tinycolor2: 1.6.0
+      vue: 3.5.27(typescript@5.9.3)
+      vue-types: 3.0.2(vue@3.5.27(typescript@5.9.3))
 
   vue@3.5.27(typescript@5.9.3):
     dependencies:

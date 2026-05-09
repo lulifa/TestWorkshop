@@ -5,11 +5,17 @@
     "codeLogin": "验证码登录",
     "qrcodeLogin": "二维码登录",
     "forgetPassword": "忘记密码",
-    "profile": "个人中心"
+    "oidcLogin": "认证中心登录",
+    "oidcLoginMessage": "请点击确定跳转认证中心登录",
+    "processingLogin": "正在处理登录，请稍候..."
   },
   "dashboard": {
-    "title": "概览",
+    "title": "仪表盘",
     "analytics": "分析页",
     "workspace": "工作台"
+  },
+  "business": {
+    "title": "业务管理",
+    "books": "书籍管理"
   }
 }
