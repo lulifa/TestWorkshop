@@ -6,11 +6,21 @@ export default defineConfig(async () => {
     vite: {
       server: {
         proxy: {
+          '/.well-known': {
+            changeOrigin: true,
+            target: 'http://localhost:44382/',
+          },
           '/api': {
             changeOrigin: true,
-            rewrite: (path) => path.replace(/^\/api/, ''),
-            // mock代理目标地址
-            target: 'http://localhost:5320/api',
+            target: 'http://localhost:44382/',
+          },
+          '/connect': {
+            changeOrigin: true,
+            target: 'http://localhost:44382/',
+          },
+          '/signalr-hubs': {
+            changeOrigin: true,
+            target: 'http://localhost:44382/',
             ws: true,
           },
         },
