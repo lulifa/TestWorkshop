@@ -1,0 +1,75 @@
+{
+  "title": "Abp Framework",
+  "oauth": {
+    "tenant": {
+      "title": "tenant",
+      "placeholder": "Please select a tenant. Ignore this field if multi-tenancy is disabled."
+    },
+    "twoFactor": {
+      "title": "Two Factor",
+      "authenticator": "Authenticator",
+      "emailAddress": "Email Address",
+      "phoneNumber": "Phone Number",
+      "getCode": "Get Code",
+      "code": "Code"
+    },
+    "qrcodeLogin": {
+      "scaned": "Please confirm login on your phone."
+    },
+    "errors": {
+      "accountLockedByInvalidLoginAttempts": "The user account has been locked out due to invalid login attempts. Please wait a while and try again.",
+      "accountInactive": "You are not allowed to login!  Your account is inactive.",
+      "invalidUserNameOrPassword": "Invalid username or password!",
+      "tokenHasExpired": "The token is no longer valid!",
+      "requiresTwoFactor": "Identity verification is required. Please select a verification method!",
+      "shouldChangePassword": "Your password has expired. Please change it and login!"
+    }
+  },
+  "modules": {
+    "title": "Platform",
+    "platform": {
+      "dataDictionaries": "Data Dictionaries",
+      "layouts": "Layouts",
+      "menus": "Menus"
+    }
+  },
+  "system": {
+    "title": "System",
+    "tenants": "Tenants",
+    "identity": {
+      "users": "Users",
+      "roles": "Roles",
+      "organizationUnits": "Organization Units"
+    },
+    "dataProtection": {
+      "title": "Data Protection",
+      "entityTypeInfos": "Entity Type Infos"
+    }
+  },
+  "account": {
+    "title": "Account",
+    "settings": {
+      "title": "My Settings",
+      "basic": {
+        "title": "Basic Settings"
+      },
+      "security": {
+        "title": "Security Settings",
+        "unSet": "Not Set",
+        "verified": "Verified",
+        "unVerified": "Not Verified",
+        "email": "Email",
+        "password": "Password",
+        "passwordDesc": "Reset My Password",
+        "phoneNumber": "PhoneNumber"
+      },
+      "bindSettings": "Bind Settings",
+      "noticeSettings": "Notice Settings",
+      "authenticatorSettings": "Authenticator Settings",
+      "changeAvatar": "Change Avatar",
+      "sessionSettings": "Session Settings",
+      "personalDataSettings": "Personal Data Settings"
+    },
+    "profile": "My Profile"
+  }
+}
