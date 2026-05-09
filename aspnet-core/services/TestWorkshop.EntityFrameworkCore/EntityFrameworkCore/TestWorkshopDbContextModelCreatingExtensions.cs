@@ -7,13 +7,15 @@ public static class TestWorkshopDbContextModelCreatingExtensions
     {
         Check.NotNull(builder, nameof(builder));
 
-        builder.ConfigureTimeScale();
+        builder.ConfigureBusiness();
 
         builder.ConfigurePlatform();
 
+        builder.ConfigureTimeScale();
+
     }
 
-    public static void ConfigureTimeScale(this ModelBuilder builder)
+    public static void ConfigureBusiness(this ModelBuilder builder)
     {
         builder.Entity<Device>(b =>
         {
@@ -33,26 +35,6 @@ public static class TestWorkshopDbContextModelCreatingExtensions
             b.ConfigureByConvention();
 
             b.HasIndex(x => x.Code).IsUnique();
-        });
-
-        builder.Entity<DeviceTelemetry>(b =>
-        {
-            b.ToTable(TestWorkshopDbProperties.DbTablePrefix + "DeviceTelemetries", TestWorkshopDbProperties.DbSchema);
-
-            b.HasKey(x => x.Id);
-
-            b.Property(p => p.Metric)
-                .HasMaxLength(TestWorkshopConsts.MaxLength128)
-                .HasColumnName(nameof(DeviceTelemetry.Metric))
-                .IsRequired();
-            b.Property(p => p.Timestamp)
-                .HasColumnName(nameof(DeviceTelemetry.Timestamp))
-                .HasColumnType("timestamp with time zone")
-                .IsRequired();
-            b.Property(p => p.DeviceId).IsRequired();
-            b.Property(p => p.Value).IsRequired();
-
-            b.ConfigureByConvention();
         });
 
         // ✅ 新增：TelemetryTask 配置
@@ -160,6 +142,30 @@ public static class TestWorkshopDbContextModelCreatingExtensions
             b.HasIndex(x => new { x.Status, x.NextRetryTime, x.CreatedAt });
 
         });
+    }
+
+    public static void ConfigureTimeScale(this ModelBuilder builder)
+    {
+        builder.Entity<DeviceTelemetry>(b =>
+        {
+            b.ToTable(TestWorkshopDbProperties.DbTablePrefix + "DeviceTelemetries", TestWorkshopDbProperties.DbSchema);
+
+            b.HasKey(x => new { x.DeviceId, x.Timestamp, x.Metric });
+
+            b.Property(p => p.Metric)
+                .HasMaxLength(TestWorkshopConsts.MaxLength128)
+                .HasColumnName(nameof(DeviceTelemetry.Metric))
+                .IsRequired();
+            b.Property(p => p.Timestamp)
+                .HasColumnName(nameof(DeviceTelemetry.Timestamp))
+                .HasColumnType("timestamp with time zone")
+                .IsRequired();
+            b.Property(p => p.DeviceId).IsRequired();
+            b.Property(p => p.Value).IsRequired();
+
+            b.ConfigureByConvention();
+        });
+
     }
 
     public static void ConfigurePlatform(this ModelBuilder builder)

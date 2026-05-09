@@ -71,7 +71,6 @@ catalog:
   '@vueuse/integrations': ^14.1.0
   '@vueuse/motion': ^3.0.3
   ant-design-vue: ^4.2.6
-  antdv-next: ^1.0.2
   archiver: ^7.0.1
   autoprefixer: ^10.4.24
   axios: ^1.13.4
@@ -94,7 +93,6 @@ catalog:
   depcheck: ^1.4.7
   dotenv: ^16.6.1
   echarts: ^6.0.0
-  element-plus: ^2.13.1
   es-toolkit: ^1.44.0
   esbuild: ^0.25.12
   eslint: ^9.39.2
@@ -131,7 +129,6 @@ catalog:
   lodash.clonedeep: ^4.5.0
   lucide-vue-next: ^0.553.0
   medium-zoom: ^1.1.0
-  naive-ui: ^2.43.2
   nitropack: ^2.13.1
   nprogress: ^0.2.0
   ora: ^8.2.0
@@ -170,13 +167,11 @@ catalog:
   tailwind-merge: ^2.6.0
   tailwindcss: ^3.4.19
   tailwindcss-animate: ^1.0.7
-  tdesign-vue-next: ^1.18.0
   theme-colors: ^0.1.0
   tippy.js: ^6.3.7
   turbo: ^2.8.3
   typescript: ^5.9.3
   unbuild: ^3.6.1
-  unplugin-element-plus: ^0.11.2
   vee-validate: ^4.15.1
   vite: ^7.3.1
   vite-plugin-compression: ^0.5.1

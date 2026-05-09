@@ -13,8 +13,8 @@ using Volo.Abp.EntityFrameworkCore;
 namespace TestWorkshop.Migrations
 {
     [DbContext(typeof(TestWorkshopDbContext))]
-    [Migration("20260429081731_AddDeviceTelemetry")]
-    partial class AddDeviceTelemetry
+    [Migration("20260509063540_AddTimescaleEntities")]
+    partial class AddTimescaleEntities
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -475,6 +475,10 @@ namespace TestWorkshop.Migrations
                     b.Property<Guid>("OrganizationUnitId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("TenantId");
+
                     b.Property<int>("Type")
                         .HasColumnType("integer");
 
@@ -488,31 +492,137 @@ namespace TestWorkshop.Migrations
 
             modelBuilder.Entity("TestWorkshop.TimeScale.DeviceTelemetry", b =>
                 {
+                    b.Property<Guid>("DeviceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("Timestamp");
+
+                    b.Property<string>("Metric")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("Metric");
+
+                    b.Property<double>("Value")
+                        .HasColumnType("double precision");
+
+                    b.HasKey("DeviceId", "Timestamp", "Metric");
+
+                    b.ToTable("AppDeviceTelemetries", (string)null);
+                });
+
+            modelBuilder.Entity("TestWorkshop.TimeScale.TelemetryTask", b =>
+                {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<Guid>("DeviceId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("BlobName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("BlobName")
+                        .HasComment("Blob存储文件名");
 
-                    b.Property<string>("Metric")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)")
-                        .HasColumnName("Metric");
-
-                    b.Property<DateTime>("Timestamp")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("Timestamp");
+                        .HasColumnName("CreatedAt")
+                        .HasComment("创建时间");
 
-                    b.Property<double>("Value")
-                        .HasColumnType("double precision");
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("DeletedAt")
+                        .HasComment("删除时间");
+
+                    b.Property<string>("Error")
+                        .HasColumnType("text")
+                        .HasColumnName("Error")
+                        .HasComment("错误信息");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ExpiresAt")
+                        .HasComment("过期时间");
+
+                    b.Property<Guid>("FileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("FileId")
+                        .HasComment("文件ID");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("FileName")
+                        .HasComment("原始文件名");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint")
+                        .HasColumnName("FileSize")
+                        .HasComment("文件大小（字节）");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("IsDeleted")
+                        .HasComment("是否已删除");
+
+                    b.Property<DateTime?>("NextRetryTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("NextRetryTime")
+                        .HasComment("下次重试时间");
+
+                    b.Property<DateTime?>("ProcessedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ProcessedAt")
+                        .HasComment("处理完成时间");
+
+                    b.Property<DateTime?>("ProcessingStartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ProcessingStartedAt")
+                        .HasComment("任务开始处理的时间，用于判断是否卡死");
+
+                    b.Property<int?>("RecordCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("RecordCount")
+                        .HasComment("解析的记录数");
+
+                    b.Property<int>("RetryCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("RetryCount")
+                        .HasComment("重试次数");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasColumnName("Status")
+                        .HasComment("处理状态 (0=Pending 1=Processing 2=Success 3=Failed)");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("TenantId")
+                        .HasComment("租户ID");
 
                     b.HasKey("Id");
 
-                    b.ToTable("AppDeviceTelemetries", (string)null);
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("FileId")
+                        .IsUnique();
+
+                    b.HasIndex("FileName");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("ExpiresAt", "IsDeleted");
+
+                    b.HasIndex("Status", "NextRetryTime", "CreatedAt");
+
+                    b.ToTable("AppTelemetryTasks", (string)null);
                 });
 
             modelBuilder.Entity("TestWorkshop.UserFavoriteMenu", b =>
@@ -986,83 +1096,6 @@ namespace TestWorkshop.Migrations
                     b.HasIndex("IsAbandoned", "NextTryTime");
 
                     b.ToTable("AbpBackgroundJobs", (string)null);
-                });
-
-            modelBuilder.Entity("Volo.Abp.BlobStoring.Database.DatabaseBlob", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .HasMaxLength(40)
-                        .HasColumnType("character varying(40)")
-                        .HasColumnName("ConcurrencyStamp");
-
-                    b.Property<Guid>("ContainerId")
-                        .HasColumnType("uuid");
-
-                    b.Property<byte[]>("Content")
-                        .HasMaxLength(2147483647)
-                        .HasColumnType("bytea");
-
-                    b.Property<string>("ExtraProperties")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("ExtraProperties");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<Guid?>("TenantId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("TenantId");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ContainerId");
-
-                    b.HasIndex("TenantId", "ContainerId", "Name");
-
-                    b.ToTable("AbpBlobs", (string)null);
-                });
-
-            modelBuilder.Entity("Volo.Abp.BlobStoring.Database.DatabaseBlobContainer", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .HasMaxLength(40)
-                        .HasColumnType("character varying(40)")
-                        .HasColumnName("ConcurrencyStamp");
-
-                    b.Property<string>("ExtraProperties")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("ExtraProperties");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.Property<Guid?>("TenantId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("TenantId");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TenantId", "Name");
-
-                    b.ToTable("AbpBlobContainers", (string)null);
                 });
 
             modelBuilder.Entity("Volo.Abp.FeatureManagement.FeatureDefinitionRecord", b =>
@@ -2518,15 +2551,6 @@ namespace TestWorkshop.Migrations
                     b.HasOne("Volo.Abp.AuditLogging.EntityChange", null)
                         .WithMany("PropertyChanges")
                         .HasForeignKey("EntityChangeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Volo.Abp.BlobStoring.Database.DatabaseBlob", b =>
-                {
-                    b.HasOne("Volo.Abp.BlobStoring.Database.DatabaseBlobContainer", null)
-                        .WithMany()
-                        .HasForeignKey("ContainerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

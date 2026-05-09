@@ -1,12 +1,13 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
 namespace TestWorkshop.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class InitialDatabase : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -80,21 +81,6 @@ namespace TestWorkshop.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AbpBackgroundJobs", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "AbpBlobContainers",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    TenantId = table.Column<Guid>(type: "uuid", nullable: true),
-                    Name = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
-                    ExtraProperties = table.Column<string>(type: "text", nullable: false),
-                    ConcurrencyStamp = table.Column<string>(type: "character varying(40)", maxLength: 40, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AbpBlobContainers", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -473,6 +459,22 @@ namespace TestWorkshop.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "AppDevices",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Code = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
+                    Name = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
+                    Type = table.Column<int>(type: "integer", nullable: false),
+                    OrganizationUnitId = table.Column<Guid>(type: "uuid", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AppDevices", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AppLayouts",
                 columns: table => new
                 {
@@ -549,6 +551,34 @@ namespace TestWorkshop.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AppRoleMenus", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AppTelemetryTasks",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    FileId = table.Column<Guid>(type: "uuid", nullable: false, comment: "文件ID"),
+                    FileName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false, comment: "原始文件名"),
+                    FileSize = table.Column<long>(type: "bigint", nullable: false, comment: "文件大小（字节）"),
+                    BlobName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true, comment: "Blob存储文件名"),
+                    Status = table.Column<int>(type: "integer", nullable: false, comment: "处理状态 (0=Pending 1=Processing 2=Success 3=Failed)"),
+                    RetryCount = table.Column<int>(type: "integer", nullable: false, defaultValue: 0, comment: "重试次数"),
+                    NextRetryTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, comment: "下次重试时间"),
+                    Error = table.Column<string>(type: "text", nullable: true, comment: "错误信息"),
+                    RecordCount = table.Column<int>(type: "integer", nullable: true, comment: "解析的记录数"),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, comment: "创建时间"),
+                    ProcessedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, comment: "处理完成时间"),
+                    ProcessingStartedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, comment: "任务开始处理的时间，用于判断是否卡死"),
+                    ExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, comment: "过期时间"),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false, comment: "是否已删除"),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, comment: "删除时间"),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: true, comment: "租户ID")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AppTelemetryTasks", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -704,29 +734,6 @@ namespace TestWorkshop.Migrations
                         name: "FK_AbpEntityChanges_AbpAuditLogs_AuditLogId",
                         column: x => x.AuditLogId,
                         principalTable: "AbpAuditLogs",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "AbpBlobs",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    ContainerId = table.Column<Guid>(type: "uuid", nullable: false),
-                    TenantId = table.Column<Guid>(type: "uuid", nullable: true),
-                    Name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
-                    Content = table.Column<byte[]>(type: "bytea", maxLength: 2147483647, nullable: true),
-                    ExtraProperties = table.Column<string>(type: "text", nullable: false),
-                    ConcurrencyStamp = table.Column<string>(type: "character varying(40)", maxLength: 40, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AbpBlobs", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_AbpBlobs_AbpBlobContainers_ContainerId",
-                        column: x => x.ContainerId,
-                        principalTable: "AbpBlobContainers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -1057,21 +1064,6 @@ namespace TestWorkshop.Migrations
                 columns: new[] { "IsAbandoned", "NextTryTime" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_AbpBlobContainers_TenantId_Name",
-                table: "AbpBlobContainers",
-                columns: new[] { "TenantId", "Name" });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AbpBlobs_ContainerId",
-                table: "AbpBlobs",
-                column: "ContainerId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AbpBlobs_TenantId_ContainerId_Name",
-                table: "AbpBlobs",
-                columns: new[] { "TenantId", "ContainerId", "Name" });
-
-            migrationBuilder.CreateIndex(
                 name: "IX_AbpEntityChanges_AuditLogId",
                 table: "AbpEntityChanges",
                 column: "AuditLogId");
@@ -1276,9 +1268,46 @@ namespace TestWorkshop.Migrations
                 column: "Name");
 
             migrationBuilder.CreateIndex(
+                name: "IX_AppDevices_Code",
+                table: "AppDevices",
+                column: "Code",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_AppRoleMenus_RoleName_MenuId",
                 table: "AppRoleMenus",
                 columns: new[] { "RoleName", "MenuId" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppTelemetryTasks_CreatedAt",
+                table: "AppTelemetryTasks",
+                column: "CreatedAt");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppTelemetryTasks_ExpiresAt_IsDeleted",
+                table: "AppTelemetryTasks",
+                columns: new[] { "ExpiresAt", "IsDeleted" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppTelemetryTasks_FileId",
+                table: "AppTelemetryTasks",
+                column: "FileId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppTelemetryTasks_FileName",
+                table: "AppTelemetryTasks",
+                column: "FileName");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppTelemetryTasks_Status",
+                table: "AppTelemetryTasks",
+                column: "Status");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppTelemetryTasks_Status_NextRetryTime_CreatedAt",
+                table: "AppTelemetryTasks",
+                columns: new[] { "Status", "NextRetryTime", "CreatedAt" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AppUserFavoriteMenus_UserId_MenuId",
@@ -1332,9 +1361,6 @@ namespace TestWorkshop.Migrations
 
             migrationBuilder.DropTable(
                 name: "AbpBackgroundJobs");
-
-            migrationBuilder.DropTable(
-                name: "AbpBlobs");
 
             migrationBuilder.DropTable(
                 name: "AbpClaimTypes");
@@ -1406,6 +1432,9 @@ namespace TestWorkshop.Migrations
                 name: "AppDataItems");
 
             migrationBuilder.DropTable(
+                name: "AppDevices");
+
+            migrationBuilder.DropTable(
                 name: "AppLayouts");
 
             migrationBuilder.DropTable(
@@ -1413,6 +1442,9 @@ namespace TestWorkshop.Migrations
 
             migrationBuilder.DropTable(
                 name: "AppRoleMenus");
+
+            migrationBuilder.DropTable(
+                name: "AppTelemetryTasks");
 
             migrationBuilder.DropTable(
                 name: "AppUserFavoriteMenus");
@@ -1425,9 +1457,6 @@ namespace TestWorkshop.Migrations
 
             migrationBuilder.DropTable(
                 name: "OpenIddictTokens");
-
-            migrationBuilder.DropTable(
-                name: "AbpBlobContainers");
 
             migrationBuilder.DropTable(
                 name: "AbpEntityChanges");

@@ -1,5 +1,8 @@
 ﻿namespace TestWorkshop.TimeScale;
 
+/// <summary>
+/// 设备实体 - 用于存储下位机上传的设备基础信息
+/// </summary>
 public class Device : Entity<Guid>, IMultiTenant
 {
     public string Code { get; set; }      // NB-FIVA-001，下位机传

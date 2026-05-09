@@ -97,13 +97,13 @@ public class TelemetryWorker : AsyncPeriodicBackgroundWorkerBase
             return;
         }
 
-        var conn = (NpgsqlConnection)dbContext.Database.GetDbConnection();
-        if (conn.State != System.Data.ConnectionState.Open)
-            await conn.OpenAsync();
+        // 使用全新独立的连接，防止与外层 UOW 冲突
+        var connString = dbContext.Database.GetConnectionString();
+        await using var conn = new NpgsqlConnection(connString);
+        await conn.OpenAsync();
 
-        // 重点：统一使用 Npgsql 事务，并同步给 EF，保证一致性
+        // 开启独立事务
         await using var transaction = await conn.BeginTransactionAsync();
-        await dbContext.Database.UseTransactionAsync(transaction);
 
         try
         {

@@ -24,9 +24,6 @@ public class TelemetryTaskRepository :
     {
         var dbContext = await GetDbContextAsync();
 
-        // 短事务，锁定行后马上修改状态
-        await using var transaction = await dbContext.Database.BeginTransactionAsync();
-
         // FOR UPDATE SKIP LOCKED 防止并发重复获取
         var sql = @"
                 SELECT * FROM ""TelemetryTasks""
@@ -52,8 +49,6 @@ public class TelemetryTaskRepository :
             }
             await dbContext.SaveChangesAsync();
         }
-
-        await transaction.CommitAsync();
         return tasks;
     }
 
