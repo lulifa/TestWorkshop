@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace TestWorkshop;
 
 [Route("api/telemetry")]
-[ApiController]
 public class TelemetryController : TestWorkshopController
 {
     private readonly ITelemetryAppService _telemetryAppService;
@@ -18,7 +19,8 @@ public class TelemetryController : TestWorkshopController
     /// 上传遥测文件
     /// </summary>
     [HttpPost("upload")]
-    public async Task<TelemetryTaskDto> UploadAsync(IFormFile file)
+    [AllowAnonymous]
+    public async Task<TelemetryTaskDto> UploadAsync([Required]IFormFile file)
     {
         return await _telemetryAppService.UploadAsync(file);
     }
