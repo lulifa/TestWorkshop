@@ -51,18 +51,18 @@ const [Form, formApi] = useVbenForm({
         triggerFields: ['id'],
       },
       fieldName: 'parentId',
-      label: $t('AppPlatform.DisplayName:ParentData'),
+      label: $t('TestWorkshop.DisplayName:ParentData'),
     },
     {
       component: 'Input',
       fieldName: 'name',
-      label: $t('AppPlatform.DisplayName:Name'),
+      label: $t('TestWorkshop.DisplayName:Name'),
       rules: 'required',
     },
     {
       component: 'Input',
       fieldName: 'displayName',
-      label: $t('AppPlatform.DisplayName:DisplayName'),
+      label: $t('TestWorkshop.DisplayName:DisplayName'),
       rules: 'required',
     },
     {
@@ -73,7 +73,7 @@ const [Form, formApi] = useVbenForm({
         },
       },
       fieldName: 'description',
-      label: $t('AppPlatform.DisplayName:Description'),
+      label: $t('TestWorkshop.DisplayName:Description'),
     },
   ],
   showDefaultActions: false,
@@ -94,13 +94,13 @@ async function onGet() {
     modalApi.setState({ loading: true });
     formApi.resetForm();
     const { displayName, id, parentId } = modalApi.getData<DataDto>();
-    let title = $t('AppPlatform.Data:AddNew');
+    let title = $t('TestWorkshop.Data:AddNew');
     if (id) {
       const dto = await getApi(id);
       formApi.setValues(dto);
-      title = `${$t('AppPlatform.Data:Edit')} - ${dto.name}`;
+      title = `${$t('TestWorkshop.Data:Edit')} - ${dto.name}`;
     } else if (parentId) {
-      title = `${$t('AppPlatform.Data:AddChildren')} - ${displayName}`;
+      title = `${$t('TestWorkshop.Data:AddChildren')} - ${displayName}`;
       formApi.setFieldValue('parentId', parentId);
     }
     modalApi.setState({ title });

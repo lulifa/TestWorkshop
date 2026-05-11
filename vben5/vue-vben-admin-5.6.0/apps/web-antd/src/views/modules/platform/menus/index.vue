@@ -66,7 +66,7 @@ const formOptions: VbenFormProps = {
         valueField: 'id',
       },
       fieldName: 'layoutId',
-      label: $t('AppPlatform.DisplayName:Layout'),
+      label: $t('TestWorkshop.DisplayName:Layout'),
     },
     {
       component: 'Input',
@@ -96,7 +96,7 @@ const gridOptions: VxeGridProps<MenuDto> = {
       minWidth: 250,
       slots: { default: 'name' },
       sortable: true,
-      title: $t('AppPlatform.DisplayName:Name'),
+      title: $t('TestWorkshop.DisplayName:Name'),
       treeNode: true,
     },
     {
@@ -104,14 +104,14 @@ const gridOptions: VxeGridProps<MenuDto> = {
       field: 'displayName',
       minWidth: 150,
       sortable: true,
-      title: $t('AppPlatform.DisplayName:DisplayName'),
+      title: $t('TestWorkshop.DisplayName:DisplayName'),
     },
     {
       align: 'left',
       field: 'description',
       minWidth: 150,
       sortable: true,
-      title: $t('AppPlatform.DisplayName:Description'),
+      title: $t('TestWorkshop.DisplayName:Description'),
     },
     {
       field: 'action',
@@ -272,7 +272,7 @@ onMounted(onGet);
 
 <template>
   <Page class="vp-raw h-[300px] w-full">
-    <Grid :table-title="$t('AppPlatform.DisplayName:Menus')">
+    <Grid :table-title="$t('TestWorkshop.DisplayName:Menus')">
       <template #toolbar-tools>
         <Button
           v-if="isGranted([MenuPermissions.Create])"
@@ -280,7 +280,7 @@ onMounted(onGet);
           type="primary"
           @click="onCreate()"
         >
-          {{ $t('AppPlatform.Menu:AddNew') }}
+          {{ $t('TestWorkshop.Menu:AddNew') }}
         </Button>
       </template>
       <template #name="{ row }">
@@ -302,7 +302,7 @@ onMounted(onGet);
             type="link"
             @click="onCreate(row)"
           >
-            {{ $t('AppPlatform.Menu:AddChildren') }}
+            {{ $t('TestWorkshop.Menu:AddChildren') }}
           </Button>
           <Button
             v-if="

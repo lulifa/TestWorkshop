@@ -54,7 +54,7 @@ const [Form, formApi] = useVbenForm({
         triggerFields: ['id'],
       },
       fieldName: 'framework',
-      label: $t('AppPlatform.DisplayName:UIFramework'),
+      label: $t('TestWorkshop.DisplayName:UIFramework'),
       rules: 'selectRequired',
     },
     {
@@ -79,31 +79,31 @@ const [Form, formApi] = useVbenForm({
         triggerFields: ['id'],
       },
       fieldName: 'dataId',
-      label: $t('AppPlatform.DisplayName:LayoutConstraint'),
+      label: $t('TestWorkshop.DisplayName:LayoutConstraint'),
       rules: 'selectRequired',
     },
     {
       component: 'Input',
       fieldName: 'name',
-      label: $t('AppPlatform.DisplayName:Name'),
+      label: $t('TestWorkshop.DisplayName:Name'),
       rules: 'required',
     },
     {
       component: 'Input',
       fieldName: 'displayName',
-      label: $t('AppPlatform.DisplayName:DisplayName'),
+      label: $t('TestWorkshop.DisplayName:DisplayName'),
       rules: 'required',
     },
     {
       component: 'Input',
       fieldName: 'path',
-      label: $t('AppPlatform.DisplayName:Path'),
+      label: $t('TestWorkshop.DisplayName:Path'),
       rules: 'required',
     },
     {
       component: 'Input',
       fieldName: 'redirect',
-      label: $t('AppPlatform.DisplayName:Redirect'),
+      label: $t('TestWorkshop.DisplayName:Redirect'),
     },
     {
       component: 'Textarea',
@@ -113,7 +113,7 @@ const [Form, formApi] = useVbenForm({
         },
       },
       fieldName: 'description',
-      label: $t('AppPlatform.DisplayName:Description'),
+      label: $t('TestWorkshop.DisplayName:Description'),
     },
   ],
   showDefaultActions: false,
@@ -136,7 +136,7 @@ async function onGet() {
   formApi.resetForm();
   const { id } = modalApi.getData<LayoutDto>();
   if (isNullOrWhiteSpace(id)) {
-    modalApi.setState({ title: $t('AppPlatform.Layout:AddNew') });
+    modalApi.setState({ title: $t('TestWorkshop.Layout:AddNew') });
     return;
   }
   try {
@@ -144,7 +144,7 @@ async function onGet() {
     const dto = await getApi(id);
     formApi.setValues(dto, false);
     modalApi.setState({
-      title: `${$t('AppPlatform.Layout:Edit')} - ${dto.displayName}`,
+      title: `${$t('TestWorkshop.Layout:Edit')} - ${dto.displayName}`,
     });
   } finally {
     modalApi.setState({ loading: false });

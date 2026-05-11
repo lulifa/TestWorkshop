@@ -64,7 +64,7 @@ const [Form, formApi] = useVbenForm({
         triggerFields: ['id'],
       },
       fieldName: 'framework',
-      label: $t('AppPlatform.DisplayName:UIFramework'),
+      label: $t('TestWorkshop.DisplayName:UIFramework'),
       rules: 'selectRequired',
     },
     {
@@ -84,7 +84,7 @@ const [Form, formApi] = useVbenForm({
         triggerFields: ['framework'],
       },
       fieldName: 'startupMenuId',
-      label: $t('AppPlatform.Menu:SetStartup'),
+      label: $t('TestWorkshop.Menu:SetStartup'),
     },
     {
       component: 'Tree',
@@ -107,7 +107,7 @@ const [Form, formApi] = useVbenForm({
         triggerFields: ['framework'],
       },
       fieldName: 'menuIds',
-      label: $t('AppPlatform.DisplayName:Menus'),
+      label: $t('TestWorkshop.DisplayName:Menus'),
       modelPropName: 'checkedKeys',
     },
   ],
@@ -235,7 +235,7 @@ async function onSubmit(values: Record<string, any>) {
 </script>
 
 <template>
-  <Modal :title="$t('AppPlatform.Menu:Manage')">
+  <Modal :title="$t('TestWorkshop.Menu:Manage')">
     <Form />
   </Modal>
 </template>

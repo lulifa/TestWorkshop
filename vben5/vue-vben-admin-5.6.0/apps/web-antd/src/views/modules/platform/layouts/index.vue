@@ -67,42 +67,42 @@ const gridOptions: VxeGridProps<LayoutDto> = {
       fixed: 'left',
       minWidth: 180,
       sortable: true,
-      title: $t('AppPlatform.DisplayName:Name'),
+      title: $t('TestWorkshop.DisplayName:Name'),
     },
     {
       align: 'left',
       field: 'displayName',
       minWidth: 150,
       sortable: true,
-      title: $t('AppPlatform.DisplayName:DisplayName'),
+      title: $t('TestWorkshop.DisplayName:DisplayName'),
     },
     {
       align: 'center',
       field: 'path',
       minWidth: 200,
       sortable: true,
-      title: $t('AppPlatform.DisplayName:Path'),
+      title: $t('TestWorkshop.DisplayName:Path'),
     },
     {
       align: 'left',
       field: 'framework',
       minWidth: 180,
       sortable: true,
-      title: $t('AppPlatform.DisplayName:UIFramework'),
+      title: $t('TestWorkshop.DisplayName:UIFramework'),
     },
     {
       align: 'left',
       field: 'description',
       minWidth: 220,
       sortable: true,
-      title: $t('AppPlatform.DisplayName:Description'),
+      title: $t('TestWorkshop.DisplayName:Description'),
     },
     {
       align: 'left',
       field: 'redirect',
       minWidth: 160,
       sortable: true,
-      title: $t('AppPlatform.DisplayName:Redirect'),
+      title: $t('TestWorkshop.DisplayName:Redirect'),
     },
     {
       field: 'action',
@@ -200,7 +200,7 @@ function onDelete(row: LayoutDto) {
 
 <template>
   <Page auto-content-height>
-    <Grid :table-title="$t('AppPlatform.DisplayName:Layout')">
+    <Grid :table-title="$t('TestWorkshop.DisplayName:Layout')">
       <template #toolbar-tools>
         <Button
           v-if="isGranted([LayoutPermissions.Create])"

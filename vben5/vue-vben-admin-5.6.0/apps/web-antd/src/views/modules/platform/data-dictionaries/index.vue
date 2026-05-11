@@ -53,7 +53,7 @@ const gridOptions: VxeGridProps<DataDto> = {
       minWidth: 150,
       slots: { default: 'name' },
       sortable: true,
-      title: $t('AppPlatform.DisplayName:Name'),
+      title: $t('TestWorkshop.DisplayName:Name'),
       treeNode: true,
     },
     {
@@ -61,14 +61,14 @@ const gridOptions: VxeGridProps<DataDto> = {
       field: 'displayName',
       minWidth: 150,
       sortable: true,
-      title: $t('AppPlatform.DisplayName:DisplayName'),
+      title: $t('TestWorkshop.DisplayName:DisplayName'),
     },
     {
       align: 'left',
       field: 'description',
       minWidth: 150,
       sortable: true,
-      title: $t('AppPlatform.DisplayName:Description'),
+      title: $t('TestWorkshop.DisplayName:Description'),
     },
     {
       field: 'action',
@@ -247,7 +247,7 @@ onMounted(onGet);
 
 <template>
   <Page class="vp-raw h-[300px] w-full">
-    <Grid :table-title="$t('AppPlatform.DisplayName:DataDictionary')">
+    <Grid :table-title="$t('TestWorkshop.DisplayName:DataDictionary')">
       <template #toolbar-tools>
         <Button
           v-if="isGranted([DataDictionaryPermissions.Create])"
@@ -314,7 +314,7 @@ onMounted(onGet);
                   >
                     <div class="flex flex-row items-center gap-[4px]">
                       <PlusOutlined />
-                      {{ $t('AppPlatform.Data:AddChildren') }}
+                      {{ $t('TestWorkshop.Data:AddChildren') }}
                     </div>
                   </MenuItem>
                   <MenuItem
@@ -323,7 +323,7 @@ onMounted(onGet);
                   >
                     <div class="flex flex-row items-center gap-[4px]">
                       <ItemsIcon />
-                      {{ $t('AppPlatform.Data:Items') }}
+                      {{ $t('TestWorkshop.Data:Items') }}
                     </div>
                   </MenuItem>
                 </Menu>

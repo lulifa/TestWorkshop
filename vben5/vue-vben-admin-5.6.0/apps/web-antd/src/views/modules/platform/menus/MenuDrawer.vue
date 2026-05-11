@@ -70,16 +70,16 @@ const [BasicForm, basicFormApi] = useVbenForm({
         valueField: 'id',
       },
       fieldName: 'layoutId',
-      label: $t('AppPlatform.DisplayName:Layout'),
+      label: $t('TestWorkshop.DisplayName:Layout'),
       rules: 'selectRequired',
     },
     {
       component: 'Checkbox',
       fieldName: 'isPublic',
-      label: $t('AppPlatform.DisplayName:IsPublic'),
+      label: $t('TestWorkshop.DisplayName:IsPublic'),
       renderComponentContent: () => {
         return {
-          default: () => [$t('AppPlatform.DisplayName:IsPublic')],
+          default: () => [$t('TestWorkshop.DisplayName:IsPublic')],
         };
       },
     },
@@ -94,36 +94,36 @@ const [BasicForm, basicFormApi] = useVbenForm({
         onChange: onParentIdChange,
       },
       fieldName: 'parentId',
-      label: $t('AppPlatform.DisplayName:ParentMenu'),
+      label: $t('TestWorkshop.DisplayName:ParentMenu'),
     },
     {
       component: 'Input',
       fieldName: 'name',
-      label: $t('AppPlatform.DisplayName:Name'),
+      label: $t('TestWorkshop.DisplayName:Name'),
       rules: 'required',
     },
     {
       component: 'Input',
       fieldName: 'displayName',
-      label: $t('AppPlatform.DisplayName:DisplayName'),
+      label: $t('TestWorkshop.DisplayName:DisplayName'),
       rules: 'required',
     },
     {
       component: 'Input',
       fieldName: 'path',
-      label: $t('AppPlatform.DisplayName:Path'),
+      label: $t('TestWorkshop.DisplayName:Path'),
       rules: 'required',
     },
     {
       component: 'Input',
       fieldName: 'component',
-      label: $t('AppPlatform.DisplayName:Component'),
+      label: $t('TestWorkshop.DisplayName:Component'),
       rules: 'required',
     },
     {
       component: 'Input',
       fieldName: 'redirect',
-      label: $t('AppPlatform.DisplayName:Redirect'),
+      label: $t('TestWorkshop.DisplayName:Redirect'),
     },
     {
       component: 'Textarea',
@@ -133,12 +133,12 @@ const [BasicForm, basicFormApi] = useVbenForm({
         },
       },
       fieldName: 'description',
-      label: $t('AppPlatform.DisplayName:Description'),
+      label: $t('TestWorkshop.DisplayName:Description'),
     },
   ],
   showDefaultActions: false,
   submitButtonOptions: {
-    content: $t('AppPlatform.NextStep'),
+    content: $t('TestWorkshop.NextStep'),
   },
 });
 const [MetaForm, metaFormApi] = useVbenForm({
@@ -151,7 +151,7 @@ const [MetaForm, metaFormApi] = useVbenForm({
   },
   handleSubmit: onSubmit,
   resetButtonOptions: {
-    content: $t('AppPlatform.PreStep'),
+    content: $t('TestWorkshop.PreStep'),
   },
   schema: [],
   showDefaultActions: false,
@@ -193,7 +193,7 @@ async function onInit() {
   if (isNullOrWhiteSpace(editMenu?.id)) {
     await basicFormApi.setFieldValue('parentId', editMenu!.parentId);
     await onParentIdChange(editMenu!.parentId);
-    drawerApi.setState({ title: $t('AppPlatform.Menu:AddNew') });
+    drawerApi.setState({ title: $t('TestWorkshop.Menu:AddNew') });
     return;
   }
   const dto = await getApi(editMenu!.id);
@@ -201,7 +201,7 @@ async function onInit() {
   // 编辑模式无需使用前缀
   await onParentIdChange(undefined);
   onInitMetaFormValues(dto.meta);
-  drawerApi.setState({ title: `${$t('AppPlatform.Menu:Edit')} - ${dto.name}` });
+  drawerApi.setState({ title: `${$t('TestWorkshop.Menu:Edit')} - ${dto.name}` });
 }
 
 async function onParentIdChange(menuId?: string) {
@@ -443,8 +443,8 @@ async function onSubmit() {
         <Card>
           <div class="mx-auto max-w-lg">
             <Steps :current="currentStep">
-              <Step :title="$t('AppPlatform.DisplayName:Basic')" />
-              <Step :title="$t('AppPlatform.DisplayName:Meta')" />
+              <Step :title="$t('TestWorkshop.DisplayName:Basic')" />
+              <Step :title="$t('TestWorkshop.DisplayName:Meta')" />
             </Steps>
           </div>
           <div class="p-20">
@@ -455,7 +455,7 @@ async function onSubmit() {
 
         <template #footer>
           <Button v-if="currentStep === 1" @click="onPreStep">
-            {{ $t('AppPlatform.PreStep') }}
+            {{ $t('TestWorkshop.PreStep') }}
           </Button>
           <Button
             v-if="currentStep === 0"
@@ -463,7 +463,7 @@ async function onSubmit() {
             @click="basicFormApi.validateAndSubmitForm"
             :loading="submiting"
           >
-            {{ $t('AppPlatform.NextStep') }}
+            {{ $t('TestWorkshop.NextStep') }}
           </Button>
           <Button
             v-if="currentStep === 1"

@@ -44,7 +44,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
     if (isOpen) {
       const { name } = drawerApi.getData<DataDto>();
       drawerApi.setState({
-        title: `${$t('AppPlatform.DisplayName:DataDictionary')} - ${name}`,
+        title: `${$t('TestWorkshop.DisplayName:DataDictionary')} - ${name}`,
       });
       await onGet();
     }
@@ -65,7 +65,7 @@ const gridOptions: VxeGridProps<DataItemDto> = {
       field: 'name',
       minWidth: 150,
       sortable: true,
-      title: $t('AppPlatform.DisplayName:Name'),
+      title: $t('TestWorkshop.DisplayName:Name'),
       treeNode: true,
     },
     {
@@ -73,13 +73,13 @@ const gridOptions: VxeGridProps<DataItemDto> = {
       field: 'displayName',
       minWidth: 150,
       sortable: true,
-      title: $t('AppPlatform.DisplayName:DisplayName'),
+      title: $t('TestWorkshop.DisplayName:DisplayName'),
     },
     {
       align: 'left',
       field: 'description',
       minWidth: 250,
-      title: $t('AppPlatform.DisplayName:Description'),
+      title: $t('TestWorkshop.DisplayName:Description'),
     },
     {
       align: 'left',
@@ -89,13 +89,13 @@ const gridOptions: VxeGridProps<DataItemDto> = {
       },
       minWidth: 80,
       sortable: true,
-      title: $t('AppPlatform.DisplayName:ValueType'),
+      title: $t('TestWorkshop.DisplayName:ValueType'),
     },
     {
       align: 'left',
       field: 'defaultValue',
       minWidth: 120,
-      title: $t('AppPlatform.DisplayName:DefaultValue'),
+      title: $t('TestWorkshop.DisplayName:DefaultValue'),
     },
     {
       align: 'left',
@@ -103,7 +103,7 @@ const gridOptions: VxeGridProps<DataItemDto> = {
       minWidth: 60,
       slots: { default: 'allowBeNull' },
       sortable: true,
-      title: $t('AppPlatform.DisplayName:AllowBeNull'),
+      title: $t('TestWorkshop.DisplayName:AllowBeNull'),
     },
     {
       field: 'action',
@@ -224,10 +224,10 @@ function onDelete(row: DataItemDto) {
   <div>
     <Page auto-content-height>
       <Drawer>
-        <Grid :table-title="$t('AppPlatform.Data:Items')">
+        <Grid :table-title="$t('TestWorkshop.Data:Items')">
           <template #toolbar-tools>
             <Button :icon="h(PlusOutlined)" type="primary" @click="onCreate">
-              {{ $t('AppPlatform.Data:AppendItem') }}
+              {{ $t('TestWorkshop.Data:AppendItem') }}
             </Button>
           </template>
           <template #allowBeNull="{ row }">

@@ -54,7 +54,7 @@ const [Form, formApi] = useVbenForm({
         triggerFields: ['id'],
       },
       fieldName: 'name',
-      label: $t('AppPlatform.DisplayName:Name'),
+      label: $t('TestWorkshop.DisplayName:Name'),
       rules: 'required',
     },
     {
@@ -63,7 +63,7 @@ const [Form, formApi] = useVbenForm({
         autocomplete: 'off',
       },
       fieldName: 'displayName',
-      label: $t('AppPlatform.DisplayName:DisplayName'),
+      label: $t('TestWorkshop.DisplayName:DisplayName'),
       rules: 'required',
     },
     {
@@ -84,18 +84,18 @@ const [Form, formApi] = useVbenForm({
         ],
       },
       fieldName: 'valueType',
-      label: $t('AppPlatform.DisplayName:ValueType'),
+      label: $t('TestWorkshop.DisplayName:ValueType'),
       rules: 'selectRequired',
     },
     {
       component: 'Input',
       fieldName: 'defaultValue',
-      label: $t('AppPlatform.DisplayName:DefaultValue'),
+      label: $t('TestWorkshop.DisplayName:DefaultValue'),
     },
     {
       component: 'Checkbox',
       fieldName: 'allowBeNull',
-      label: $t('AppPlatform.DisplayName:AllowBeNull'),
+      label: $t('TestWorkshop.DisplayName:AllowBeNull'),
     },
     {
       component: 'Textarea',
@@ -105,7 +105,7 @@ const [Form, formApi] = useVbenForm({
         },
       },
       fieldName: 'description',
-      label: $t('AppPlatform.DisplayName:Description'),
+      label: $t('TestWorkshop.DisplayName:Description'),
     },
   ],
   showDefaultActions: false,
@@ -124,14 +124,14 @@ const [Modal, modalApi] = useVbenModal({
 function onInit() {
   formApi.resetForm();
   const state = modalApi.getData<ModalState>();
-  let title = $t('AppPlatform.Data:AppendItem');
+  let title = $t('TestWorkshop.Data:AppendItem');
   if (state.item?.id) {
     onValueTypeChange(state.item.valueType);
     formApi.setValues({
       ...state.item,
       defaultValue: mapFromDefaultValue(state.item),
     });
-    title = `${$t('AppPlatform.Data:EditItem')} - ${state.item.name}`;
+    title = `${$t('TestWorkshop.Data:EditItem')} - ${state.item.name}`;
   } else {
     formApi.updateSchema([
       {

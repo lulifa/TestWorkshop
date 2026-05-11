@@ -254,7 +254,7 @@ function onPermissionChange(_name: string, key: string) {
                     key="menus"
                     :icon="h(MenuOutlined)"
                   >
-                    {{ $t('AppPlatform.Menu:Manage') }}
+                    {{ $t('TestWorkshop.Menu:Manage') }}
                   </MenuItem>
                   <MenuItem key="entity-rules">
                     {{ '数据权限' }}

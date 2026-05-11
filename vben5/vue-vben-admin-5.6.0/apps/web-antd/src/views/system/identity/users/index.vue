@@ -399,7 +399,7 @@ const handleMenuClick = async (row: IdentityUserDto, info: MenuInfo) => {
                     key="menus"
                     :icon="h(MenuOutlined)"
                   >
-                    {{ $t('AppPlatform.Menu:Manage') }}
+                    {{ $t('TestWorkshop.Menu:Manage') }}
                   </MenuItem>
                 </Menu>
               </template>
