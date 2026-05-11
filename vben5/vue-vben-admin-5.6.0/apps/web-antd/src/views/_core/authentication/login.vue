@@ -2,7 +2,7 @@
 import type { ExtendedFormApi, VbenFormSchema } from '@vben/common-ui';
 import type { Recordable } from '@vben/types';
 
-import { computed, markRaw, nextTick, onMounted, useTemplateRef } from 'vue';
+import { computed, nextTick, onMounted, useTemplateRef } from 'vue';
 
 import { AuthenticationLogin, z } from '@vben/common-ui';
 import { useAppConfig } from '@vben/hooks';
@@ -16,7 +16,6 @@ import {
 import { Modal } from 'ant-design-vue';
 
 import { useAuthStore } from '#/store';
-import TenantSelect from '#/views/system/tenants/TenantSelect.vue';
 
 import ThirdPartyLogin from './third-party-login.vue';
 
@@ -42,7 +41,7 @@ const formSchema = computed((): VbenFormSchema[] => {
   if (onlyOidc) {
     return [];
   }
-  let schemas: VbenFormSchema[] = [
+  const schemas: VbenFormSchema[] = [
     {
       component: 'Input',
       componentProps: {
@@ -63,18 +62,19 @@ const formSchema = computed((): VbenFormSchema[] => {
       rules: z.string().min(1, { message: $t('authentication.passwordTip') }),
     },
   ];
-  if (abpStore.application?.multiTenancy?.isEnabled) {
-    schemas = [
-      {
-        component: markRaw(TenantSelect),
-        componentProps: {
-          onChange: onInit,
-        },
-        fieldName: 'tenant',
-      },
-      ...schemas,
-    ];
-  }
+  // 如果启用了多租户，则添加租户输入框
+  // if (abpStore.application?.multiTenancy?.isEnabled) {
+  //   schemas = [
+  //     {
+  //       component: markRaw(TenantSelect),
+  //       componentProps: {
+  //         onChange: onInit,
+  //       },
+  //       fieldName: 'tenant',
+  //     },
+  //     ...schemas,
+  //   ];
+  // }
   return schemas;
 });
 
@@ -120,11 +120,13 @@ onMounted(onInit);
 
 <template>
   <div v-if="!onlyOidc">
+    <!-- 简单控制 不展示即可 后期有拓展再说 -->
+    <!-- :show-register="isTrue('Abp.Account.IsSelfRegistrationEnabled')" -->
     <AuthenticationLogin
       ref="login"
       :form-schema="formSchema"
       :loading="authStore.loginLoading"
-      :show-register="isTrue('Abp.Account.IsSelfRegistrationEnabled')"
+      :show-register="false"
       @submit="onLogin"
     >
       <!-- 第三方登录 -->
