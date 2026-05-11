@@ -44,11 +44,11 @@ async function bootstrap(namespace: string) {
     spinning: 'spinning',
   });
 
-  // 国际化 i18n 配置
-  await setupI18n(app);
-
   // 配置 pinia-tore
   await initStores(app, { namespace });
+
+  // 国际化 i18n 配置
+  await setupI18n(app);
 
   // 安装权限指令
   registerAccessDirective(app);
