@@ -197,6 +197,8 @@
 
   "cssVariables.lookupFiles": ["packages/core/base/design/src/**/*.css"],
 
+  // ABP 文案运行时从后端加载，i18n-ally 无法静态解析，避免误报缺失 key
+  "i18n-ally.disabled": true,
   "i18n-ally.localesPaths": [
     "packages/locales/src/langs",
     "playground/src/locales/langs",

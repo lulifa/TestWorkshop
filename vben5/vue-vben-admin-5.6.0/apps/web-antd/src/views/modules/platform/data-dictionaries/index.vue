@@ -149,6 +149,7 @@ const gridEvents: VxeGridListeners<DataDto> = {
   },
 };
 
+// @ts-expect-error 类型实例化过深，由 EntityDto 的 [key:string]:any + treeConfig 嵌套导致
 const [Grid, gridApi] = useVbenVxeGrid({
   gridEvents,
   gridOptions,
