@@ -1,8 +1,11 @@
-﻿namespace TestWorkshop;
+﻿using Volo.Abp;
+
+namespace TestWorkshop;
 
 /// <summary>
 /// 所有控制器的基类（只做本地化资源设置）
 /// </summary>
+[RemoteService]
 public abstract class TestWorkshopController : AbpControllerBase
 {
     protected TestWorkshopController()

@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace TestWorkshop;
 
-[Route("api/telemetry")]
+[Route("api/business/telemetry")]
 public class TelemetryController : TestWorkshopController
 {
     private readonly ITelemetryAppService _telemetryAppService;
