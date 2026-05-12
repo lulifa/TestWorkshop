@@ -32,8 +32,8 @@ public class TestWorkshopEntityFrameworkCoreModule : AbpModule
              * default repositories only for aggregate roots */
             options.AddDefaultRepositories(includeAllEntities: true);
 
-            options.AddRepository<Device, DeviceRepository>();
-            options.AddRepository<TelemetryTask, TelemetryTaskRepository>();
+            options.AddRepository<WorkshopDevice, WorkshopDeviceRepository>();
+            options.AddRepository<WorkshopTelemetryTask, WorkshopTelemetryTaskRepository>();
 
             options.AddRepository<Menu, EfCoreMenuRepository>();
             options.AddRepository<UserMenu, EfCoreUserMenuRepository>();
@@ -66,8 +66,8 @@ public class TestWorkshopEntityFrameworkCoreModule : AbpModule
 
     public override void OnApplicationInitialization(ApplicationInitializationContext context)
     {
-        context.AddBackgroundWorkerAsync<TelemetryWorker>();
-        context.AddBackgroundWorkerAsync<TelemetryFileCleanupWorker>();
+        context.AddBackgroundWorkerAsync<WorkshopTelemetryWorker>();
+        context.AddBackgroundWorkerAsync<WorkshopTelemetryFileCleanupWorker>();
     }
 
 }

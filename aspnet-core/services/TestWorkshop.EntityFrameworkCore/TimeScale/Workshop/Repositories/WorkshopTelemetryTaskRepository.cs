@@ -6,12 +6,12 @@ namespace TestWorkshop.EntityFrameworkCore;
 /// <summary>
 /// 遥测任务仓储实现 - EF Core
 /// </summary>
-public class TelemetryTaskRepository :
-    EfCoreRepository<TestWorkshopDbContext, TelemetryTask, long>,
-    ITelemetryTaskRepository
+public class WorkshopTelemetryTaskRepository :
+    EfCoreRepository<TestWorkshopDbContext, WorkshopTelemetryTask, long>,
+    IWorkshopTelemetryTaskRepository
 {
     private readonly ICurrentTenant _currentTenant;
-    public TelemetryTaskRepository(IDbContextProvider<TestWorkshopDbContext> dbContextProvider, ICurrentTenant currentTenant)
+    public WorkshopTelemetryTaskRepository(IDbContextProvider<TestWorkshopDbContext> dbContextProvider, ICurrentTenant currentTenant)
         : base(dbContextProvider)
     {
         _currentTenant = currentTenant;
@@ -20,12 +20,12 @@ public class TelemetryTaskRepository :
     /// <summary>
     /// 原子操作：锁定并获取待处理任务，立即标记为 Processing
     /// </summary>
-    public async Task<List<TelemetryTask>> ClaimPendingTasksAsync(int take = 5)
+    public async Task<List<WorkshopTelemetryTask>> ClaimPendingTasksAsync(int take = 5)
     {
         var dbContext = await GetDbContextAsync();
 
         // FOR UPDATE SKIP LOCKED 防止并发重复获取
-        var entityType = dbContext.Model.FindEntityType(typeof(TelemetryTask));
+        var entityType = dbContext.Model.FindEntityType(typeof(WorkshopTelemetryTask));
         var tableName = entityType?.GetTableName();
         var schema = entityType?.GetSchema();
 
@@ -60,10 +60,10 @@ public class TelemetryTaskRepository :
         return tasks;
     }
 
-    public async Task<List<TelemetryTask>> SearchByFileNameAsync(string fileName)
+    public async Task<List<WorkshopTelemetryTask>> SearchByFileNameAsync(string fileName)
     {
         if (string.IsNullOrWhiteSpace(fileName))
-            return new List<TelemetryTask>();
+            return new List<WorkshopTelemetryTask>();
 
         var dbSet = await GetDbSetAsync();
         return await dbSet
@@ -75,7 +75,7 @@ public class TelemetryTaskRepository :
     /// <summary>
     /// 只获取已过期且状态为 Success(2) 或 Failed(3) 的任务，用于安全清理
     /// </summary>
-    public async Task<List<TelemetryTask>> GetExpiredCompletedTasksAsync()
+    public async Task<List<WorkshopTelemetryTask>> GetExpiredCompletedTasksAsync()
     {
         var dbSet = await GetDbSetAsync();
         return await dbSet
@@ -86,7 +86,7 @@ public class TelemetryTaskRepository :
             .ToListAsync();
     }
 
-    public async Task<PagedResultDto<TelemetryTask>> GetListAsync(
+    public async Task<PagedResultDto<WorkshopTelemetryTask>> GetListAsync(
         string fileName = null,
         int? status = null,
         int skipCount = 0,
@@ -107,7 +107,7 @@ public class TelemetryTaskRepository :
             .Take(maxResultCount)
             .ToListAsync();
 
-        return new PagedResultDto<TelemetryTask>(totalCount, items);
+        return new PagedResultDto<WorkshopTelemetryTask>(totalCount, items);
     }
 
     public async Task<(int TotalFiles, long TotalSize, int PendingCount, int ProcessingCount, int SuccessCount, int FailedCount, long TotalRecords)>
@@ -128,7 +128,7 @@ public class TelemetryTaskRepository :
         return (totalFiles, totalSize, pendingCount, processingCount, successCount, failedCount, totalRecords);
     }
 
-    public async Task UpdateManyAsync(List<TelemetryTask> tasks)
+    public async Task UpdateManyAsync(List<WorkshopTelemetryTask> tasks)
     {
         if (tasks == null || tasks.Count == 0) return;
 

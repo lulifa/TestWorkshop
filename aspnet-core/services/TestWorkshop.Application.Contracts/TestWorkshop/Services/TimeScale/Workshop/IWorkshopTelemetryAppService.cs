@@ -1,31 +1,31 @@
 ﻿namespace TestWorkshop;
 
-public interface ITelemetryAppService : IApplicationService
+public interface IWorkshopTelemetryAppService : IApplicationService
 {
     /// <summary>
     /// 上传遥测文件
     /// </summary>
-    Task<TelemetryTaskDto> UploadAsync(IFormFile file);
+    Task<WorkshopTelemetryTaskDto> UploadAsync(IFormFile file);
 
     /// <summary>
     /// 获取任务详情
     /// </summary>
-    Task<TelemetryTaskDto> GetAsync(long id);
+    Task<WorkshopTelemetryTaskDto> GetAsync(long id);
 
     /// <summary>
     /// 根据文件名搜索
     /// </summary>
-    Task<List<TelemetryTaskDto>> SearchByFileNameAsync(string fileName);
+    Task<List<WorkshopTelemetryTaskDto>> SearchByFileNameAsync(string fileName);
 
     /// <summary>
     /// 分页查询任务
     /// </summary>
-    Task<PagedResultDto<TelemetryTaskDto>> GetListAsync(TelemetryTaskListInput input);
+    Task<PagedResultDto<WorkshopTelemetryTaskDto>> GetListAsync(TelemetryTaskListInput input);
 
     /// <summary>
     /// 获取统计信息
     /// </summary>
-    Task<TelemetryStatisticsDto> GetStatisticsAsync();
+    Task<WorkshopTelemetryStatisticsDto> GetStatisticsAsync();
 
     /// <summary>
     /// 删除任务（物理删除）

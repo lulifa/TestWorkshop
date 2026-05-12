@@ -1,12 +1,12 @@
-﻿namespace TestWorkshop;
+﻿namespace TestWorkshop.TimeScale;
 
 /// <summary>
-/// 遥测任务 DTO
+/// 遥测任务实体 - 用于管理下位机上传的采集数据文件
 /// </summary>
-public class TelemetryTaskDto : EntityDto<long>
+public class WorkshopTelemetryTask : Entity<long>, IMultiTenant
 {
     /// <summary>
-    /// 文件ID
+    /// 文件ID（Guid）
     /// </summary>
     public Guid FileId { get; set; }
 
@@ -26,7 +26,7 @@ public class TelemetryTaskDto : EntityDto<long>
     public string BlobName { get; set; }
 
     /// <summary>
-    /// 处理状态 (0=Pending 1=Processing 2=Success 3=Failed)
+    /// 处理状态 (0 = Pending, 1 = Processing, 2 = Success, 3 = Failed)
     /// </summary>
     public int Status { get; set; }
 
@@ -61,6 +61,11 @@ public class TelemetryTaskDto : EntityDto<long>
     public DateTime? ProcessedAt { get; set; }
 
     /// <summary>
+    /// 任务开始处理的时间，用于判断任务是否卡死
+    /// </summary>
+    public DateTime? ProcessingStartedAt { get; set; }
+
+    /// <summary>
     /// 过期时间
     /// </summary>
     public DateTime ExpiresAt { get; set; }
@@ -76,19 +81,14 @@ public class TelemetryTaskDto : EntityDto<long>
     public DateTime? DeletedAt { get; set; }
 
     /// <summary>
-    /// 状态描述
+    /// 租户ID
     /// </summary>
-    public string StatusName => GetStatusName(Status);
+    public Guid? TenantId { get; set; }
 
-    private string GetStatusName(int status)
+
+    public WorkshopTelemetryTask()
     {
-        return status switch
-        {
-            0 => "Pending",
-            1 => "Processing",
-            2 => "Success",
-            3 => "Failed",
-            _ => "Unknown"
-        };
+        
     }
+
 }

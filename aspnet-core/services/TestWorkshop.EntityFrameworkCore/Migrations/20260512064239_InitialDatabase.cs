@@ -459,22 +459,6 @@ namespace TestWorkshop.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AppDevices",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Code = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
-                    Name = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
-                    Type = table.Column<int>(type: "integer", nullable: false),
-                    OrganizationUnitId = table.Column<Guid>(type: "uuid", nullable: false),
-                    TenantId = table.Column<Guid>(type: "uuid", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AppDevices", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "AppLayouts",
                 columns: table => new
                 {
@@ -554,34 +538,6 @@ namespace TestWorkshop.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AppTelemetryTasks",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    FileId = table.Column<Guid>(type: "uuid", nullable: false, comment: "文件ID"),
-                    FileName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false, comment: "原始文件名"),
-                    FileSize = table.Column<long>(type: "bigint", nullable: false, comment: "文件大小（字节）"),
-                    BlobName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true, comment: "Blob存储文件名"),
-                    Status = table.Column<int>(type: "integer", nullable: false, comment: "处理状态 (0=Pending 1=Processing 2=Success 3=Failed)"),
-                    RetryCount = table.Column<int>(type: "integer", nullable: false, defaultValue: 0, comment: "重试次数"),
-                    NextRetryTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, comment: "下次重试时间"),
-                    Error = table.Column<string>(type: "text", nullable: true, comment: "错误信息"),
-                    RecordCount = table.Column<int>(type: "integer", nullable: true, comment: "解析的记录数"),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, comment: "创建时间"),
-                    ProcessedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, comment: "处理完成时间"),
-                    ProcessingStartedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, comment: "任务开始处理的时间，用于判断是否卡死"),
-                    ExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, comment: "过期时间"),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false, comment: "是否已删除"),
-                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, comment: "删除时间"),
-                    TenantId = table.Column<Guid>(type: "uuid", nullable: true, comment: "租户ID")
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AppTelemetryTasks", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "AppUserFavoriteMenus",
                 columns: table => new
                 {
@@ -623,6 +579,50 @@ namespace TestWorkshop.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AppUserMenus", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AppWorkshopDevices",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Code = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
+                    Name = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
+                    Type = table.Column<int>(type: "integer", nullable: false),
+                    WorkshopId = table.Column<Guid>(type: "uuid", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AppWorkshopDevices", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AppWorkshopTelemetryTasks",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    FileId = table.Column<Guid>(type: "uuid", nullable: false, comment: "文件ID"),
+                    FileName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false, comment: "原始文件名"),
+                    FileSize = table.Column<long>(type: "bigint", nullable: false, comment: "文件大小（字节）"),
+                    BlobName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true, comment: "Blob存储文件名"),
+                    Status = table.Column<int>(type: "integer", nullable: false, comment: "处理状态 (0=Pending 1=Processing 2=Success 3=Failed)"),
+                    RetryCount = table.Column<int>(type: "integer", nullable: false, defaultValue: 0, comment: "重试次数"),
+                    NextRetryTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, comment: "下次重试时间"),
+                    Error = table.Column<string>(type: "text", nullable: true, comment: "错误信息"),
+                    RecordCount = table.Column<int>(type: "integer", nullable: true, comment: "解析的记录数"),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, comment: "创建时间"),
+                    ProcessedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, comment: "处理完成时间"),
+                    ProcessingStartedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, comment: "任务开始处理的时间，用于判断是否卡死"),
+                    ExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, comment: "过期时间"),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false, comment: "是否已删除"),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, comment: "删除时间"),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: true, comment: "租户ID")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AppWorkshopTelemetryTasks", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -1268,46 +1268,9 @@ namespace TestWorkshop.Migrations
                 column: "Name");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AppDevices_Code",
-                table: "AppDevices",
-                column: "Code",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_AppRoleMenus_RoleName_MenuId",
                 table: "AppRoleMenus",
                 columns: new[] { "RoleName", "MenuId" });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AppTelemetryTasks_CreatedAt",
-                table: "AppTelemetryTasks",
-                column: "CreatedAt");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AppTelemetryTasks_ExpiresAt_IsDeleted",
-                table: "AppTelemetryTasks",
-                columns: new[] { "ExpiresAt", "IsDeleted" });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AppTelemetryTasks_FileId",
-                table: "AppTelemetryTasks",
-                column: "FileId",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AppTelemetryTasks_FileName",
-                table: "AppTelemetryTasks",
-                column: "FileName");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AppTelemetryTasks_Status",
-                table: "AppTelemetryTasks",
-                column: "Status");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AppTelemetryTasks_Status_NextRetryTime_CreatedAt",
-                table: "AppTelemetryTasks",
-                columns: new[] { "Status", "NextRetryTime", "CreatedAt" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AppUserFavoriteMenus_UserId_MenuId",
@@ -1318,6 +1281,43 @@ namespace TestWorkshop.Migrations
                 name: "IX_AppUserMenus_UserId_MenuId",
                 table: "AppUserMenus",
                 columns: new[] { "UserId", "MenuId" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppWorkshopDevices_Code",
+                table: "AppWorkshopDevices",
+                column: "Code",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppWorkshopTelemetryTasks_CreatedAt",
+                table: "AppWorkshopTelemetryTasks",
+                column: "CreatedAt");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppWorkshopTelemetryTasks_ExpiresAt_IsDeleted",
+                table: "AppWorkshopTelemetryTasks",
+                columns: new[] { "ExpiresAt", "IsDeleted" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppWorkshopTelemetryTasks_FileId",
+                table: "AppWorkshopTelemetryTasks",
+                column: "FileId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppWorkshopTelemetryTasks_FileName",
+                table: "AppWorkshopTelemetryTasks",
+                column: "FileName");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppWorkshopTelemetryTasks_Status",
+                table: "AppWorkshopTelemetryTasks",
+                column: "Status");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppWorkshopTelemetryTasks_Status_NextRetryTime_CreatedAt",
+                table: "AppWorkshopTelemetryTasks",
+                columns: new[] { "Status", "NextRetryTime", "CreatedAt" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_OpenIddictApplications_ClientId",
@@ -1432,9 +1432,6 @@ namespace TestWorkshop.Migrations
                 name: "AppDataItems");
 
             migrationBuilder.DropTable(
-                name: "AppDevices");
-
-            migrationBuilder.DropTable(
                 name: "AppLayouts");
 
             migrationBuilder.DropTable(
@@ -1444,13 +1441,16 @@ namespace TestWorkshop.Migrations
                 name: "AppRoleMenus");
 
             migrationBuilder.DropTable(
-                name: "AppTelemetryTasks");
-
-            migrationBuilder.DropTable(
                 name: "AppUserFavoriteMenus");
 
             migrationBuilder.DropTable(
                 name: "AppUserMenus");
+
+            migrationBuilder.DropTable(
+                name: "AppWorkshopDevices");
+
+            migrationBuilder.DropTable(
+                name: "AppWorkshopTelemetryTasks");
 
             migrationBuilder.DropTable(
                 name: "OpenIddictScopes");

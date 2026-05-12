@@ -4,6 +4,29 @@ public static class TestWorkshopPermissions
 {
     public const string GroupName = "TestWorkshop";
 
+    public static class Workshop
+    {
+        public const string Default = GroupName + ".Workshop";
+
+        public const string Create = Default + ".Create";
+
+        public const string Update = Default + ".Update";
+
+        public const string Delete = Default + ".Delete";
+    }
+
+    public static class WorkshopDevice
+    {
+        public const string Default = GroupName + ".WorkshopDevice";
+
+        public const string Create = Default + ".Create";
+
+        public const string Update = Default + ".Update";
+
+        public const string Delete = Default + ".Delete";
+    }
+
+
     public static class DataDictionary
     {
         public const string Default = GroupName + ".DataDictionary";
@@ -46,7 +69,6 @@ public static class TestWorkshopPermissions
 
         public const string ManageUserFavorites = Default + ".ManageUserFavorites";
     }
-
 
     public static class Users
     {

@@ -10,17 +10,17 @@ namespace TestWorkshop.EntityFrameworkCore;
 /// <summary>
 /// 后台任务调度器：定期扫描待处理文件，解析 CSV 并批量写入遥测数据
 /// </summary>
-public class TelemetryWorker : AsyncPeriodicBackgroundWorkerBase
+public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IMemoryCache _cache;
-    private readonly ILogger<TelemetryWorker> _logger;
+    private readonly ILogger<WorkshopTelemetryWorker> _logger;
 
-    public TelemetryWorker(
+    public WorkshopTelemetryWorker(
         AbpAsyncTimer timer,
         IServiceScopeFactory scopeFactory,
         IMemoryCache cache,
-        ILogger<TelemetryWorker> logger)
+        ILogger<WorkshopTelemetryWorker> logger)
         : base(timer, scopeFactory)
     {
         _scopeFactory = scopeFactory;
@@ -47,7 +47,7 @@ public class TelemetryWorker : AsyncPeriodicBackgroundWorkerBase
         {
             // 第一阶段：通过仓储原子性地领取任务（状态已被改为 Processing）
             using var scope = _scopeFactory.CreateScope();
-            var taskRepo = scope.ServiceProvider.GetRequiredService<ITelemetryTaskRepository>();
+            var taskRepo = scope.ServiceProvider.GetRequiredService<IWorkshopTelemetryTaskRepository>();
             var tasks = await taskRepo.ClaimPendingTasksAsync(take: 5);
 
             if (tasks.Count == 0) return;
@@ -85,7 +85,7 @@ public class TelemetryWorker : AsyncPeriodicBackgroundWorkerBase
     /// </summary>
     private async Task ProcessTaskAsync(long taskId, IServiceProvider sp)
     {
-        var taskRepo = sp.GetRequiredService<ITelemetryTaskRepository>();
+        var taskRepo = sp.GetRequiredService<IWorkshopTelemetryTaskRepository>();
         var blobContainer = sp.GetRequiredService<IBlobContainer>();
         var dbContext = sp.GetRequiredService<TestWorkshopDbContext>();
 
@@ -139,7 +139,7 @@ public class TelemetryWorker : AsyncPeriodicBackgroundWorkerBase
 
             // 重试逻辑（独立 scope，避免上下文污染）
             using var retryScope = _scopeFactory.CreateScope();
-            var retryRepo = retryScope.ServiceProvider.GetRequiredService<ITelemetryTaskRepository>();
+            var retryRepo = retryScope.ServiceProvider.GetRequiredService<IWorkshopTelemetryTaskRepository>();
             var latest = await retryRepo.GetAsync(taskId);
             if (latest == null) return;
 
@@ -170,8 +170,8 @@ public class TelemetryWorker : AsyncPeriodicBackgroundWorkerBase
         NpgsqlConnection conn,
         NpgsqlTransaction transaction)
     {
-        var entityType = db.Model.FindEntityType(typeof(DeviceTelemetry));
-        var tableName = entityType?.GetTableName() ?? "AppDeviceTelemetries"; // 兜底
+        var entityType = db.Model.FindEntityType(typeof(WorkshopDeviceTelemetry));
+        var tableName = entityType?.GetTableName() ?? "AppWorkshopDeviceTelemetries"; // 兜底
 
         using var writer = conn.BeginBinaryImport(
             $"COPY \"{tableName}\" (\"DeviceId\",\"Metric\",\"Value\",\"Timestamp\") FROM STDIN (FORMAT BINARY)");
@@ -255,7 +255,7 @@ public class TelemetryWorker : AsyncPeriodicBackgroundWorkerBase
         try
         {
             using var scope = _scopeFactory.CreateScope();
-            var repo = scope.ServiceProvider.GetRequiredService<ITelemetryTaskRepository>();
+            var repo = scope.ServiceProvider.GetRequiredService<IWorkshopTelemetryTaskRepository>();
             var db = scope.ServiceProvider.GetRequiredService<TestWorkshopDbContext>();
 
             var stuckTime = DateTime.UtcNow.AddMinutes(-10);

@@ -13,8 +13,8 @@ using Volo.Abp.EntityFrameworkCore;
 namespace TestWorkshop.Migrations
 {
     [DbContext(typeof(TestWorkshopDbContext))]
-    [Migration("20260509063540_AddTimescaleEntities")]
-    partial class AddTimescaleEntities
+    [Migration("20260512064337_AddTimeScaleEntities")]
+    partial class AddTimeScaleEntities
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -455,7 +455,7 @@ namespace TestWorkshop.Migrations
                     b.ToTable("AppRoleMenus", (string)null);
                 });
 
-            modelBuilder.Entity("TestWorkshop.TimeScale.Device", b =>
+            modelBuilder.Entity("TestWorkshop.TimeScale.WorkshopDevice", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
@@ -472,9 +472,6 @@ namespace TestWorkshop.Migrations
                         .HasColumnType("character varying(128)")
                         .HasColumnName("Name");
 
-                    b.Property<Guid>("OrganizationUnitId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid?>("TenantId")
                         .HasColumnType("uuid")
                         .HasColumnName("TenantId");
@@ -482,15 +479,18 @@ namespace TestWorkshop.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("integer");
 
+                    b.Property<Guid>("WorkshopId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Code")
                         .IsUnique();
 
-                    b.ToTable("AppDevices", (string)null);
+                    b.ToTable("AppWorkshopDevices", (string)null);
                 });
 
-            modelBuilder.Entity("TestWorkshop.TimeScale.DeviceTelemetry", b =>
+            modelBuilder.Entity("TestWorkshop.TimeScale.WorkshopDeviceTelemetry", b =>
                 {
                     b.Property<Guid>("DeviceId")
                         .HasColumnType("uuid");
@@ -509,10 +509,10 @@ namespace TestWorkshop.Migrations
 
                     b.HasKey("DeviceId", "Timestamp", "Metric");
 
-                    b.ToTable("AppDeviceTelemetries", (string)null);
+                    b.ToTable("AppWorkshopDeviceTelemetries", (string)null);
                 });
 
-            modelBuilder.Entity("TestWorkshop.TimeScale.TelemetryTask", b =>
+            modelBuilder.Entity("TestWorkshop.TimeScale.WorkshopTelemetryTask", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -622,7 +622,7 @@ namespace TestWorkshop.Migrations
 
                     b.HasIndex("Status", "NextRetryTime", "CreatedAt");
 
-                    b.ToTable("AppTelemetryTasks", (string)null);
+                    b.ToTable("AppWorkshopTelemetryTasks", (string)null);
                 });
 
             modelBuilder.Entity("TestWorkshop.UserFavoriteMenu", b =>

@@ -141,6 +141,8 @@
     "Permission:CopyFile": "复制文件",
     "Permission:MoveFile": "移动文件",
     "Permission:DownloadFile": "下载文件",
+    "Permission:Workshop": "车间管理",
+    "Permission:WorkshopDevice": "车间设备管理",
     "Permission:DataDictionary": "数据字典",
     "Permission:Layout": "布局管理",
     "Permission:Menu": "菜单管理",

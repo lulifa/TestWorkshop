@@ -202,25 +202,6 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
               description: "组织机构")
           .SetProperty("title", "abp.system.identity.organizationUnits"));
 
-        var dataProtection = system.AddItem(new ApplicationMenu(
-              name: "Vben5SystemDataProtection",
-              displayName: "数据保护",
-              url: "/system/data-protection",
-              component: "",
-              description: "数据保护",
-              icon: "icon-park-outline:protect",
-              multiTenancySides: MultiTenancySides.Host)
-            .SetProperty("title", "abp.system.dataProtection.title"));
-        dataProtection.AddItem(new ApplicationMenu(
-               name: "Vben5SystemDataProtectionEntityTypeInfos",
-               displayName: "实体管理",
-               url: "/system/data-protection/entity-type-infos",
-               component: "/system/data-protection/entity-type-infos/index",
-               icon: "iconamoon:type",
-               description: "实体管理",
-               multiTenancySides: MultiTenancySides.Host)
-            .SetProperty("title", "abp.system.dataProtection.entityTypeInfos"));
-
         return
         [
             new NavigationDefinition(system),

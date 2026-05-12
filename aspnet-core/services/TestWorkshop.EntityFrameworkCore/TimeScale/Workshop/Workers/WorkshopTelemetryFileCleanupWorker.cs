@@ -4,15 +4,15 @@ using Volo.Abp.BlobStoring;
 
 namespace TestWorkshop.EntityFrameworkCore;
 
-public class TelemetryFileCleanupWorker : AsyncPeriodicBackgroundWorkerBase
+public class WorkshopTelemetryFileCleanupWorker : AsyncPeriodicBackgroundWorkerBase
 {
     private readonly IServiceScopeFactory _scopeFactory;
-    private readonly ILogger<TelemetryFileCleanupWorker> _logger;
+    private readonly ILogger<WorkshopTelemetryFileCleanupWorker> _logger;
 
-    public TelemetryFileCleanupWorker(
+    public WorkshopTelemetryFileCleanupWorker(
         AbpAsyncTimer timer,
         IServiceScopeFactory scopeFactory,
-        ILogger<TelemetryFileCleanupWorker> logger)
+        ILogger<WorkshopTelemetryFileCleanupWorker> logger)
         : base(timer, scopeFactory)
     {
         _scopeFactory = scopeFactory;
@@ -23,7 +23,7 @@ public class TelemetryFileCleanupWorker : AsyncPeriodicBackgroundWorkerBase
     protected override async Task DoWorkAsync(PeriodicBackgroundWorkerContext workerContext)
     {
         using var scope = _scopeFactory.CreateScope();
-        var taskRepo = scope.ServiceProvider.GetRequiredService<ITelemetryTaskRepository>();
+        var taskRepo = scope.ServiceProvider.GetRequiredService<IWorkshopTelemetryTaskRepository>();
         var blobContainer = scope.ServiceProvider.GetRequiredService<IBlobContainer>();
 
         try

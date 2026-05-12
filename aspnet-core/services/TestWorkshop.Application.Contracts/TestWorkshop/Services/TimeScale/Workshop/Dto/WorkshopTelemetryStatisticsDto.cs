@@ -3,7 +3,7 @@
 /// <summary>
 /// 遥测统计信息 DTO
 /// </summary>
-public class TelemetryStatisticsDto
+public class WorkshopTelemetryStatisticsDto
 {
     /// <summary>
     /// 总文件数

@@ -6,13 +6,13 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace TestWorkshop.Migrations
 {
     /// <inheritdoc />
-    public partial class AddTimescaleEntities : Migration
+    public partial class AddTimeScaleEntities : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "AppDeviceTelemetries",
+                name: "AppWorkshopDeviceTelemetries",
                 columns: table => new
                 {
                     DeviceId = table.Column<Guid>(type: "uuid", nullable: false),
@@ -22,33 +22,31 @@ namespace TestWorkshop.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AppDeviceTelemetries", x => new { x.DeviceId, x.Timestamp, x.Metric });
+                    table.PrimaryKey("PK_AppWorkshopDeviceTelemetries", x => new { x.DeviceId, x.Timestamp, x.Metric });
                 });
-
 
             // TimescaleDB 扩展核心配置（手动添加）
             migrationBuilder.Sql(@"CREATE EXTENSION IF NOT EXISTS timescaledb;");
 
             migrationBuilder.Sql(@"
                 SELECT create_hypertable(
-                    '""AppDeviceTelemetries""',
+                    '""AppWorkshopDeviceTelemetries""',
                     'Timestamp',
                     if_not_exists => TRUE
                 );
             ");
 
             migrationBuilder.Sql(@"
-                CREATE INDEX IF NOT EXISTS idx_device_time 
-                ON ""AppDeviceTelemetries"" (""DeviceId"", ""Timestamp"" DESC);
+                CREATE INDEX IF NOT EXISTS idx_device_time
+                ON ""AppWorkshopDeviceTelemetries"" (""DeviceId"", ""Timestamp"" DESC);
             ");
-
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "AppDeviceTelemetries");
+                name: "AppWorkshopDeviceTelemetries");
         }
     }
 }

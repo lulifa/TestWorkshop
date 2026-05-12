@@ -3,7 +3,7 @@
 /// <summary>
 /// 创建遥测任务 DTO
 /// </summary>
-public class TelemetryTaskCreateDto
+public class WorkshopTelemetryTaskCreateDto
 {
     /// <summary>
     /// 原始文件名

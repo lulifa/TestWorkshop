@@ -9,15 +9,15 @@ namespace TestWorkshop;
 /// <summary>
 /// 遥测服务应用
 /// </summary>
-public class TelemetryAppService : TestWorkshopAppService, ITelemetryAppService
+public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTelemetryAppService
 {
     private readonly IBlobContainer _blobContainer;
-    private readonly ITelemetryTaskRepository _telemetryTaskRepository;
+    private readonly IWorkshopTelemetryTaskRepository _telemetryTaskRepository;
     private readonly ICurrentTenant _currentTenant;
 
-    public TelemetryAppService(
+    public WorkshopTelemetryAppService(
         IBlobContainer blobContainer,
-        ITelemetryTaskRepository telemetryTaskRepository,
+        IWorkshopTelemetryTaskRepository telemetryTaskRepository,
         ICurrentTenant currentTenant)
     {
         _blobContainer = blobContainer;
@@ -28,7 +28,7 @@ public class TelemetryAppService : TestWorkshopAppService, ITelemetryAppService
     /// <summary>
     /// 上传遥测文件
     /// </summary>
-    public async Task<TelemetryTaskDto> UploadAsync(IFormFile file)
+    public async Task<WorkshopTelemetryTaskDto> UploadAsync(IFormFile file)
     {
         if (file == null || file.Length == 0)
             throw new UserFriendlyException("Please select a file to upload");
@@ -45,7 +45,7 @@ public class TelemetryAppService : TestWorkshopAppService, ITelemetryAppService
             }
 
             // 2️⃣ 创建任务记录
-            var task = new TelemetryTask
+            var task = new WorkshopTelemetryTask
             {
                 FileId = fileId,
                 BlobName = blobName,
@@ -62,7 +62,7 @@ public class TelemetryAppService : TestWorkshopAppService, ITelemetryAppService
             await _telemetryTaskRepository.InsertAsync(task);
 
             // ✅ 使用 ObjectMapper 进行转换
-            return ObjectMapper.Map<TelemetryTask, TelemetryTaskDto>(task);
+            return ObjectMapper.Map<WorkshopTelemetryTask, WorkshopTelemetryTaskDto>(task);
         }
         catch (Exception ex)
         {
@@ -80,27 +80,27 @@ public class TelemetryAppService : TestWorkshopAppService, ITelemetryAppService
     /// <summary>
     /// 获取任务详情
     /// </summary>
-    public async Task<TelemetryTaskDto> GetAsync(long id)
+    public async Task<WorkshopTelemetryTaskDto> GetAsync(long id)
     {
         var task = await _telemetryTaskRepository.GetAsync(id);
         // ✅ 使用 ObjectMapper 进行转换
-        return ObjectMapper.Map<TelemetryTask, TelemetryTaskDto>(task);
+        return ObjectMapper.Map<WorkshopTelemetryTask, WorkshopTelemetryTaskDto>(task);
     }
 
     /// <summary>
     /// 根据文件名搜索
     /// </summary>
-    public async Task<List<TelemetryTaskDto>> SearchByFileNameAsync(string fileName)
+    public async Task<List<WorkshopTelemetryTaskDto>> SearchByFileNameAsync(string fileName)
     {
         var tasks = await _telemetryTaskRepository.SearchByFileNameAsync(fileName);
         // ✅ 使用 ObjectMapper 进行转换
-        return ObjectMapper.Map<List<TelemetryTask>, List<TelemetryTaskDto>>(tasks);
+        return ObjectMapper.Map<List<WorkshopTelemetryTask>, List<WorkshopTelemetryTaskDto>>(tasks);
     }
 
     /// <summary>
     /// 分页查询
     /// </summary>
-    public async Task<PagedResultDto<TelemetryTaskDto>> GetListAsync(TelemetryTaskListInput input)
+    public async Task<PagedResultDto<WorkshopTelemetryTaskDto>> GetListAsync(TelemetryTaskListInput input)
     {
         var result = await _telemetryTaskRepository.GetListAsync(
             input.FileName,
@@ -109,20 +109,20 @@ public class TelemetryAppService : TestWorkshopAppService, ITelemetryAppService
             input.MaxResultCount);
 
         // ✅ 使用 ObjectMapper 进行转换
-        var dtos = ObjectMapper.Map<List<TelemetryTask>, List<TelemetryTaskDto>>(result.Items.ToList());
+        var dtos = ObjectMapper.Map<List<WorkshopTelemetryTask>, List<WorkshopTelemetryTaskDto>>(result.Items.ToList());
 
-        return new PagedResultDto<TelemetryTaskDto>(result.TotalCount, dtos);
+        return new PagedResultDto<WorkshopTelemetryTaskDto>(result.TotalCount, dtos);
     }
 
     /// <summary>
     /// 获取统计信息
     /// </summary>
-    public async Task<TelemetryStatisticsDto> GetStatisticsAsync()
+    public async Task<WorkshopTelemetryStatisticsDto> GetStatisticsAsync()
     {
         var (totalFiles, totalSize, pendingCount, processingCount, successCount, failedCount, totalRecords)
             = await _telemetryTaskRepository.GetStatisticsDataAsync();
 
-        return new TelemetryStatisticsDto
+        return new WorkshopTelemetryStatisticsDto
         {
             TotalFiles = totalFiles,
             TotalSize = totalSize,

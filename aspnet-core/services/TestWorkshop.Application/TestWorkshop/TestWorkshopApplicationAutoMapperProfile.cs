@@ -6,8 +6,8 @@ public class TestWorkshopApplicationAutoMapperProfile : Profile
 {
     public TestWorkshopApplicationAutoMapperProfile()
     {
-        CreateMap<TelemetryTask, TelemetryTaskDto>();
-        CreateMap<TelemetryTaskCreateDto, TelemetryTask>();
+        CreateMap<WorkshopTelemetryTask, WorkshopTelemetryTaskDto>();
+        CreateMap<WorkshopTelemetryTaskCreateDto, WorkshopTelemetryTask>();
 
 
         CreateMap<DataItem, DataItemDto>();
