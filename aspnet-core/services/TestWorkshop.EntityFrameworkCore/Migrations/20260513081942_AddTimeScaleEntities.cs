@@ -17,13 +17,16 @@ namespace TestWorkshop.Migrations
                 {
                     DeviceId = table.Column<Guid>(type: "uuid", nullable: false),
                     Timestamp = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Metric = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
-                    Value = table.Column<double>(type: "double precision", nullable: false)
+                    MetricType = table.Column<int>(type: "integer", nullable: false),
+                    Value = table.Column<double>(type: "double precision", nullable: false),
+                    TestedDeviceCode = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
+                    TestedDeviceName = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AppWorkshopDeviceTelemetries", x => new { x.DeviceId, x.Timestamp, x.Metric });
+                    table.PrimaryKey("PK_AppWorkshopDeviceTelemetries", x => new { x.DeviceId, x.Timestamp, x.MetricType });
                 });
+
 
             // TimescaleDB 扩展核心配置（手动添加）
             migrationBuilder.Sql(@"CREATE EXTENSION IF NOT EXISTS timescaledb;");
@@ -35,11 +38,12 @@ namespace TestWorkshop.Migrations
                     if_not_exists => TRUE
                 );
             ");
-
+            
             migrationBuilder.Sql(@"
                 CREATE INDEX IF NOT EXISTS idx_device_time
                 ON ""AppWorkshopDeviceTelemetries"" (""DeviceId"", ""Timestamp"" DESC);
             ");
+
         }
 
         /// <inheritdoc />

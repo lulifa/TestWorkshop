@@ -25,11 +25,9 @@ public static class TestWorkshopDbContextModelCreatingExtensions
 
             b.Property(p => p.Code)
                 .HasMaxLength(TestWorkshopConsts.MaxLength64)
-                .HasColumnName(nameof(WorkshopDevice.Code))
                 .IsRequired();
             b.Property(p => p.Name)
                 .HasMaxLength(TestWorkshopConsts.MaxLength128)
-                .HasColumnName(nameof(WorkshopDevice.Name))
                 .IsRequired();
 
             b.ConfigureByConvention();
@@ -45,85 +43,69 @@ public static class TestWorkshopDbContextModelCreatingExtensions
             b.HasKey(x => x.Id);
 
             b.Property(p => p.FileId)
-                .HasColumnName(nameof(WorkshopTelemetryTask.FileId))
                 .IsRequired()
                 .HasComment("文件ID");
 
             b.Property(p => p.FileName)
                 .HasMaxLength(TestWorkshopConsts.MaxLength256)
-                .HasColumnName(nameof(WorkshopTelemetryTask.FileName))
                 .IsRequired()
                 .HasComment("原始文件名");
 
             b.Property(p => p.FileSize)
-                .HasColumnName(nameof(WorkshopTelemetryTask.FileSize))
                 .IsRequired()
                 .HasComment("文件大小（字节）");
 
             b.Property(p => p.BlobName)
                 .HasMaxLength(TestWorkshopConsts.MaxLength256)
-                .HasColumnName(nameof(WorkshopTelemetryTask.BlobName))
                 .HasComment("Blob存储文件名");
 
             b.Property(p => p.Status)
-                .HasColumnName(nameof(WorkshopTelemetryTask.Status))
                 .IsRequired()
                 .HasComment("处理状态 (0=Pending 1=Processing 2=Success 3=Failed)");
 
             b.Property(p => p.RetryCount)
-                .HasColumnName(nameof(WorkshopTelemetryTask.RetryCount))
                 .IsRequired()
                 .HasDefaultValue(0)
                 .HasComment("重试次数");
 
             b.Property(p => p.NextRetryTime)
-                .HasColumnName(nameof(WorkshopTelemetryTask.NextRetryTime))
                 .HasColumnType("timestamp with time zone")
                 .HasComment("下次重试时间");
 
             b.Property(p => p.Error)
-                .HasColumnName(nameof(WorkshopTelemetryTask.Error))
                 .HasComment("错误信息");
 
             b.Property(p => p.RecordCount)
-                .HasColumnName(nameof(WorkshopTelemetryTask.RecordCount))
                 .HasComment("解析的记录数");
 
             b.Property(p => p.CreatedAt)
-                .HasColumnName(nameof(WorkshopTelemetryTask.CreatedAt))
                 .HasColumnType("timestamp with time zone")
                 .IsRequired()
                 .HasComment("创建时间");
 
             b.Property(p => p.ProcessedAt)
-                .HasColumnName(nameof(WorkshopTelemetryTask.ProcessedAt))
                 .HasColumnType("timestamp with time zone")
                 .HasComment("处理完成时间");
 
             b.Property(p => p.ProcessingStartedAt)
-                .HasColumnName(nameof(WorkshopTelemetryTask.ProcessingStartedAt))
                 .HasColumnType("timestamp with time zone")
                 .HasComment("任务开始处理的时间，用于判断是否卡死");
 
             b.Property(p => p.ExpiresAt)
-                .HasColumnName(nameof(WorkshopTelemetryTask.ExpiresAt))
                 .HasColumnType("timestamp with time zone")
                 .IsRequired()
                 .HasComment("过期时间");
 
             b.Property(p => p.IsDeleted)
-                .HasColumnName(nameof(WorkshopTelemetryTask.IsDeleted))
                 .IsRequired()
                 .HasDefaultValue(false)
                 .HasComment("是否已删除");
 
             b.Property(p => p.DeletedAt)
-                .HasColumnName(nameof(WorkshopTelemetryTask.DeletedAt))
                 .HasColumnType("timestamp with time zone")
                 .HasComment("删除时间");
 
             b.Property(p => p.TenantId)
-                .HasColumnName(nameof(WorkshopTelemetryTask.TenantId))
                 .HasComment("租户ID");
 
             b.ConfigureByConvention();
@@ -150,18 +132,21 @@ public static class TestWorkshopDbContextModelCreatingExtensions
         {
             b.ToTable(TestWorkshopDbProperties.DbTablePrefix + "WorkshopDeviceTelemetries", TestWorkshopDbProperties.DbSchema);
 
-            b.HasKey(x => new { x.DeviceId, x.Timestamp, x.Metric });
+            b.HasKey(x => new { x.DeviceId, x.Timestamp, x.MetricType });
 
-            b.Property(p => p.Metric)
-                .HasMaxLength(TestWorkshopConsts.MaxLength128)
-                .HasColumnName(nameof(WorkshopDeviceTelemetry.Metric))
+            b.Property(p => p.MetricType)
                 .IsRequired();
+
             b.Property(p => p.Timestamp)
-                .HasColumnName(nameof(WorkshopDeviceTelemetry.Timestamp))
                 .HasColumnType("timestamp with time zone")
                 .IsRequired();
+
             b.Property(p => p.DeviceId).IsRequired();
             b.Property(p => p.Value).IsRequired();
+
+            // 被测试产品（可空，因为不是所有采集都有产品）
+            b.Property(p => p.TestedDeviceCode).HasMaxLength(64);
+            b.Property(p => p.TestedDeviceName).HasMaxLength(128);
 
             b.ConfigureByConvention();
         });

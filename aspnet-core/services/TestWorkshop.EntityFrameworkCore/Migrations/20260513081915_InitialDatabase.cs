@@ -589,7 +589,7 @@ namespace TestWorkshop.Migrations
                     Code = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
                     Name = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
                     Type = table.Column<int>(type: "integer", nullable: false),
-                    WorkshopId = table.Column<Guid>(type: "uuid", nullable: false),
+                    OrganizationUnitId = table.Column<Guid>(type: "uuid", nullable: false),
                     TenantId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>

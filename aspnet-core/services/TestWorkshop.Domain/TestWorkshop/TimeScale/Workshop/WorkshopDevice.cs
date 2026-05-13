@@ -5,10 +5,10 @@
 /// </summary>
 public class WorkshopDevice : Entity<Guid>, IMultiTenant
 {
-    public string Code { get; set; }      // NB-FIVA-001，下位机传
+    public string Code { get; set; }      // FIVA-001，下位机传
     public string Name { get; set; }      // FIVA #1
     public DeviceTypeEnum Type { get; set; }      // FIVA / PUMP
-    public Guid WorkshopId { get; set; } // 关联车间
+    public Guid OrganizationUnitId { get; protected set; } // 关联车间
     public Guid? TenantId { get; set; }
 
     public WorkshopDevice()

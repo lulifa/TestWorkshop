@@ -6,9 +6,16 @@
 /// </summary>
 public class WorkshopDeviceTelemetry
 {
+    // 基础信息
     public Guid DeviceId { get; set; }
     public DateTime Timestamp { get; set; }
-    public string Metric { get; set; } // pressure / temp / flow / vibration
+
+    // 采集指标
+    public TelemetryMetricType MetricType { get; set; }
     public double Value { get; set; }
-    
+
+    // 被测试产品/设备信息（动态，每次不同）
+    public string TestedDeviceCode { get; set; }
+    public string TestedDeviceName { get; set; }
+
 }

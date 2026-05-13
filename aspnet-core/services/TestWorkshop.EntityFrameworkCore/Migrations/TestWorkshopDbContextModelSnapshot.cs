@@ -460,14 +460,15 @@ namespace TestWorkshop.Migrations
                     b.Property<string>("Code")
                         .IsRequired()
                         .HasMaxLength(64)
-                        .HasColumnType("character varying(64)")
-                        .HasColumnName("Code");
+                        .HasColumnType("character varying(64)");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(128)
-                        .HasColumnType("character varying(128)")
-                        .HasColumnName("Name");
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<Guid>("OrganizationUnitId")
+                        .HasColumnType("uuid");
 
                     b.Property<Guid?>("TenantId")
                         .HasColumnType("uuid")
@@ -475,9 +476,6 @@ namespace TestWorkshop.Migrations
 
                     b.Property<int>("Type")
                         .HasColumnType("integer");
-
-                    b.Property<Guid>("WorkshopId")
-                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -493,18 +491,23 @@ namespace TestWorkshop.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("Timestamp")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("Timestamp");
+                        .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Metric")
+                    b.Property<int>("MetricType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TestedDeviceCode")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("TestedDeviceName")
                         .HasMaxLength(128)
-                        .HasColumnType("character varying(128)")
-                        .HasColumnName("Metric");
+                        .HasColumnType("character varying(128)");
 
                     b.Property<double>("Value")
                         .HasColumnType("double precision");
 
-                    b.HasKey("DeviceId", "Timestamp", "Metric");
+                    b.HasKey("DeviceId", "Timestamp", "MetricType");
 
                     b.ToTable("AppWorkshopDeviceTelemetries", (string)null);
                 });
@@ -520,83 +523,68 @@ namespace TestWorkshop.Migrations
                     b.Property<string>("BlobName")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)")
-                        .HasColumnName("BlobName")
                         .HasComment("Blob存储文件名");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("CreatedAt")
                         .HasComment("创建时间");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("DeletedAt")
                         .HasComment("删除时间");
 
                     b.Property<string>("Error")
                         .HasColumnType("text")
-                        .HasColumnName("Error")
                         .HasComment("错误信息");
 
                     b.Property<DateTime>("ExpiresAt")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("ExpiresAt")
                         .HasComment("过期时间");
 
                     b.Property<Guid>("FileId")
                         .HasColumnType("uuid")
-                        .HasColumnName("FileId")
                         .HasComment("文件ID");
 
                     b.Property<string>("FileName")
                         .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)")
-                        .HasColumnName("FileName")
                         .HasComment("原始文件名");
 
                     b.Property<long>("FileSize")
                         .HasColumnType("bigint")
-                        .HasColumnName("FileSize")
                         .HasComment("文件大小（字节）");
 
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(false)
-                        .HasColumnName("IsDeleted")
                         .HasComment("是否已删除");
 
                     b.Property<DateTime?>("NextRetryTime")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("NextRetryTime")
                         .HasComment("下次重试时间");
 
                     b.Property<DateTime?>("ProcessedAt")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("ProcessedAt")
                         .HasComment("处理完成时间");
 
                     b.Property<DateTime?>("ProcessingStartedAt")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("ProcessingStartedAt")
                         .HasComment("任务开始处理的时间，用于判断是否卡死");
 
                     b.Property<int?>("RecordCount")
                         .HasColumnType("integer")
-                        .HasColumnName("RecordCount")
                         .HasComment("解析的记录数");
 
                     b.Property<int>("RetryCount")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
                         .HasDefaultValue(0)
-                        .HasColumnName("RetryCount")
                         .HasComment("重试次数");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer")
-                        .HasColumnName("Status")
                         .HasComment("处理状态 (0=Pending 1=Processing 2=Success 3=Failed)");
 
                     b.Property<Guid?>("TenantId")
