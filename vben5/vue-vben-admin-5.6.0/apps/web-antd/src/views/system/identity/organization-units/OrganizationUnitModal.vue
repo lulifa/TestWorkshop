@@ -19,6 +19,7 @@ const emits = defineEmits<{
 
 const defaultModel = {
   displayName: '',
+  extraProperties: {},
 } as OrganizationUnitDto;
 
 const { cancel, createApi, getApi, updateApi } = useOrganizationUnitsApi();
@@ -51,6 +52,14 @@ const [Form, formApi] = useVbenForm({
       fieldName: 'displayName',
       label: $t('AbpIdentity.OrganizationUnit:DisplayName'),
       rules: 'required',
+    },
+    {
+      component: 'Input',
+      componentProps: {
+        autocomplete: 'off',
+      },
+      fieldName: 'extraProperties.BusinessCode',
+      label: '业务编码',
     },
   ],
   showDefaultActions: false,

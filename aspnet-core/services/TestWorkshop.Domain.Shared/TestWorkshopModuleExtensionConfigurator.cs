@@ -67,5 +67,23 @@ public static class TestWorkshopModuleExtensionConfigurator
          * See the documentation for more:
          * https://abp.io/docs/latest/framework/architecture/modularity/extending/module-entity-extensions
          */
+
+        ObjectExtensionManager.Instance.Modules()
+           .ConfigureIdentity(identity =>
+           {
+               identity.ConfigureOrganizationUnit(organizationUnit =>
+               {
+                   organizationUnit.AddOrUpdateProperty<string>(
+                       OrganizationUnitConstants.BusinessCode,
+                       property =>
+                       {           
+                           property.Attributes.Add(
+                               new StringLengthAttribute(TestWorkshopConsts.MaxLength64)
+                           );
+                       }
+                   );
+               });
+           });
+
     }
 }

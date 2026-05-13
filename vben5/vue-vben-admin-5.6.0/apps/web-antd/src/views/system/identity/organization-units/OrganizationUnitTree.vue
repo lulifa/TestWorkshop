@@ -78,7 +78,11 @@ async function onRefresh() {
     return {
       isLeaf: false,
       key: item.id,
-      title: item.displayName,
+      title:
+        item.displayName +
+        (item.extraProperties?.BusinessCode
+          ? ` (${item.extraProperties.BusinessCode})`
+          : ''),
       children: [],
     };
   });
@@ -93,7 +97,11 @@ async function onLoad(node: EventDataNode) {
     return {
       isLeaf: false,
       key: item.id,
-      title: item.displayName,
+      title:
+        item.displayName +
+        (item.extraProperties?.BusinessCode
+          ? ` (${item.extraProperties.BusinessCode})`
+          : ''),
       children: [],
     };
   });

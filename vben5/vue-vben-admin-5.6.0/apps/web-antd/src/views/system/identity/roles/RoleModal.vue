@@ -46,7 +46,7 @@ const [Modal, modalApi] = useVbenModal({
     modalApi.setState({ submitting: true });
     api
       .then((res) => {
-        message.success($t('AbpUi.Success'));
+        message.success($t('AbpUi.SavedSuccessfully'));
         emits('change', res);
         modalApi.close();
       })

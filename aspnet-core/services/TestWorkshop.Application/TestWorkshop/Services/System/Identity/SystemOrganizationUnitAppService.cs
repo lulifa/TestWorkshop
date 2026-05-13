@@ -214,6 +214,8 @@ public class SystemOrganizationUnitAppService : TestWorkshopAppService, ISystemO
         await OrganizationUnitManager.UpdateAsync(origanizationUnit);
         await CurrentUnitOfWork.SaveChangesAsync();
 
+        var mapper = ObjectMapper.Map<OrganizationUnit, OrganizationUnitDto>(origanizationUnit);
+
         return ObjectMapper.Map<OrganizationUnit, OrganizationUnitDto>(origanizationUnit);
     }
 
