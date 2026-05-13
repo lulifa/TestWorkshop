@@ -2,7 +2,13 @@
 
 public class SystemDefaultDataSeederContributor : IDataSeedContributor, ITransientDependency
 {
-    public static readonly string DefaultUserRole = "users";
+    private static readonly string[] RolesToCreate =
+    {
+        "supervisor",   // 车间主管
+        "tester",       // 测试工程师
+        "auditor",      // 质量审核员
+        "guest"         // 访客
+    };
     protected IGuidGenerator GuidGenerator { get; }
     protected ICurrentTenant CurrentTenant { get; }
     protected IdentityUserManager IdentityUserManager { get; }
@@ -31,23 +37,25 @@ public class SystemDefaultDataSeederContributor : IDataSeedContributor, ITransie
     {
         using (CurrentTenant.Change(context.TenantId))
         {
-            await CreateDefaultRoleUser(context.TenantId);
+            await CreateRolesIfNotExistAsync(context.TenantId);
         }
     }
 
-    private async Task CreateDefaultRoleUser(Guid? tenantId)
+    private async Task CreateRolesIfNotExistAsync(Guid? tenantId)
     {
-        var defaultRole = await IdentityRoleManager.FindByNameAsync(DefaultUserRole);
-
-        if (defaultRole == null)
+        foreach (var roleName in RolesToCreate)
         {
-            defaultRole = new IdentityRole(GuidGenerator.Create(), DefaultUserRole, tenantId)
+            var role = await IdentityRoleManager.FindByNameAsync(roleName);
+            if (role == null)
             {
-                IsStatic = true,
-                IsPublic = true,
-                IsDefault = true,
-            };
-            (await IdentityRoleManager.CreateAsync(defaultRole)).CheckErrors();
+                role = new IdentityRole(GuidGenerator.Create(), roleName, tenantId)
+                {
+                    IsStatic = true,   // 静态角色，不可在UI中删除
+                    IsPublic = false,  // 不允许用户公开申请（可根据需要调整）
+                    IsDefault = false  // 不是默认注册角色
+                };
+                (await IdentityRoleManager.CreateAsync(role)).CheckErrors();
+            }
         }
     }
 

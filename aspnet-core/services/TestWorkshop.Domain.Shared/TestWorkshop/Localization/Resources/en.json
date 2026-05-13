@@ -141,7 +141,6 @@
     "Permission:CopyFile": "Copy file",
     "Permission:MoveFile": "Move file",
     "Permission:DownloadFile": "Download file",
-    "Permission:Workshop": "Workshop",
     "Permission:WorkshopDevice": "Workshop Device",
     "Permission:DataDictionary": "Data Dictionary",
     "Permission:Layout": "Layout",
