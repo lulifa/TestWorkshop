@@ -250,14 +250,11 @@ function onPermissionChange(_name: string, key: string) {
                     {{ $t('AbpPermissionManagement.Permissions') }}
                   </MenuItem>
                   <MenuItem
-                    v-if="hasAccessByCodes(['Platform.Menu.ManageRoles'])"
+                    v-if="hasAccessByCodes(['TestWorkshop.Menu.ManageRoles'])"
                     key="menus"
                     :icon="h(MenuOutlined)"
                   >
                     {{ $t('TestWorkshop.Menu:Manage') }}
-                  </MenuItem>
-                  <MenuItem key="entity-rules">
-                    {{ '数据权限' }}
                   </MenuItem>
                 </Menu>
               </template>

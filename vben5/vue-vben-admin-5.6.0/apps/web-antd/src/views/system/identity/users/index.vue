@@ -395,7 +395,7 @@ const handleMenuClick = async (row: IdentityUserDto, info: MenuInfo) => {
                     {{ $t('AbpIdentity.SetPassword') }}
                   </MenuItem>
                   <MenuItem
-                    v-if="hasAccessByCodes(['Platform.Menu.ManageUsers'])"
+                    v-if="hasAccessByCodes(['TestWorkshop.Menu.ManageUsers'])"
                     key="menus"
                     :icon="h(MenuOutlined)"
                   >
