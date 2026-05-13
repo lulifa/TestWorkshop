@@ -20,6 +20,7 @@
     "OrganizationUnit:AddMember": "添加成员",
     "OrganizationUnit:AddRole": "添加角色",
     "OrganizationUnit:DisplayName": "显示名称",
+    "OrganizationUnit:BusinessCode": "业务编码",
     "OrganizationUnit:WillDelete": "组织机构: {0} 将被删除",
     "OrganizationUnit:AreYouSureRemoveUser": "你确定要从组织机构中删除用户 {0} 吗?",
     "OrganizationUnit:AreYouSureRemoveRole": "你确定要从组织机构中删除角色 {0} 吗?",

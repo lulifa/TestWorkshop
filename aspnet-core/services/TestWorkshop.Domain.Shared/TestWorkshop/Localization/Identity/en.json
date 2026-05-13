@@ -20,6 +20,7 @@
     "OrganizationUnit:AddMember": "Add Member",
     "OrganizationUnit:AddRole": "Add Role",
     "OrganizationUnit:DisplayName": "Display Name",
+    "OrganizationUnit:BusinessCode": "Business Code",
     "OrganizationUnit:WillDelete": "Organization: {0} will be deleted",
     "OrganizationUnit:AreYouSureRemoveUser": "Are you sure you want to delete user {0} from your organization?",
     "OrganizationUnit:AreYouSureRemoveRole": "Are you sure you want to remove the role {0} from the organization?",

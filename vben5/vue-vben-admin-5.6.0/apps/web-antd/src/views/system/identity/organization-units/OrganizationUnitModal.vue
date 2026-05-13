@@ -59,7 +59,7 @@ const [Form, formApi] = useVbenForm({
         autocomplete: 'off',
       },
       fieldName: 'extraProperties.BusinessCode',
-      label: '业务编码',
+      label: $t('AbpIdentity.OrganizationUnit:BusinessCode'),
     },
   ],
   showDefaultActions: false,
