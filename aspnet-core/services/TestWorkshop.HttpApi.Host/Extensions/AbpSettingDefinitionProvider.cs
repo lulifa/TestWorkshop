@@ -1,4 +1,6 @@
-﻿namespace TestWorkshop;
+﻿using Volo.Abp.Account.Settings;
+
+namespace TestWorkshop;
 
 public class AbpSettingDefinitionProvider : Volo.Abp.Settings.SettingDefinitionProvider
 {
@@ -35,5 +37,12 @@ public class AbpSettingDefinitionProvider : Volo.Abp.Settings.SettingDefinitionP
         {
             requireDigit.DefaultValue = false.ToString();
         }
+
+        var selfRegistration = context.GetOrNull(AccountSettingNames.IsSelfRegistrationEnabled);
+        if (selfRegistration != null)
+        {
+            selfRegistration.DefaultValue = false.ToString(); // 关闭注册
+        }
+
     }
 }

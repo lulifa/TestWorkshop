@@ -139,7 +139,7 @@ public class Vben5NavigationSeedContributor : IDataSeedContributor, ITransientDe
             GuidGenerator,
             "keepAlive",
             "是否开启缓存",
-            "true",
+            "false",
             ValueType.Boolean,
             "用于配置页面是否开启缓存，开启后页面会缓存，不会重新加载，仅在标签页启用时有效。",
             isStatic: true);
@@ -326,7 +326,18 @@ public class Vben5NavigationSeedContributor : IDataSeedContributor, ITransientDe
                 }
             }
 
-            var roles = menu.Url.StartsWith("/system") ? new[] { "admin" } : new[] { "admin", "users" };
+            string[] roles;
+
+            if (menu.Url.StartsWith("/system") || menu.Url.StartsWith("/modules"))
+            {
+                // 系统管理 + 平台管理 → 仅管理员
+                roles = [RoleConstants.admin];
+            }
+            else
+            {
+                // 仪表盘、业务、其他 → 所有角色
+                roles = RoleConstants.AllRoles;
+            }
 
             var seedMenu = await SeedMenuAsync(
                 layout: layout,

@@ -2,13 +2,6 @@
 
 public class SystemDefaultDataSeederContributor : IDataSeedContributor, ITransientDependency
 {
-    private static readonly string[] RolesToCreate =
-    {
-        "supervisor",   // 车间主管
-        "tester",       // 测试工程师
-        "auditor",      // 质量审核员
-        "guest"         // 访客
-    };
     protected IGuidGenerator GuidGenerator { get; }
     protected ICurrentTenant CurrentTenant { get; }
     protected IdentityUserManager IdentityUserManager { get; }
@@ -43,7 +36,7 @@ public class SystemDefaultDataSeederContributor : IDataSeedContributor, ITransie
 
     private async Task CreateRolesIfNotExistAsync(Guid? tenantId)
     {
-        foreach (var roleName in RolesToCreate)
+        foreach (var roleName in RoleConstants.BusinessRoles)
         {
             var role = await IdentityRoleManager.FindByNameAsync(roleName);
             if (role == null)
