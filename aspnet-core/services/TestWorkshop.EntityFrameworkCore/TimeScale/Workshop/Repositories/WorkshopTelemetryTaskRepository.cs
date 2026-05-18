@@ -1,7 +1,4 @@
-﻿using Volo.Abp.Application.Dtos;
-using Volo.Abp.MultiTenancy;
-
-namespace TestWorkshop.EntityFrameworkCore;
+﻿namespace TestWorkshop.EntityFrameworkCore;
 
 /// <summary>
 /// 遥测任务仓储实现 - EF Core

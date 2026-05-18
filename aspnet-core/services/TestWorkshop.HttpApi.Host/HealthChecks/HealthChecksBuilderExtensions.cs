@@ -1,4 +1,4 @@
-﻿namespace TestWorkshop.HealthChecks;
+﻿namespace TestWorkshop;
 
 public static class HealthChecksBuilderExtensions
 {

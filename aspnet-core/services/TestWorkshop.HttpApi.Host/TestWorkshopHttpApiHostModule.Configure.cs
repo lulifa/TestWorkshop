@@ -1,41 +1,4 @@
-﻿using Autofac.Core;
-using Medallion.Threading;
-using Medallion.Threading.Redis;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Builder.Extensions;
-using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.Extensions.Caching.StackExchangeRedis;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.OpenApi.Models;
-using OpenIddict.Server.AspNetCore;
-using OpenIddict.Validation.AspNetCore;
-using StackExchange.Redis;
-using System;
-using System.IO;
-using System.Linq;
-using TestWorkshop.HealthChecks;
-using TestWorkshop.Wrapper;
-using Volo.Abp.Account;
-using Volo.Abp.AspNetCore.Mvc.AntiForgery;
-using Volo.Abp.AspNetCore.Mvc.UI.Bundling;
-using Volo.Abp.AspNetCore.Mvc.UI.Theme.LeptonXLite.Bundling;
-using Volo.Abp.BlobStoring;
-using Volo.Abp.BlobStoring.FileSystem;
-using Volo.Abp.Caching;
-using Volo.Abp.Localization;
-using Volo.Abp.Modularity;
-using Volo.Abp.OpenIddict;
-using Volo.Abp.Security.Claims;
-using Volo.Abp.Swashbuckle;
-using Volo.Abp.UI.Navigation.Urls;
-
-namespace TestWorkshop
+﻿namespace TestWorkshop
 {
     public partial class TestWorkshopHttpApiHostModule
     {

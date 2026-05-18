@@ -1,6 +1,3 @@
-using Volo.Abp.BlobStoring;
-using Volo.Abp.BlobStoring.FileSystem;
-
 namespace TestWorkshop;
 
 [DependsOn(
