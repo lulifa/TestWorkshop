@@ -41,13 +41,13 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
             .SetProperty("title", "page.business.title");
         business.AddItem(
           new ApplicationMenu(
-              name: "Vben5BusinessBooks",
-              displayName: "书籍管理",
-              url: "/business/books",
-              component: "/business/books/index",
+              name: "Vben5BusinessWorkDevices",
+              displayName: "车间设备管理",
+              url: "/business/workshopdevices",
+              component: "/business/workshopdevices/index",
               icon: "arcticons:tenantcloud-pro",
-              description: "书籍管理")
-            .SetProperty("title", "page.business.books"));
+              description: "车间设备管理")
+            .SetProperty("title", "page.business.workshopdevices"));
 
         return
         [

@@ -70,3 +70,24 @@ public partial class AddTimeScaleEntities : Migration
             name: "AppWorkshopDeviceTelemetries");
     }
 }
+
+
+三  相关表解释
+/// <summary>
+/// 设备遥测数据实体 - 用于存储下位机上传的实时采集数据
+/// 超级表
+/// </summary>
+public class WorkshopDeviceTelemetry
+
+/// <summary>
+/// 遥测任务实体 - 用于管理下位机上传的采集数据文件
+/// </summary>
+public class WorkshopTelemetryTask : Entity<long>, IMultiTenant
+
+/// <summary>
+/// 设备实体 - 用于存储下位机上传的设备基础信息
+/// </summary>
+public class WorkshopDevice : Entity<Guid>, IMultiTenant
+
+
+下位机通过http上传相关数据到服务端，首先存储在WorkshopTelemetryTask记录相关文件内容并将文件存储在本地文件系统，然后解析服务端将数据存储到 TimescaleDB 中的超级表中WorkshopDeviceTelemetry。
