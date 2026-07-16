@@ -11,6 +11,7 @@ public static class TestWorkshopDbContextModelCreatingExtensions
 
         builder.ConfigurePlatform();
 
+        // 默认先注释掉这个 迁移平台功能，后续在打开这个 注册timescale相关迁移及readme里边的操作
         builder.ConfigureTimeScale();
 
     }
