@@ -91,3 +91,6 @@ public class WorkshopDevice : Entity<Guid>, IMultiTenant
 
 
 下位机通过http上传相关数据到服务端，首先存储在WorkshopTelemetryTask记录相关文件内容并将文件存储在本地文件系统，然后解析服务端将数据存储到 TimescaleDB 中的超级表中WorkshopDeviceTelemetry。
+
+
+每个车间都有自己的业务编码，车间的设备都有自己的编码code 基于abp模式 组织单元作为车间载体，一个组织单元就是一个车间，车间设备挂在到组织单元下
