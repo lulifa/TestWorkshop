@@ -35,14 +35,14 @@ const { getListApi: getFavoriteMenusApi, deleteApi: deleteFavoriteMenuApi } =
 const { uiFramework } = useAppConfig(import.meta.env, import.meta.env.PROD);
 
 const defaultMenus: FavoriteMenu[] = [
-  // {
-  //   id: '1',
-  //   color: '#1fdaca',
-  //   icon: 'ion:home-outline',
-  //   displayName: $t('workbench.content.favoriteMenu.home'),
-  //   path: '/',
-  //   isDefault: true,
-  // },
+  {
+    id: '1',
+    color: '#1fdaca',
+    icon: 'ion:home-outline',
+    displayName: $t('workbench.content.favoriteMenu.home'),
+    path: '/',
+    isDefault: true,
+  },
   // {
   //   id: '2',
   //   color: '#bf0c2c',
