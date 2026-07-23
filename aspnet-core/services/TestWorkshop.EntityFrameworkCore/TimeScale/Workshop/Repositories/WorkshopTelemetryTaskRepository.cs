@@ -48,6 +48,7 @@ public class WorkshopTelemetryTaskRepository :
             .FromSqlRaw(sql,
                 new NpgsqlParameter("@Now", now),
                 new NpgsqlParameter("@Take", take))
+            .IgnoreQueryFilters()
             .ToListAsync();
 
         // 无需再调用 SaveChangesAsync，因为状态已在数据库中更新

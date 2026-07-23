@@ -70,6 +70,7 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
         }
         catch (Exception ex)
         {
+            Logger.LogError(ex, "Upload failed, attempting to cleanup blob {BlobName}", blobName);
             // 如果数据库操作失败，删除已上传的文件
             try
             {
