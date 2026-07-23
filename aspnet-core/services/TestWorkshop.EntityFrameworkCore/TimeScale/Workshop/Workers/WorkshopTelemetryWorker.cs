@@ -174,7 +174,7 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
         var tableName = entityType?.GetTableName() ?? "AppWorkshopDeviceTelemetries"; // 兜底
 
         using var writer = conn.BeginBinaryImport(
-            $"COPY \"{tableName}\" (\"DeviceId\",\"Metric\",\"Value\",\"Timestamp\") FROM STDIN (FORMAT BINARY)");
+            $"COPY \"{tableName}\" (\"DeviceId\",\"MetricType\",\"Value\",\"Timestamp\") FROM STDIN (FORMAT BINARY)");
 
         int count = 0, skipped = 0;
         using var reader = new StreamReader(csvStream);
@@ -202,7 +202,7 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
             try
             {
                 var deviceCode = parts[0].Trim();
-                var metric = parts[1].Trim();
+                var metricType = parts[1].Trim();
                 var value = double.Parse(parts[2].Trim(), CultureInfo.InvariantCulture);
                 var timestamp = DateTime.Parse(parts[3].Trim(), CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal);
 
@@ -215,7 +215,7 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
 
                 writer.StartRow();
                 writer.Write(deviceId);
-                writer.Write(metric);
+                writer.Write(metricType);
                 writer.Write(value);
                 writer.Write(timestamp, NpgsqlDbType.TimestampTz);
                 count++;
