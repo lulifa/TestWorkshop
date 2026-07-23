@@ -21,39 +21,38 @@ public class WorkshopTelemetryTaskRepository :
     {
         var dbContext = await GetDbContextAsync();
 
-        // FOR UPDATE SKIP LOCKED 防止并发重复获取
         var entityType = dbContext.Model.FindEntityType(typeof(WorkshopTelemetryTask));
         var tableName = entityType?.GetTableName();
         var schema = entityType?.GetSchema();
-
         var fullTableName = string.IsNullOrWhiteSpace(schema)
             ? $@"""{tableName}"""
             : $@"""{schema}"".""{tableName}""";
 
+        var now = DateTime.UtcNow;
+
         var sql = $@"
-            SELECT * FROM {fullTableName}
-            WHERE ""Status"" = 0
-              AND (""NextRetryTime"" IS NULL OR ""NextRetryTime"" <= @Now)
-            ORDER BY ""CreatedAt""
-            LIMIT @Take
-            FOR UPDATE SKIP LOCKED";
+            UPDATE {fullTableName}
+            SET ""Status"" = 1,
+                ""ProcessingStartedAt"" = @Now
+            WHERE ""Id"" IN (
+                SELECT ""Id"" FROM {fullTableName}
+                WHERE ""Status"" = 0
+                  AND (""NextRetryTime"" IS NULL OR ""NextRetryTime"" <= @Now)
+                ORDER BY ""CreatedAt""
+                LIMIT @Take
+                FOR UPDATE SKIP LOCKED
+            )
+            RETURNING *";
 
         var tasks = await dbContext.TelemetryTasks
             .FromSqlRaw(sql,
-                new NpgsqlParameter("@Now", DateTime.UtcNow),
+                new NpgsqlParameter("@Now", now),
                 new NpgsqlParameter("@Take", take))
             .ToListAsync();
 
-        if (tasks.Count > 0)
-        {
-            var now = DateTime.UtcNow;
-            foreach (var t in tasks)
-            {
-                t.Status = 1;                  // Processing
-                t.ProcessingStartedAt = now;
-            }
-            await dbContext.SaveChangesAsync();
-        }
+        // 无需再调用 SaveChangesAsync，因为状态已在数据库中更新
+        // 返回的实体对象已拥有最新的 Status 和 ProcessingStartedAt
+
         return tasks;
     }
 
