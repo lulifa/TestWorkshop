@@ -33,16 +33,20 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
         if (file == null || file.Length == 0)
             throw new UserFriendlyException("Please select a file to upload");
 
+        var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+        if (extension != ".csv")
+            throw new UserFriendlyException("Only .csv files are supported");
+
         var fileId = GuidGenerator.Create();
-        var blobName = fileId.ToString("N") + Path.GetExtension(file.FileName);
+        var datePart = DateTime.UtcNow.ToString("yyyy/MM/dd");
+        var blobName = $"{datePart}/{fileId:N}{extension}";
+
 
         try
         {
             // 1️⃣ 保存文件到 Blob 存储
-            await using (var stream = file.OpenReadStream())
-            {
-                await _blobContainer.SaveAsync(blobName, stream, true);
-            }
+            await using var stream = file.OpenReadStream();
+            await _blobContainer.SaveAsync(blobName, stream, true);
 
             // 2️⃣ 创建任务记录
             var task = new WorkshopTelemetryTask
