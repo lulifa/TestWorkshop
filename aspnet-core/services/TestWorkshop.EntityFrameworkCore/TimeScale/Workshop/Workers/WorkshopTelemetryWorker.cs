@@ -146,8 +146,8 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
         CancellationToken ct)
     {
         var entityType = db.Model.FindEntityType(typeof(WorkshopDeviceTelemetry));
-        var tableName = entityType?.GetSchemaQualifiedTableName()
-                        ?? "\"AppWorkshopDeviceTelemetries\"";
+        var rawTableName = entityType?.GetTableName() ?? "AppWorkshopDeviceTelemetries";
+        var tableName = $"\"{rawTableName}\"";   // 强制加双引号
 
         using var writer = transaction.Connection.BeginBinaryImport(
             $"COPY {tableName} (\"DeviceId\",\"MetricType\",\"Value\",\"Timestamp\",\"TestedDeviceCode\",\"TestedDeviceName\") FROM STDIN (FORMAT BINARY)");
