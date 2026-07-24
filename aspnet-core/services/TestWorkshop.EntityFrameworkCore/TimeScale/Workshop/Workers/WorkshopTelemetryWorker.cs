@@ -150,7 +150,7 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
                         ?? "\"AppWorkshopDeviceTelemetries\"";
 
         using var writer = transaction.Connection.BeginBinaryImport(
-            $"COPY {tableName} (\"DeviceId\",\"MetricType\",\"Value\",\"Timestamp\") FROM STDIN (FORMAT BINARY)");
+            $"COPY {tableName} (\"DeviceId\",\"MetricType\",\"Value\",\"Timestamp\",\"TestedDeviceCode\",\"TestedDeviceName\") FROM STDIN (FORMAT BINARY)");
 
         int count = 0, skipped = 0;
         using var reader = new StreamReader(csvStream);
@@ -194,7 +194,7 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
         Dictionary<string, Guid> deviceMap, ref int count, ref int skipped)
     {
         var parts = line.Split(',');
-        if (parts.Length < 4)
+        if (parts.Length < 6)
         {
             skipped++;
             return;
@@ -217,6 +217,9 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
                 return;
             }
 
+            var testedDeviceCode = parts[4].Trim();   // 新增
+            var testedDeviceName = parts[5].Trim();   // 新增
+
             if (!deviceMap.TryGetValue(deviceCode, out var deviceId))
             {
                 _logger.LogWarning("未知设备码 {Code}", deviceCode);
@@ -229,6 +232,8 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
             writer.Write(metricType, NpgsqlDbType.Text);
             writer.Write(value, NpgsqlDbType.Double);
             writer.Write(timestamp, NpgsqlDbType.TimestampTz);
+            writer.Write(testedDeviceCode, NpgsqlDbType.Text);   // 新增
+            writer.Write(testedDeviceName, NpgsqlDbType.Text);   // 新增
             count++;
         }
         catch (Exception ex)
