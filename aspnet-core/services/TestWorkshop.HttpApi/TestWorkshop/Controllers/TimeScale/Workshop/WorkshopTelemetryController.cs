@@ -41,7 +41,7 @@ public class WorkshopTelemetryController : TestWorkshopController
     /// <summary>
     /// 分页查询
     /// </summary>
-    [HttpPost("list")]
+    [HttpGet("list")]
     public async Task<PagedResultDto<WorkshopTelemetryTaskDto>> GetListAsync(TelemetryTaskListInput input)
     {
         return await Service.GetListAsync(input);
