@@ -1,3 +1,5 @@
+using Swashbuckle.AspNetCore.SwaggerUI;
+
 namespace TestWorkshop;
 
 [DependsOn(
@@ -101,6 +103,7 @@ public partial class TestWorkshopHttpApiHostModule : AbpModule
         app.UseAbpSwaggerUI(options =>
         {
             options.SwaggerEndpoint("/swagger/v1/swagger.json", "TestWorkshop API");
+            options.ConfigObject.DocExpansion = DocExpansion.None;
 
             var configuration = context.ServiceProvider.GetRequiredService<IConfiguration>();
             var scopes = configuration.GetSection("AuthServer:Scopes").Get<string[]>();

@@ -1,5 +1,8 @@
 ﻿namespace TestWorkshop;
 
+/// <summary>
+/// 下位机遥测数据及任务管理
+/// </summary>
 [Route("api/workshop/telemetry")]
 public class WorkshopTelemetryController : TestWorkshopController
 {
