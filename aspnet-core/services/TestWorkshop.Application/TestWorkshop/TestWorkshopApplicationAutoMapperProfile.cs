@@ -1,4 +1,5 @@
 using TestWorkshop.TimeScale;
+using Volo.Abp.AuditLogging;
 
 namespace TestWorkshop;
 
@@ -25,5 +26,18 @@ public class TestWorkshopApplicationAutoMapperProfile : Profile
         CreateMap<TenantConnectionString, TenantConnectionStringDto>();
 
         CreateMap<OrganizationUnit, OrganizationUnitDto>().MapExtraProperties();
+
+        CreateMap<AuditLog, GetAuditLogListOutput>()
+            .ForMember(dest => dest.ExecutionTime,
+                opt => opt.MapFrom(s => s.ExecutionTime.ToString("O")));
+        CreateMap<AuditLogAction, GetAuditLogActionListOutput>()
+            .ForMember(dest => dest.ExecutionTime,
+                opt => opt.MapFrom(s => s.ExecutionTime.ToString("O")));
+        CreateMap<EntityChange, GetEntityChangeListOutput>()
+            .ForMember(dest => dest.ChangeTypeDescription,
+                opt => opt.MapFrom(s => s.ChangeType))
+            .ForMember(dest => dest.ChangeTime,
+                opt => opt.MapFrom(s => s.ChangeTime.ToString("O")));
+        CreateMap<EntityPropertyChange, GetEntityPropertyChangeListOutput>();
     }
 }

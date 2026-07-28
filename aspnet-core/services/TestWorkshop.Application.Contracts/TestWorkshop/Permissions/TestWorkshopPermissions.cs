@@ -15,7 +15,6 @@ public static class TestWorkshopPermissions
         public const string Delete = Default + ".Delete";
     }
 
-
     public static class DataDictionary
     {
         public const string Default = GroupName + ".DataDictionary";
@@ -79,6 +78,11 @@ public static class TestWorkshopPermissions
         public const string ManageUsers = Default + ".ManageUsers";
         public const string ManageRoles = Default + ".ManageRoles";
         public const string ManagePermissions = Default + ".ManagePermissions";
+    }
+
+    public static class AuditLog
+    {
+        public const string Default = GroupName + ".AuditLogs";
     }
 
 

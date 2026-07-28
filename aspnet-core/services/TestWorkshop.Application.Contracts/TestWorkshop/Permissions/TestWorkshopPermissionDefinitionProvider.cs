@@ -11,7 +11,6 @@ public class TestWorkshopPermissionDefinitionProvider : PermissionDefinitionProv
         workshopDevice.AddChild(TestWorkshopPermissions.WorkshopDevice.Update, L("Permission:Update"));
         workshopDevice.AddChild(TestWorkshopPermissions.WorkshopDevice.Delete, L("Permission:Delete"));
 
-
         var dataDictionary = platform.AddPermission(TestWorkshopPermissions.DataDictionary.Default, L("Permission:DataDictionary"));
         dataDictionary.AddChild(TestWorkshopPermissions.DataDictionary.Create, L("Permission:Create"));
         dataDictionary.AddChild(TestWorkshopPermissions.DataDictionary.Update, L("Permission:Update"));
@@ -58,6 +57,8 @@ public class TestWorkshopPermissionDefinitionProvider : PermissionDefinitionProv
             origanizationUnitPermission.AddChild(TestWorkshopPermissions.OrganizationUnits.ManagePermissions, IdentityL("Permission:ChangePermissions"));
 
         }
+
+        var auditlog = platform.AddPermission(TestWorkshopPermissions.AuditLog.Default, L("Permission:AuditLog"));
 
     }
 
