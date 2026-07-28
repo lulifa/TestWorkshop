@@ -1,9 +1,16 @@
-﻿namespace TestWorkshop;
+﻿using TestWorkshop.TimeScale;
+
+namespace TestWorkshop;
 
 public class WorkshopDeviceAppService : TestWorkshopAppService, IWorkshopDeviceAppService
 {
-    public WorkshopDeviceAppService()
+    protected IWorkshopDeviceRepository WorkshopDeviceRepository { get; }
+    public WorkshopDeviceAppService(IWorkshopDeviceRepository workshopDeviceRepository)
     {
-
+        WorkshopDeviceRepository = workshopDeviceRepository;
     }
+
+
+
+
 }

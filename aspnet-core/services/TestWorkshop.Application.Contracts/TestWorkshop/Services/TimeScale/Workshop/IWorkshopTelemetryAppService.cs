@@ -20,7 +20,7 @@ public interface IWorkshopTelemetryAppService : IApplicationService
     /// <summary>
     /// 分页查询任务
     /// </summary>
-    Task<PagedResultDto<WorkshopTelemetryTaskDto>> GetListAsync(TelemetryTaskListInput input);
+    Task<PagedResultDto<WorkshopTelemetryTaskDto>> GetListAsync(WorkshopTelemetryTaskListInput input);
 
     /// <summary>
     /// 获取统计信息
@@ -36,17 +36,4 @@ public interface IWorkshopTelemetryAppService : IApplicationService
     /// 重新处理失败的任务
     /// </summary>
     Task RetryAsync(long id);
-}
-
-public class TelemetryTaskListInput : PagedAndSortedResultRequestDto
-{
-    /// <summary>
-    /// 文件名过滤
-    /// </summary>
-    public string FileName { get; set; }
-
-    /// <summary>
-    /// 状态过滤 (0/1/2/3)
-    /// </summary>
-    public int? Status { get; set; }
 }

@@ -105,7 +105,7 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
     /// <summary>
     /// 分页查询
     /// </summary>
-    public async Task<PagedResultDto<WorkshopTelemetryTaskDto>> GetListAsync(TelemetryTaskListInput input)
+    public async Task<PagedResultDto<WorkshopTelemetryTaskDto>> GetListAsync(WorkshopTelemetryTaskListInput input)
     {
         var result = await _telemetryTaskRepository.GetListAsync(
             input.FileName,
