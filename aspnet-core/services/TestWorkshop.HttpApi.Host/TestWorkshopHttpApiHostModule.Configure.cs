@@ -1,4 +1,8 @@
-﻿namespace TestWorkshop
+﻿using Microsoft.Extensions.DependencyInjection.Extensions;
+using Volo.Abp.AspNetCore.WebClientInfo;
+using Volo.Abp.AuditLogging;
+
+namespace TestWorkshop
 {
     public partial class TestWorkshopHttpApiHostModule
     {
@@ -51,7 +55,7 @@
 
                 Configure<ForwardedHeadersOptions>(options =>
                 {
-                    options.ForwardedHeaders = ForwardedHeaders.XForwardedProto;
+                    options.ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor;
                 });
             }
         }
@@ -249,5 +253,25 @@
             });
         }
 
+        private void ConfigureIPLocation(ServiceConfigurationContext context)
+        {
+            // 1. 替换 WebClientInfoProvider，以支持代理环境获取真实 IP
+            context.Services.Replace(
+                new ServiceDescriptor(
+                    typeof(IWebClientInfoProvider),
+                    typeof(RealIpHttpContextWebClientInfoProvider),
+                    ServiceLifetime.Transient
+                )
+            );
+
+            // 2. 替换 AuditLogInfoToAuditLogConverter，以添加 IP 归属地解析
+            context.Services.Replace(
+                new ServiceDescriptor(
+                    typeof(IAuditLogInfoToAuditLogConverter),
+                    typeof(CustomAuditLogInfoToAuditLogConverter),
+                    ServiceLifetime.Transient
+                )
+            );
+        }
     }
 }

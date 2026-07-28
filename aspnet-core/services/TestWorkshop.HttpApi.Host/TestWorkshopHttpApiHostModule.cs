@@ -58,6 +58,8 @@ public partial class TestWorkshopHttpApiHostModule : AbpModule
 
         ConfigureBlob(configuration);
 
+        ConfigureIPLocation(context);
+
     }
 
 

@@ -19,6 +19,8 @@
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" />
     <PackageReference Include="DistributedLock.Redis" />
     <PackageReference Include="Volo.Abp.Caching.StackExchangeRedis" />
+    <PackageReference Include="IpTools.China" />
+    <PackageReference Include="UAParser" />
   </ItemGroup>
 
   <ItemGroup>
@@ -48,6 +50,12 @@
     <Content Remove="Logs\**" />
     <EmbeddedResource Remove="Logs\**" />
     <None Remove="Logs\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="ip2region.db">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
