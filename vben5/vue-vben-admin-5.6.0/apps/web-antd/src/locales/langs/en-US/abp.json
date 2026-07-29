@@ -35,6 +35,8 @@
   },
   "system": {
     "title": "System",
+    "securitylogs": "Security Logs",
+    "auditlogs": "Audit Logs",
     "tenants": "Tenants",
     "identity": {
       "users": "Users",

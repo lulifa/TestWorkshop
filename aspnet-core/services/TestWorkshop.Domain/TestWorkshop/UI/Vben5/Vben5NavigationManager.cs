@@ -164,6 +164,7 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
             order: 3,
             multiTenancySides: MultiTenancySides.Host)
             .SetProperty("title", "abp.system.title");
+
         system.AddItem(
           new ApplicationMenu(
               name: "Vben5SystemTenants",
@@ -174,6 +175,18 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
               description: "租户管理",
               multiTenancySides: MultiTenancySides.Host)
             .SetProperty("title", "abp.system.tenants"));
+
+        system.AddItem(
+          new ApplicationMenu(
+              name: "Vben5SystemSecurityLogs",
+              displayName: "安全日志",
+              url: "/system/identity/securitylogs",
+              component: "/system/identity/securitylogs/index",
+              icon: "carbon:security",
+              description: "安全日志",
+              multiTenancySides: MultiTenancySides.Host)
+            .SetProperty("title", "abp.system.securitylogs"));
+
         system.AddItem(
           new ApplicationMenu(
               name: "Vben5SystemUsers",

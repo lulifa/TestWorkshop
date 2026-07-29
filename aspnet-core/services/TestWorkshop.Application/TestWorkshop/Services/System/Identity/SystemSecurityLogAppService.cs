@@ -10,6 +10,10 @@ public class SystemSecurityLogAppService : TestWorkshopAppService, ISystemSecuri
         IdentitySecurityLogRepository = identitySecurityLogRepository;
     }
 
+    /// <summary>
+    /// 分页查询安全日志
+    /// </summary>
+    [Authorize(Policy = TestWorkshopPermissions.SecurityLog.Default)]
     public virtual async Task<PagedResultDto<IdentitySecurityLogOutput>> GetListAsync(IdentitySecurityLogInput input)
     {
         var totalCount = await IdentitySecurityLogRepository.GetCountAsync(
@@ -17,7 +21,7 @@ public class SystemSecurityLogAppService : TestWorkshopAppService, ISystemSecuri
             input.EndTime,
             input.ApplicationName,
             input.Identity,
-            input.Action,
+            input.ActionName,
             input.UserId,
             input.UserName,
             input.ClientId,
@@ -36,7 +40,7 @@ public class SystemSecurityLogAppService : TestWorkshopAppService, ISystemSecuri
             input.EndTime,
             input.ApplicationName,
             input.Identity,
-            input.Action,
+            input.ActionName,
             input.UserId,
             input.UserName,
             input.ClientId,

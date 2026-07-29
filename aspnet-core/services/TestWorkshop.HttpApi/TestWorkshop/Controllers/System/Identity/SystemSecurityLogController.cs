@@ -2,7 +2,7 @@
 
 
 /// <summary>
-/// 登录日志
+/// 安全日志
 /// </summary>
 [Route("api/system/securitylog")]
 public class SystemSecurityLogController : TestWorkshopController, ISystemSecurityLogAppService
@@ -16,7 +16,7 @@ public class SystemSecurityLogController : TestWorkshopController, ISystemSecuri
     }
 
     [HttpGet]
-    public Task<PagedResultDto<IdentitySecurityLogOutput>> GetListAsync([FromQuery] IdentitySecurityLogInput input)
+    public Task<PagedResultDto<IdentitySecurityLogOutput>> GetListAsync(IdentitySecurityLogInput input)
     {
         return Service.GetListAsync(input);
     }

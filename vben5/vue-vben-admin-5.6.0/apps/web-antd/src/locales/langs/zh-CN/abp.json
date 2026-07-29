@@ -35,6 +35,8 @@
   },
   "system": {
     "title": "系统管理",
+    "securitylogs": "安全日志",
+    "auditlogs": "审计日志",
     "tenants": "租户管理",
     "identity": {
       "users": "用户管理",
