@@ -1,8 +1,6 @@
-﻿using System.Net;
+﻿namespace TestWorkshop;
 
-namespace TestWorkshop;
-
-public class GetAuditLogListInput : PagedAndSortedResultRequestDto
+public class IdentitySecurityLogInput : PagedAndSortedResultRequestDto
 {
 
     /// <summary>
@@ -15,16 +13,12 @@ public class GetAuditLogListInput : PagedAndSortedResultRequestDto
     /// </summary>
     public DateTime? EndTime { get; set; }
 
-    /// <summary>
-    /// 请求方法
-    /// </summary>
-    public string HttpMethod { get; set; }
+    public string Identity { get; set; }
 
     /// <summary>
     /// 请求地址
     /// </summary>
-    public string Url { get; set; }
-
+    public string Action { get; set; }
 
     /// <summary>
     /// 用户Id
@@ -47,24 +41,9 @@ public class GetAuditLogListInput : PagedAndSortedResultRequestDto
     public string CorrelationId { get; set; }
 
     /// <summary>
-    /// 最大执行时间
+    /// ClientId
     /// </summary>
-    public int? MaxExecutionDuration { get; set; }
-
-    /// <summary>
-    /// 最小执行时间
-    /// </summary>
-    public int? MinExecutionDuration { get; set; }
-
-    /// <summary>
-    /// 是否有异常
-    /// </summary>
-    public bool? HasException { get; set; }
-
-    /// <summary>
-    /// http 状态码
-    /// </summary>
-    public HttpStatusCode? HttpStatusCode { get; set; }
+    public string ClientId { get; set; }
 
     /// <summary>
     /// 客户端IP

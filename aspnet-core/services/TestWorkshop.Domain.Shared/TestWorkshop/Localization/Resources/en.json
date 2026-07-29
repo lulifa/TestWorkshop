@@ -146,6 +146,7 @@
     "Permission:Layout": "Layout",
     "Permission:Menu": "Menu",
     "Permission:AuditLog": "Audit Log",
+    "Permission:SecurityLog": "Security Log",
     "Permission:Create": "Create",
     "Permission:Update": "Update",
     "Permission:Move": "Move",

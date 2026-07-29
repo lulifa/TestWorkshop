@@ -2,7 +2,7 @@
 
 namespace TestWorkshop;
 
-public class GetAuditLogActionListOutput
+public class AuditLogActionOutput
 {
 
     public Guid Id { get; set; }

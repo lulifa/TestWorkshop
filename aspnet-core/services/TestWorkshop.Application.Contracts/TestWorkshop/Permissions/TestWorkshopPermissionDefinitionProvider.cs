@@ -60,6 +60,8 @@ public class TestWorkshopPermissionDefinitionProvider : PermissionDefinitionProv
 
         var auditlog = platform.AddPermission(TestWorkshopPermissions.AuditLog.Default, L("Permission:AuditLog"));
 
+        var securitylog = platform.AddPermission(TestWorkshopPermissions.SecurityLog.Default, L("Permission:SecurityLog"));
+
     }
 
     private static LocalizableString L(string name)

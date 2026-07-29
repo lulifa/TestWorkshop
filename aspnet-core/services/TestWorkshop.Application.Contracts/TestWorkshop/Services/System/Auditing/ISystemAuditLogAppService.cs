@@ -8,6 +8,6 @@ public interface ISystemAuditLogAppService : IApplicationService
     /// </summary>
     /// <param name="input"></param>
     /// <returns></returns>
-    Task<PagedResultDto<GetAuditLogListOutput>> GetListAsync(GetAuditLogListInput input);
+    Task<PagedResultDto<AuditLogOutput>> GetListAsync(AuditLogInput input);
 
 }

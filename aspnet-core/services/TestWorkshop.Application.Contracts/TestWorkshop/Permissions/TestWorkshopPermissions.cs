@@ -85,6 +85,11 @@ public static class TestWorkshopPermissions
         public const string Default = GroupName + ".AuditLogs";
     }
 
+    public static class  SecurityLog
+    {
+        public const string Default = GroupName + ".SecurityLogs";
+    }
+
 
     public static string[] GetAll()
     {

@@ -27,17 +27,19 @@ public class TestWorkshopApplicationAutoMapperProfile : Profile
 
         CreateMap<OrganizationUnit, OrganizationUnitDto>().MapExtraProperties();
 
-        CreateMap<AuditLog, GetAuditLogListOutput>()
+        CreateMap<AuditLog, AuditLogOutput>()
             .ForMember(dest => dest.ExecutionTime,
                 opt => opt.MapFrom(s => s.ExecutionTime.ToString("O")));
-        CreateMap<AuditLogAction, GetAuditLogActionListOutput>()
+        CreateMap<AuditLogAction, AuditLogActionOutput>()
             .ForMember(dest => dest.ExecutionTime,
                 opt => opt.MapFrom(s => s.ExecutionTime.ToString("O")));
-        CreateMap<EntityChange, GetEntityChangeListOutput>()
+        CreateMap<EntityChange, EntityChangeOutput>()
             .ForMember(dest => dest.ChangeTypeDescription,
                 opt => opt.MapFrom(s => s.ChangeType))
             .ForMember(dest => dest.ChangeTime,
                 opt => opt.MapFrom(s => s.ChangeTime.ToString("O")));
-        CreateMap<EntityPropertyChange, GetEntityPropertyChangeListOutput>();
+        CreateMap<EntityPropertyChange, EntityPropertyChangeOutput>();
+
+        CreateMap<IdentitySecurityLog, IdentitySecurityLogOutput>();
     }
 }

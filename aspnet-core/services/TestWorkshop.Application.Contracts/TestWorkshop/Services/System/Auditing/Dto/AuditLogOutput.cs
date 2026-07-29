@@ -1,6 +1,6 @@
 ﻿namespace TestWorkshop;
 
-public class GetAuditLogListOutput
+public class AuditLogOutput
 {
     public string ApplicationName { get; set; }
 
@@ -40,8 +40,8 @@ public class GetAuditLogListOutput
 
     public int? HttpStatusCode { get; set; }
 
-    public List<GetEntityChangeListOutput> EntityChanges { get; set; }
+    public List<EntityChangeOutput> EntityChanges { get; set; }
 
-    public List<GetAuditLogActionListOutput> Actions { get; set; }
+    public List<AuditLogActionOutput> Actions { get; set; }
 
 }

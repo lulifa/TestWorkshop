@@ -1,6 +1,6 @@
 ﻿namespace TestWorkshop;
 
-public class GetEntityPropertyChangeListOutput
+public class EntityPropertyChangeOutput
 {
 
     public Guid Id { get; set; }

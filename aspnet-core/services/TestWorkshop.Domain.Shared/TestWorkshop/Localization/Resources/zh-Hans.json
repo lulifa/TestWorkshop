@@ -146,6 +146,7 @@
     "Permission:Layout": "布局管理",
     "Permission:Menu": "菜单管理",
     "Permission:AuditLog": "审计日志",
+    "Permission:SecurityLog": "登录日志",
     "Permission:Create": "新增",
     "Permission:Update": "编辑",
     "Permission:Move": "移动",

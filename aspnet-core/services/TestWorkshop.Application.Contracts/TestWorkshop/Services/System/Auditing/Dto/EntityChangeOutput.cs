@@ -2,7 +2,7 @@
 
 namespace TestWorkshop;
 
-public class GetEntityChangeListOutput
+public class EntityChangeOutput
 {
 
     public Guid Id { get; set; }
@@ -23,7 +23,7 @@ public class GetEntityChangeListOutput
 
     public string EntityTypeFullName { get; set; }
 
-    public List<GetEntityPropertyChangeListOutput> PropertyChanges { get; set; }
+    public List<EntityPropertyChangeOutput> PropertyChanges { get; set; }
 
     public ExtraPropertyDictionary ExtraProperties { get; set; }
 

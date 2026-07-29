@@ -14,7 +14,7 @@ public class SystemAuditLogController : TestWorkshopController, ISystemAuditLogA
     }
 
     [HttpGet]
-    public Task<PagedResultDto<GetAuditLogListOutput>> GetListAsync(GetAuditLogListInput input)
+    public Task<PagedResultDto<AuditLogOutput>> GetListAsync(AuditLogInput input)
     {
         return Service.GetListAsync(input);
     }

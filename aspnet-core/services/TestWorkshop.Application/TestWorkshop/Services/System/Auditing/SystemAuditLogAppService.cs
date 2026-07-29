@@ -17,7 +17,7 @@ public class SystemAuditLogAppService : TestWorkshopAppService, ISystemAuditLogA
     /// 分页查询审计日志
     /// </summary>
     [Authorize(Policy = TestWorkshopPermissions.AuditLog.Default)]
-    public virtual async Task<PagedResultDto<GetAuditLogListOutput>> GetListAsync(GetAuditLogListInput input)
+    public virtual async Task<PagedResultDto<AuditLogOutput>> GetListAsync(AuditLogInput input)
     {
         var totalCount = await AuditLogRepository.GetCountAsync(
             input.StartTime,
@@ -36,7 +36,7 @@ public class SystemAuditLogAppService : TestWorkshopAppService, ISystemAuditLogA
             input.HttpStatusCode);
         if (totalCount == 0)
         {
-            return new PagedResultDto<GetAuditLogListOutput>();
+            return new PagedResultDto<AuditLogOutput>();
         }
 
         var list = await AuditLogRepository.GetListAsync(
@@ -59,9 +59,9 @@ public class SystemAuditLogAppService : TestWorkshopAppService, ISystemAuditLogA
             input.HttpStatusCode,
             true);
 
-        var items = ObjectMapper.Map<List<AuditLog>, List<GetAuditLogListOutput>>(list);
+        var items = ObjectMapper.Map<List<AuditLog>, List<AuditLogOutput>>(list);
 
-        return new PagedResultDto<GetAuditLogListOutput>(totalCount, items);
+        return new PagedResultDto<AuditLogOutput>(totalCount, items);
     }
 
 
