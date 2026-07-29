@@ -57,12 +57,18 @@ const formOptions: VbenFormProps = {
       fieldName: 'applicationName',
       label: $t('TestWorkshop.DisplayName:ApplicationName'),
       formItemClass: 'col-span-1',
+      componentProps: {
+        allowClear: true,
+      },
     },
     {
       component: 'Input',
       fieldName: 'userName',
       label: $t('TestWorkshop.DisplayName:UserName'),
       formItemClass: 'col-span-1',
+      componentProps: {
+        allowClear: true,
+      },
     },
   ],
   // 控制表单是否显示折叠按钮
