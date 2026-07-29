@@ -1,4 +1,6 @@
-﻿namespace TestWorkshop;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+
+namespace TestWorkshop;
 
 public class IdentitySecurityLogInput : PagedAndSortedResultRequestDto
 {
@@ -15,9 +17,6 @@ public class IdentitySecurityLogInput : PagedAndSortedResultRequestDto
 
     public string Identity { get; set; }
 
-    /// <summary>
-    /// 请求地址
-    /// </summary>
     public string Action { get; set; }
 
     /// <summary>

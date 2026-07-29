@@ -45,6 +45,14 @@ public class SystemSecurityLogAppService : TestWorkshopAppService, ISystemSecuri
 
         var items = ObjectMapper.Map<List<IdentitySecurityLog>, List<IdentitySecurityLogOutput>>(list);
 
+        foreach (var item in items)
+        {
+            if (!string.IsNullOrEmpty(item.ClientIpAddress))
+            {
+                item.ClientIpAddress = IpLocationHelper.GetIpWithLocation(item.ClientIpAddress);
+            }
+        }
+
         return new PagedResultDto<IdentitySecurityLogOutput>(totalCount, items);
     }
 

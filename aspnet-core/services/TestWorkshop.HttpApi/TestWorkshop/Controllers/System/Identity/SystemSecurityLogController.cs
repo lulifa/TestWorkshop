@@ -16,7 +16,7 @@ public class SystemSecurityLogController : TestWorkshopController, ISystemSecuri
     }
 
     [HttpGet]
-    public Task<PagedResultDto<IdentitySecurityLogOutput>> GetListAsync(IdentitySecurityLogInput input)
+    public Task<PagedResultDto<IdentitySecurityLogOutput>> GetListAsync([FromQuery] IdentitySecurityLogInput input)
     {
         return Service.GetListAsync(input);
     }
