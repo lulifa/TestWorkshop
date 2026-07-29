@@ -54,6 +54,7 @@ public class SystemSecurityLogAppService : TestWorkshopAppService, ISystemSecuri
             if (!string.IsNullOrEmpty(item.ClientIpAddress))
             {
                 item.ClientIpAddress = IpLocationHelper.GetIpWithLocation(item.ClientIpAddress);
+                item.BrowserInfo = IpLocationHelper.GetBrowserInfo(item.BrowserInfo);
             }
         }
 
