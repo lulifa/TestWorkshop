@@ -183,7 +183,7 @@ const gridOptions: VxeGridProps<AuditLogDto> = {
       field: 'applicationName',
       sortable: true,
       title: $t('TestWorkshop.DisplayName:ApplicationName'),
-      width: 180,
+      width: 220,
     },
     {
       align: 'left',
