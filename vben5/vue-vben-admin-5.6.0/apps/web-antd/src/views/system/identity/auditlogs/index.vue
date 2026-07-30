@@ -54,11 +54,15 @@ const formOptions: VbenFormProps = {
       fieldName: 'url',
       formItemClass: 'col-span-2 items-baseline',
       label: $t('TestWorkshop.DisplayName:RequestUrl'),
+      componentProps: {
+        allowClear: true,
+      },
     },
     {
       component: 'Select',
       componentProps: {
         options: httpStatusCodeOptions,
+        allowClear: true,
       },
       fieldName: 'httpStatusCode',
       label: $t('TestWorkshop.DisplayName:HttpStatusCode'),
@@ -67,6 +71,7 @@ const formOptions: VbenFormProps = {
       component: 'Select',
       componentProps: {
         options: httpMethodOptions,
+        allowClear: true,
       },
       fieldName: 'httpMethod',
       label: $t('TestWorkshop.DisplayName:HttpMethod'),
@@ -268,6 +273,11 @@ function onUpdate(row: AuditLogDto) {
   logDrawerApi.setData(row);
   logDrawerApi.open();
 }
+
+function onFilter(field: string, value: any) {
+  gridApi.formApi.setFieldValue(field, value);
+  gridApi.formApi.validateAndSubmitForm();
+}
 </script>
 
 <template>
@@ -284,16 +294,23 @@ function onUpdate(row: AuditLogDto) {
           <Tag
             :color="getHttpStatusCodeColor(row.httpStatusCode)"
             class="cursor-pointer"
+            @click="onFilter('httpStatusCode', row.httpStatusCode)"
           >
             {{ row.httpStatusCode }}
           </Tag>
           <Tag
             :color="getHttpMethodColor(row.httpMethod)"
             class="ml-px cursor-pointer"
+            @click="onFilter('httpMethod', row.httpMethod)"
           >
             {{ row.httpMethod }}
           </Tag>
-          <a class="link" href="javaScript:void(0);">{{ row.url }} </a>
+          <a
+            class="link"
+            href="javaScript:void(0);"
+            @click="onFilter('url', row.url)"
+            >{{ row.url }}
+          </a>
         </div>
       </template>
       <template #action="{ row }">
