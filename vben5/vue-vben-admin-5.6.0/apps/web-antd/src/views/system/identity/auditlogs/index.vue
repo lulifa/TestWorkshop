@@ -5,7 +5,7 @@ import type { VbenFormProps } from '@vben/common-ui';
 
 import type { VxeGridListeners, VxeGridProps } from '#/adapter/vxe-table';
 
-import { defineAsyncComponent, h } from 'vue';
+import { defineAsyncComponent } from 'vue';
 
 import { Page, useVbenDrawer } from '@vben/common-ui';
 import { $t } from '@vben/locales';
@@ -16,7 +16,6 @@ import {
   useAuditlogs,
   useAuditLogsApi,
 } from '@abp/core';
-import { EditOutlined } from '@ant-design/icons-vue';
 import { Button, Space, Tag } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
@@ -317,7 +316,6 @@ function onFilter(field: string, value: any) {
         <div class="flex flex-row justify-center">
           <Space>
             <Button
-              :icon="h(EditOutlined)"
               block
               type="link"
               v-access:code="[AuditLogPermissions.Default]"
