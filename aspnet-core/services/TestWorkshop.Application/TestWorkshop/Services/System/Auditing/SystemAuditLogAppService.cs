@@ -2,6 +2,7 @@
 
 namespace TestWorkshop;
 
+[Authorize(Policy = TestWorkshopPermissions.AuditLog.Default)]
 public class SystemAuditLogAppService : TestWorkshopAppService, ISystemAuditLogAppService
 {
 
@@ -16,7 +17,6 @@ public class SystemAuditLogAppService : TestWorkshopAppService, ISystemAuditLogA
     /// <summary>
     /// 分页查询审计日志
     /// </summary>
-    [Authorize(Policy = TestWorkshopPermissions.AuditLog.Default)]
     public virtual async Task<PagedResultDto<AuditLogOutput>> GetListAsync(AuditLogInput input)
     {
         var totalCount = await AuditLogRepository.GetCountAsync(

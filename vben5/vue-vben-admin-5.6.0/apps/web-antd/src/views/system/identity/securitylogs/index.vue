@@ -8,7 +8,7 @@ import type { VxeGridListeners, VxeGridProps } from '#/adapter/vxe-table';
 import { Page } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 
-import { useSecurityLogsApi } from '@abp/core';
+import { formatToDateTime, useSecurityLogsApi } from '@abp/core';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 
@@ -133,6 +133,9 @@ const gridOptions: VxeGridProps<IdentitySecurityLogOutput> = {
       field: 'creationTime',
       minWidth: 180,
       sortable: true,
+      formatter: ({ cellValue }) => {
+        return cellValue ? formatToDateTime(cellValue) : cellValue;
+      },
       title: $t('TestWorkshop.DisplayName:CreationTime'),
     },
     {

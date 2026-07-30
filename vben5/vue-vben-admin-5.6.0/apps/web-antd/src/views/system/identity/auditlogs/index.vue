@@ -142,7 +142,7 @@ const gridOptions: VxeGridProps<AuditLogDto> = {
       field: 'userName',
       sortable: true,
       title: $t('TestWorkshop.DisplayName:UserName'),
-      width: 120,
+      width: 100,
     },
     {
       align: 'left',
@@ -181,14 +181,14 @@ const gridOptions: VxeGridProps<AuditLogDto> = {
       field: 'applicationName',
       sortable: true,
       title: $t('TestWorkshop.DisplayName:ApplicationName'),
-      width: 160,
+      width: 180,
     },
     {
       align: 'left',
       field: 'correlationId',
       sortable: true,
       title: $t('TestWorkshop.DisplayName:CorrelationId'),
-      width: 160,
+      width: 180,
     },
     {
       align: 'left',
@@ -202,7 +202,7 @@ const gridOptions: VxeGridProps<AuditLogDto> = {
       field: 'browserInfo',
       sortable: true,
       title: $t('TestWorkshop.DisplayName:BrowserInfo'),
-      width: 300,
+      width: 160,
     },
     {
       field: 'action',

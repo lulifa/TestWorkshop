@@ -1,5 +1,6 @@
 ﻿namespace TestWorkshop;
 
+[Authorize(Policy = TestWorkshopPermissions.SecurityLog.Default)]
 public class SystemSecurityLogAppService : TestWorkshopAppService, ISystemSecurityLogAppService
 {
 
@@ -13,7 +14,6 @@ public class SystemSecurityLogAppService : TestWorkshopAppService, ISystemSecuri
     /// <summary>
     /// 分页查询安全日志
     /// </summary>
-    [Authorize(Policy = TestWorkshopPermissions.SecurityLog.Default)]
     public virtual async Task<PagedResultDto<IdentitySecurityLogOutput>> GetListAsync(IdentitySecurityLogInput input)
     {
         var totalCount = await IdentitySecurityLogRepository.GetCountAsync(
@@ -27,6 +27,7 @@ public class SystemSecurityLogAppService : TestWorkshopAppService, ISystemSecuri
             input.ClientId,
             input.CorrelationId,
             input.ClientIpAddress);
+
         if (totalCount == 0)
         {
             return new PagedResultDto<IdentitySecurityLogOutput>();
