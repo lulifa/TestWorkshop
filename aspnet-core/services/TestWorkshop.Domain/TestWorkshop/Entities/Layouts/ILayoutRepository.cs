@@ -26,5 +26,6 @@ public interface ILayoutRepository : IBasicRepository<Layout, Guid>
         bool includeDetails = false,
         int skipCount = 0,
         int maxResultCount = 10,
+        bool isPaged = true,
         CancellationToken cancellationToken = default);
 }

@@ -134,6 +134,16 @@ const gridOptions: VxeGridProps<LayoutDto> = {
           ...formValues,
         });
       },
+      queryAll: async (params) => {
+        const { sort } = params;
+        const formValues = await gridApi.formApi.getValues();
+        const sorting = sort.order ? `${sort.field} ${sort.order}` : undefined;
+        return await getPagedListApi({
+          isPaged: false,
+          sorting,
+          ...formValues,
+        });
+      },
     },
     response: {
       total: 'totalCount',
