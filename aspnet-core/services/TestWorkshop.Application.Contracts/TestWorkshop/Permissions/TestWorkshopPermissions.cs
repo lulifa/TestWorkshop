@@ -82,12 +82,12 @@ public static class TestWorkshopPermissions
 
     public static class AuditLog
     {
-        public const string Default = GroupName + ".AuditLogs";
+        public const string Default = "AbpAuditing.AuditLogs";
     }
 
-    public static class  SecurityLog
+    public static class SecurityLog
     {
-        public const string Default = GroupName + ".SecurityLogs";
+        public const string Default = "AbpAuditing.SecurityLogs";
     }
 
 

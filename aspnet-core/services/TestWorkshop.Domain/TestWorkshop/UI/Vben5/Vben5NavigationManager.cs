@@ -1,4 +1,6 @@
-﻿namespace TestWorkshop;
+﻿using System;
+
+namespace TestWorkshop;
 
 public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDependency
 {
@@ -186,6 +188,15 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
               description: "安全日志",
               multiTenancySides: MultiTenancySides.Host)
             .SetProperty("title", "abp.system.securitylogs"));
+
+        system.AddItem(new ApplicationMenu(
+               name: "Vben5SystemAuditLogs",
+               displayName: "审计日志",
+               url: "/system/identity/auditlogs",
+               component: "/system/identity/auditlogs/index",
+               icon: "fluent-mdl2:compliance-audit",
+               description: "审计日志")
+            .SetProperty("title", "abp.system.auditlogs"));
 
         system.AddItem(
           new ApplicationMenu(
