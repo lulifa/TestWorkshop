@@ -2,7 +2,7 @@
 
 namespace TestWorkshop;
 
-public class AuditLogInput : PagedAndSortedResultRequestDto
+public class AuditLogInput : PagedAndSortedResultRequestDto, IEnablePaging
 {
 
     /// <summary>
@@ -70,5 +70,7 @@ public class AuditLogInput : PagedAndSortedResultRequestDto
     /// 客户端IP
     /// </summary>
     public string ClientIpAddress { get; set; }
+
+    public bool IsPaged { get; set; } = true;
 
 }

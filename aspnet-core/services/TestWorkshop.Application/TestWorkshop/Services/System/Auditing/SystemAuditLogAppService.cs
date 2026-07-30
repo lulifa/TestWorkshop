@@ -34,9 +34,16 @@ public class SystemAuditLogAppService : TestWorkshopAppService, ISystemAuditLogA
             input.MinExecutionDuration,
             input.HasException,
             input.HttpStatusCode);
+
         if (totalCount == 0)
         {
             return new PagedResultDto<AuditLogOutput>();
+        }
+
+        if (!input.IsPaged)
+        {
+            input.SkipCount = 0;
+            input.MaxResultCount = int.MaxValue;
         }
 
         var list = await AuditLogRepository.GetListAsync(
