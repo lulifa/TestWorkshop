@@ -70,11 +70,16 @@ public class LayoutAppService : TestWorkshopAppService, ILayoutAppService
     {
         var count = await LayoutRepository.GetCountAsync(input.Framework, input.Filter);
 
+        if (!input.IsPaged)
+        {
+            input.SkipCount = 0;
+            input.MaxResultCount = int.MaxValue;
+        }
+
         var layouts = await LayoutRepository.GetPagedListAsync(
             input.Framework, input.Filter,
             input.Sorting, false,
-            input.SkipCount, input.MaxResultCount,
-            input.IsPaged);
+            input.SkipCount, input.MaxResultCount);
 
         return new PagedResultDto<LayoutDto>(count,
             ObjectMapper.Map<List<Layout>, List<LayoutDto>>(layouts));

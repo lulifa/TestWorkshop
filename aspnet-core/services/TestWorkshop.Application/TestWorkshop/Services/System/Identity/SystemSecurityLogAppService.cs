@@ -32,6 +32,12 @@ public class SystemSecurityLogAppService : TestWorkshopAppService, ISystemSecuri
             return new PagedResultDto<IdentitySecurityLogOutput>();
         }
 
+        if (!input.IsPaged)
+        {
+            input.SkipCount = 0;
+            input.MaxResultCount = int.MaxValue;
+        }
+
         var list = await IdentitySecurityLogRepository.GetListAsync(
             input.Sorting,
             input.MaxResultCount,

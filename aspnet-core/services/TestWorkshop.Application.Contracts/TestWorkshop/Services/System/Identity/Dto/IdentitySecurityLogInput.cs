@@ -1,6 +1,6 @@
 ﻿namespace TestWorkshop;
 
-public class IdentitySecurityLogInput : PagedAndSortedResultRequestDto
+public class IdentitySecurityLogInput : PagedAndSortedResultRequestDto, IEnablePaging
 {
 
     /// <summary>
@@ -46,5 +46,7 @@ public class IdentitySecurityLogInput : PagedAndSortedResultRequestDto
     /// 客户端IP
     /// </summary>
     public string ClientIpAddress { get; set; }
+
+    public bool IsPaged { get; set; } = true;
 
 }

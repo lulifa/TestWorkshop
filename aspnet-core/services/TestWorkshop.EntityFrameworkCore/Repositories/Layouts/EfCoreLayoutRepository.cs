@@ -38,7 +38,6 @@ public class EfCoreLayoutRepository : EfCoreRepository<TestWorkshopDbContext, La
         bool includeDetails = false,
         int skipCount = 0,
         int maxResultCount = 10,
-        bool isPaged = true,
         CancellationToken cancellationToken = default)
     {
         if (sorting.IsNullOrWhiteSpace())
@@ -46,21 +45,15 @@ public class EfCoreLayoutRepository : EfCoreRepository<TestWorkshopDbContext, La
             sorting = nameof(Layout.Name);
         }
 
-        IQueryable<Layout> query = await GetDbSetAsync();
-
-        query = query.IncludeDetails(includeDetails)
-                     .WhereIf(!framework.IsNullOrWhiteSpace(), x => x.Framework.Equals(framework))
-                     .WhereIf(!filter.IsNullOrWhiteSpace(), x =>
-                         x.Name.Contains(filter) || x.DisplayName.Contains(filter) ||
-                         x.Description.Contains(filter) || x.Redirect.Contains(filter))
-                     .OrderBy(sorting);
-
-        if (isPaged)
-        {
-            query = query.PageBy(skipCount, maxResultCount);
-        }
-
-        return await query.ToListAsync(GetCancellationToken(cancellationToken));
+        return await (await GetDbSetAsync())
+           .IncludeDetails(includeDetails)
+           .WhereIf(!framework.IsNullOrWhiteSpace(), x => x.Framework.Equals(framework))
+           .WhereIf(!filter.IsNullOrWhiteSpace(), x =>
+                   x.Name.Contains(filter) || x.DisplayName.Contains(filter) ||
+                   x.Description.Contains(filter) || x.Redirect.Contains(filter))
+           .OrderBy(sorting)
+           .PageBy(skipCount, maxResultCount)
+           .ToListAsync(GetCancellationToken(cancellationToken));
     }
 
     public override async Task<IQueryable<Layout>> WithDetailsAsync()
