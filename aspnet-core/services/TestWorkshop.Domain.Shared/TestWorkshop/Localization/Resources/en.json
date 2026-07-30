@@ -104,6 +104,7 @@
     "DisplayName:TenantId": "TenantId",
     "DisplayName:TenantName": "TenantName",
     "DisplayName:ShowLogDialog": "ShowLogDialog",
+    "DisplayName:HasException": "HasException",
     "MailPriority:Normal": "Normal",
     "MailPriority:Low": "Low",
     "MailPriority:High": "High",

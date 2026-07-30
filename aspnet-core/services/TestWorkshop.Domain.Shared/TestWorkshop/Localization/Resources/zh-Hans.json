@@ -104,6 +104,7 @@
     "DisplayName:TenantId": "租户标识",
     "DisplayName:TenantName": "租户名称",
     "DisplayName:ShowLogDialog": "查看日志",
+    "DisplayName:HasException": "包含异常",
     "MailPriority:Normal": "普通",
     "MailPriority:Low": "低",
     "MailPriority:High": "高",

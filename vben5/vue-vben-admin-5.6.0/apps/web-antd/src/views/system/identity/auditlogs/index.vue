@@ -110,14 +110,16 @@ const formOptions: VbenFormProps = {
       label: $t('TestWorkshop.DisplayName:CorrelationId'),
     },
     {
-      component: 'Checkbox',
-      componentProps: {
-        render: () => {
-          return h('span', $t('TestWorkshop.DisplayName:HasException'));
-        },
-      },
+      component: 'Select',
       fieldName: 'hasException',
       label: $t('TestWorkshop.DisplayName:HasException'),
+      componentProps: {
+        options: [
+          { label: $t('AbpUi.Yes'), value: true },
+          { label: $t('AbpUi.No'), value: false },
+        ],
+        allowClear: true,
+      },
     },
   ],
   // 控制表单是否显示折叠按钮
@@ -188,7 +190,7 @@ const gridOptions: VxeGridProps<AuditLogDto> = {
       field: 'correlationId',
       sortable: true,
       title: $t('TestWorkshop.DisplayName:CorrelationId'),
-      width: 180,
+      width: 260,
     },
     {
       align: 'left',
