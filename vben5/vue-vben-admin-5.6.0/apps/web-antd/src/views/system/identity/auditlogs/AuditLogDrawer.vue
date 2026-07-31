@@ -138,7 +138,7 @@ async function onGet(id: string) {
 
 <template>
   <Drawer>
-    <div style="width: 1000px">
+    <div style="width: 1200px">
       <Tabs v-model="activedTab">
         <TabPane key="basic" :tab="$t('TestWorkshop.DisplayName:Operation')">
           <Descriptions :colon="false" :column="2" bordered size="small">

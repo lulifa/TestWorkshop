@@ -280,7 +280,6 @@ namespace TestWorkshop
         {
             Configure<AbpAuditingOptions>(options =>
             {
-                options.ApplicationName = "TestWorkshop";
                 options.EntityHistorySelectors.AddAllEntities();
             });
 
