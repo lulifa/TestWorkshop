@@ -1,6 +1,6 @@
 ﻿namespace TestWorkshop;
 
-public class AuditLogOutput
+public class AuditLogOutput : ExtensibleEntityDto<Guid>
 {
     public string ApplicationName { get; set; }
 

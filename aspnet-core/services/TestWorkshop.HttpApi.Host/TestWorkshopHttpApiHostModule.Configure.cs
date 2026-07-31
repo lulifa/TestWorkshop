@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection.Extensions;
+using Volo.Abp.AspNetCore.Auditing;
 using Volo.Abp.AspNetCore.WebClientInfo;
+using Volo.Abp.Auditing;
 using Volo.Abp.AuditLogging;
 
 namespace TestWorkshop
@@ -273,5 +275,21 @@ namespace TestWorkshop
                 )
             );
         }
+
+        private void ConfigureAuditLog(ServiceConfigurationContext context)
+        {
+            Configure<AbpAuditingOptions>(options =>
+            {
+                options.ApplicationName = "TestWorkshop";
+                options.EntityHistorySelectors.AddAllEntities();
+            });
+
+            Configure<AbpAspNetCoreAuditingOptions>(options =>
+            {
+                options.IgnoredUrls.Add("/api/system/auditlog");
+            });
+
+        }
+
     }
 }

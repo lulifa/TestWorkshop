@@ -60,6 +60,8 @@ public partial class TestWorkshopHttpApiHostModule : AbpModule
 
         ConfigureIPLocation(context);
 
+        ConfigureAuditLog(context);
+
     }
 
 

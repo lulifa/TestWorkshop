@@ -18,6 +18,8 @@ import { Descriptions, Tabs, Tag } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 
+import EntityChangeTable from './EntityChangeTable.vue';
+
 defineOptions({
   name: 'AuditLogDrawer',
 });
@@ -50,7 +52,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
       }
     }
   },
-  title: $t('AbpAuditLogging.AuditLog'),
+  title: $t('TestWorkshop.DisplayName:AuditLog'),
 });
 /** 调用方法表格配置 */
 const actionsGridOptions: VxeGridProps<Action> = {
@@ -136,27 +138,33 @@ async function onGet(id: string) {
 
 <template>
   <Drawer>
-    <div style="width: 800px">
+    <div style="width: 1000px">
       <Tabs v-model="activedTab">
-        <TabPane key="basic" :tab="$t('AbpAuditLogging.Operation')">
+        <TabPane key="basic" :tab="$t('TestWorkshop.DisplayName:Operation')">
           <Descriptions :colon="false" :column="2" bordered size="small">
-            <DescriptionsItem :label="$t('AbpAuditLogging.ApplicationName')">
+            <DescriptionsItem
+              :label="$t('TestWorkshop.DisplayName:ApplicationName')"
+            >
               {{ auditLogModel.applicationName }}
             </DescriptionsItem>
-            <DescriptionsItem :label="$t('AbpAuditLogging.ExecutionTime')">
+            <DescriptionsItem
+              :label="$t('TestWorkshop.DisplayName:ExecutionTime')"
+            >
               {{ formatToDateTime(auditLogModel.executionTime) }}
             </DescriptionsItem>
-            <DescriptionsItem :label="$t('AbpAuditLogging.UserName')">
+            <DescriptionsItem :label="$t('TestWorkshop.DisplayName:UserName')">
               {{ auditLogModel.userName }}
             </DescriptionsItem>
-            <DescriptionsItem :label="$t('AbpAuditLogging.TenantName')">
+            <DescriptionsItem
+              :label="$t('TestWorkshop.DisplayName:TenantName')"
+            >
               <span v-if="auditLogModel.tenantId">
                 {{ auditLogModel.tenantId }}/{{ auditLogModel.tenantName }}
               </span>
             </DescriptionsItem>
             <template v-if="auditLogModel.impersonatorUserName">
               <DescriptionsItem
-                :label="$t('AbpAuditLogging.ImpersonatorTenantId')"
+                :label="$t('TestWorkshop.DisplayName:ImpersonatorTenantId')"
               >
                 <span v-if="auditLogModel.impersonatorTenantId">
                   {{ auditLogModel.impersonatorTenantId }}/{{
@@ -165,7 +173,7 @@ async function onGet(id: string) {
                 </span>
               </DescriptionsItem>
               <DescriptionsItem
-                :label="$t('AbpAuditLogging.ImpersonatorUserId')"
+                :label="$t('TestWorkshop.DisplayName:ImpersonatorUserId')"
               >
                 {{ auditLogModel.impersonatorUserId }}/{{
                   auditLogModel.impersonatorUserName
@@ -173,59 +181,72 @@ async function onGet(id: string) {
               </DescriptionsItem>
             </template>
             <DescriptionsItem
-              :label="$t('AbpAuditLogging.RequestUrl')"
+              :label="$t('TestWorkshop.DisplayName:RequestUrl')"
               :span="2"
             >
               {{ auditLogModel.url }}
             </DescriptionsItem>
             <DescriptionsItem
-              :label="$t('AbpAuditLogging.HttpMethod')"
+              :label="$t('TestWorkshop.DisplayName:HttpMethod')"
               :span="2"
             >
               <Tag :color="getHttpMethodColor(auditLogModel.httpMethod)">
                 {{ auditLogModel.httpMethod }}
               </Tag>
             </DescriptionsItem>
-            <DescriptionsItem :label="$t('AbpAuditLogging.HttpStatusCode')">
+            <DescriptionsItem
+              :label="$t('TestWorkshop.DisplayName:HttpStatusCode')"
+            >
               <Tag
                 :color="getHttpStatusCodeColor(auditLogModel.httpStatusCode)"
               >
                 {{ auditLogModel.httpStatusCode }}
               </Tag>
             </DescriptionsItem>
-            <DescriptionsItem :label="$t('AbpAuditLogging.ExecutionDuration')">
+            <DescriptionsItem
+              :label="$t('TestWorkshop.DisplayName:ExecutionDuration')"
+            >
               {{ auditLogModel.executionDuration }}
             </DescriptionsItem>
-            <DescriptionsItem :label="$t('AbpAuditLogging.ClientId')">
+            <DescriptionsItem :label="$t('TestWorkshop.DisplayName:ClientId')">
               {{ auditLogModel.clientId }}
             </DescriptionsItem>
-            <DescriptionsItem :label="$t('AbpAuditLogging.ClientIpAddress')">
+            <DescriptionsItem
+              :label="$t('TestWorkshop.DisplayName:ClientIpAddress')"
+            >
               {{ auditLogModel.clientIpAddress }}
             </DescriptionsItem>
-            <DescriptionsItem :label="$t('AbpAuditLogging.ClientName')">
+            <DescriptionsItem
+              :label="$t('TestWorkshop.DisplayName:ClientName')"
+            >
               {{ auditLogModel.clientName }}
             </DescriptionsItem>
-            <DescriptionsItem :label="$t('AbpAuditLogging.CorrelationId')">
+            <DescriptionsItem
+              :label="$t('TestWorkshop.DisplayName:CorrelationId')"
+            >
               {{ auditLogModel.correlationId }}
             </DescriptionsItem>
             <DescriptionsItem
-              :label="$t('AbpAuditLogging.BrowserInfo')"
+              :label="$t('TestWorkshop.DisplayName:BrowserInfo')"
               :label-style="{ width: '110px' }"
               :span="2"
             >
               {{ auditLogModel.browserInfo }}
             </DescriptionsItem>
-            <DescriptionsItem :label="$t('AbpAuditLogging.Comments')" :span="2">
+            <DescriptionsItem
+              :label="$t('TestWorkshop.DisplayName:Comments')"
+              :span="2"
+            >
               {{ auditLogModel.comments }}
             </DescriptionsItem>
             <DescriptionsItem
-              :label="$t('AbpAuditLogging.Exception')"
+              :label="$t('TestWorkshop.DisplayName:Exception')"
               :span="2"
             >
               {{ auditLogModel.exceptions }}
             </DescriptionsItem>
             <DescriptionsItem
-              :label="$t('AbpAuditLogging.Additional')"
+              :label="$t('TestWorkshop.DisplayName:Additional')"
               :span="2"
             >
               {{ auditLogModel.extraProperties }}
@@ -235,19 +256,23 @@ async function onGet(id: string) {
         <TabPane
           v-if="auditLogModel.actions?.length"
           key="opera"
-          :tab="`${$t('AbpAuditLogging.InvokeMethod')}(${auditLogModel.actions?.length})`"
+          :tab="`${$t('TestWorkshop.DisplayName:InvokeMethod')}(${auditLogModel.actions?.length})`"
         >
           <ActionsGrid>
             <template #parameters="{ row }">
               <Descriptions :colon="false" :column="1" bordered size="small">
-                <DescriptionsItem :label="$t('AbpAuditLogging.Parameters')">
+                <DescriptionsItem
+                  :label="$t('TestWorkshop.DisplayName:Parameters')"
+                >
                   <CodeEditor
                     :mode="MODE.JSON"
                     :value="row.parameters"
                     readonly
                   />
                 </DescriptionsItem>
-                <DescriptionsItem :label="$t('AbpAuditLogging.Additional')">
+                <DescriptionsItem
+                  :label="$t('TestWorkshop.DisplayName:Additional')"
+                >
                   <CodeEditor
                     :mode="MODE.JSON"
                     :value="row.extraProperties"
@@ -258,13 +283,13 @@ async function onGet(id: string) {
             </template>
           </ActionsGrid>
         </TabPane>
-        <!-- <TabPane
+        <TabPane
           v-if="auditLogModel.entityChanges?.length"
           key="changes"
-          :tab="`${$t('AbpAuditLogging.EntitiesChanged')}(${auditLogModel.entityChanges?.length})`"
+          :tab="`${$t('TestWorkshop.DisplayName:EntitiesChanged')}(${auditLogModel.entityChanges?.length})`"
         >
           <EntityChangeTable :data="auditLogModel.entityChanges" />
-        </TabPane> -->
+        </TabPane>
       </Tabs>
     </div>
   </Drawer>
