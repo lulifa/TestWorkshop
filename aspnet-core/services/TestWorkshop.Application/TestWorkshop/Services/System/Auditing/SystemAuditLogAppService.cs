@@ -1,4 +1,5 @@
-﻿using Volo.Abp.AuditLogging;
+﻿using System.Threading;
+using Volo.Abp.AuditLogging;
 
 namespace TestWorkshop;
 
@@ -11,6 +12,13 @@ public class SystemAuditLogAppService : TestWorkshopAppService, ISystemAuditLogA
     public SystemAuditLogAppService(IAuditLogRepository auditLogRepository)
     {
         AuditLogRepository = auditLogRepository;
+    }
+
+    public virtual async Task<AuditLogOutput> GetAsync(Guid id)
+    {
+        var auditLog = await AuditLogRepository.GetAsync(id, includeDetails: true);
+
+        return ObjectMapper.Map<AuditLog, AuditLogOutput>(auditLog);
     }
 
 

@@ -14,6 +14,13 @@ public class SystemAuditLogController : TestWorkshopController, ISystemAuditLogA
     }
 
     [HttpGet]
+    [Route("{id}")]
+    public Task<AuditLogOutput> GetAsync(Guid id)
+    {
+        return Service.GetAsync(id);
+    }
+
+    [HttpGet]
     public Task<PagedResultDto<AuditLogOutput>> GetListAsync(AuditLogInput input)
     {
         return Service.GetListAsync(input);

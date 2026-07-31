@@ -1,7 +1,11 @@
-﻿namespace TestWorkshop;
+﻿using System.Threading;
+
+namespace TestWorkshop;
 
 public interface ISystemAuditLogAppService : IApplicationService
 {
+
+    Task<AuditLogOutput> GetAsync(Guid id);
 
     /// <summary>
     /// 分页查询审计日志

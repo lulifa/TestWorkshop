@@ -3,13 +3,13 @@ import type { BasicOption } from '@vben/types';
 
 import type { VbenFormSchema } from '#/adapter/form';
 
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted } from 'vue';
 
 import { ProfileBaseSetting } from '@vben/common-ui';
 
-import { getUserInfoApi } from '#/api';
+// import { getUserInfoApi } from '#/api';
 
-const profileBaseSettingRef = ref();
+// const profileBaseSettingRef = ref();
 
 const MOCK_ROLES_OPTIONS: BasicOption[] = [
   {
@@ -56,8 +56,8 @@ const formSchema = computed((): VbenFormSchema[] => {
 });
 
 onMounted(async () => {
-  const data = await getUserInfoApi();
-  profileBaseSettingRef.value.getFormApi().setValues(data);
+  // const data = await getUserInfoApi();
+  // profileBaseSettingRef.value.getFormApi().setValues(data);
 });
 </script>
 <template>

@@ -1127,6 +1127,15 @@ importers:
       '@microsoft/signalr':
         specifier: 'catalog:'
         version: 10.0.0
+      '@vben-core/preferences':
+        specifier: workspace:*
+        version: link:../../@core/preferences
+      '@vben-core/shared':
+        specifier: workspace:*
+        version: link:../../@core/base/shared
+      '@vben-core/typings':
+        specifier: workspace:*
+        version: link:../../@core/base/typings
       '@vben/constants':
         specifier: workspace:*
         version: link:../../constants

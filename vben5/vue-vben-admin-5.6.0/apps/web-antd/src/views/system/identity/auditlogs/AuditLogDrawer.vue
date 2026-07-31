@@ -1,66 +1,273 @@
-<script lang="ts" setup>
-import { Page } from '@vben/common-ui';
+<script setup lang="ts">
+import type { Action, AuditLogDto } from '@abp/core';
+import type { VxeGridProps } from 'vxe-table';
 
-import { Button, Card, message, notification, Space } from 'ant-design-vue';
+import { ref } from 'vue';
 
-type NotificationType = 'error' | 'info' | 'success' | 'warning';
+import { useVbenDrawer } from '@vben/common-ui';
+import { $t } from '@vben/locales';
 
-function info() {
-  message.info('How many roads must a man walk down');
-}
+import {
+  CodeEditor,
+  formatToDateTime,
+  MODE,
+  useAuditlogs,
+  useAuditLogsApi,
+} from '@abp/core';
+import { Descriptions, Tabs, Tag } from 'ant-design-vue';
 
-function error() {
-  message.error({
-    content: 'Once upon a time you dressed so fine',
-    duration: 2500,
-  });
-}
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
 
-function warning() {
-  message.warning('How many roads must a man walk down');
-}
-function success() {
-  message.success('Cause you walked hand in hand With another man in my place');
-}
+defineOptions({
+  name: 'AuditLogDrawer',
+});
 
-function notify(type: NotificationType) {
-  notification[type]({
-    duration: 2500,
-    message: '说点啥呢',
-    type,
-  });
+const TabPane = Tabs.TabPane;
+const DescriptionsItem = Descriptions.Item;
+
+const activedTab = ref('basic');
+const auditLogModel = ref<AuditLogDto>({} as AuditLogDto);
+
+const { getApi } = useAuditLogsApi();
+const { getHttpMethodColor, getHttpStatusCodeColor } = useAuditlogs();
+const [Drawer, drawerApi] = useVbenDrawer({
+  class: 'w-auto',
+  onCancel() {
+    drawerApi.close();
+  },
+  onConfirm: async () => {
+    drawerApi.close();
+  },
+  onOpenChange: async (isOpen: boolean) => {
+    if (isOpen) {
+      try {
+        auditLogModel.value = {} as AuditLogDto;
+        drawerApi.setState({ loading: true });
+        const dto = drawerApi.getData<AuditLogDto>();
+        await onGet(dto.id);
+      } finally {
+        drawerApi.setState({ loading: false });
+      }
+    }
+  },
+  title: $t('AbpAuditLogging.AuditLog'),
+});
+/** 调用方法表格配置 */
+const actionsGridOptions: VxeGridProps<Action> = {
+  border: true,
+  columns: [
+    {
+      align: 'left',
+      field: 'parameters',
+      slots: {
+        content: 'parameters',
+      },
+      type: 'expand',
+    },
+    {
+      align: 'left',
+      field: 'serviceName',
+      sortable: true,
+      title: $t('AbpAuditLogging.ServiceName'),
+      width: 'auto',
+    },
+    {
+      align: 'left',
+      field: 'methodName',
+      sortable: true,
+      title: $t('AbpAuditLogging.MethodName'),
+      width: 150,
+    },
+    {
+      align: 'left',
+      field: 'executionTime',
+      formatter: ({ cellValue }) => {
+        return cellValue ? formatToDateTime(cellValue) : cellValue;
+      },
+      sortable: true,
+      title: $t('AbpAuditLogging.ExecutionTime'),
+      width: 200,
+    },
+    {
+      align: 'left',
+      field: 'executionDuration',
+      sortable: true,
+      title: $t('AbpAuditLogging.ExecutionDuration'),
+      width: 150,
+    },
+  ],
+  expandConfig: {
+    accordion: true,
+    padding: true,
+    trigger: 'row',
+    height: 300,
+  },
+  exportConfig: {},
+  keepSource: true,
+  pagerConfig: {
+    enabled: false,
+  },
+  proxyConfig: {
+    ajax: {
+      query: () => {
+        return Promise.resolve(auditLogModel.value.actions);
+      },
+    },
+    response: {
+      list: ({ data }) => {
+        return data;
+      },
+    },
+  },
+  toolbarConfig: {
+    enabled: false,
+  },
+};
+/** 调用方法表格 */
+const [ActionsGrid] = useVbenVxeGrid({
+  gridOptions: actionsGridOptions,
+});
+/** 查询审计日志 */
+async function onGet(id: string) {
+  const dto = await getApi(id);
+  auditLogModel.value = dto;
 }
 </script>
 
 <template>
-  <Page
-    description="支持多语言，主题功能集成切换等"
-    title="Ant Design Vue组件使用演示"
-  >
-    <Card class="mb-5" title="按钮">
-      <Space>
-        <Button>Default</Button>
-        <Button type="primary"> Primary </Button>
-        <Button> Info </Button>
-        <Button danger> Error </Button>
-      </Space>
-    </Card>
-    <Card class="mb-5" title="Message">
-      <Space>
-        <Button @click="info"> 信息 </Button>
-        <Button danger @click="error"> 错误 </Button>
-        <Button @click="warning"> 警告 </Button>
-        <Button @click="success"> 成功 </Button>
-      </Space>
-    </Card>
-
-    <Card class="mb-5" title="Notification">
-      <Space>
-        <Button @click="notify('info')"> 信息 </Button>
-        <Button danger @click="notify('error')"> 错误 </Button>
-        <Button @click="notify('warning')"> 警告 </Button>
-        <Button @click="notify('success')"> 成功 </Button>
-      </Space>
-    </Card>
-  </Page>
+  <Drawer>
+    <div style="width: 800px">
+      <Tabs v-model="activedTab">
+        <TabPane key="basic" :tab="$t('AbpAuditLogging.Operation')">
+          <Descriptions :colon="false" :column="2" bordered size="small">
+            <DescriptionsItem :label="$t('AbpAuditLogging.ApplicationName')">
+              {{ auditLogModel.applicationName }}
+            </DescriptionsItem>
+            <DescriptionsItem :label="$t('AbpAuditLogging.ExecutionTime')">
+              {{ formatToDateTime(auditLogModel.executionTime) }}
+            </DescriptionsItem>
+            <DescriptionsItem :label="$t('AbpAuditLogging.UserName')">
+              {{ auditLogModel.userName }}
+            </DescriptionsItem>
+            <DescriptionsItem :label="$t('AbpAuditLogging.TenantName')">
+              <span v-if="auditLogModel.tenantId">
+                {{ auditLogModel.tenantId }}/{{ auditLogModel.tenantName }}
+              </span>
+            </DescriptionsItem>
+            <template v-if="auditLogModel.impersonatorUserName">
+              <DescriptionsItem
+                :label="$t('AbpAuditLogging.ImpersonatorTenantId')"
+              >
+                <span v-if="auditLogModel.impersonatorTenantId">
+                  {{ auditLogModel.impersonatorTenantId }}/{{
+                    auditLogModel.impersonatorTenantName
+                  }}
+                </span>
+              </DescriptionsItem>
+              <DescriptionsItem
+                :label="$t('AbpAuditLogging.ImpersonatorUserId')"
+              >
+                {{ auditLogModel.impersonatorUserId }}/{{
+                  auditLogModel.impersonatorUserName
+                }}
+              </DescriptionsItem>
+            </template>
+            <DescriptionsItem
+              :label="$t('AbpAuditLogging.RequestUrl')"
+              :span="2"
+            >
+              {{ auditLogModel.url }}
+            </DescriptionsItem>
+            <DescriptionsItem
+              :label="$t('AbpAuditLogging.HttpMethod')"
+              :span="2"
+            >
+              <Tag :color="getHttpMethodColor(auditLogModel.httpMethod)">
+                {{ auditLogModel.httpMethod }}
+              </Tag>
+            </DescriptionsItem>
+            <DescriptionsItem :label="$t('AbpAuditLogging.HttpStatusCode')">
+              <Tag
+                :color="getHttpStatusCodeColor(auditLogModel.httpStatusCode)"
+              >
+                {{ auditLogModel.httpStatusCode }}
+              </Tag>
+            </DescriptionsItem>
+            <DescriptionsItem :label="$t('AbpAuditLogging.ExecutionDuration')">
+              {{ auditLogModel.executionDuration }}
+            </DescriptionsItem>
+            <DescriptionsItem :label="$t('AbpAuditLogging.ClientId')">
+              {{ auditLogModel.clientId }}
+            </DescriptionsItem>
+            <DescriptionsItem :label="$t('AbpAuditLogging.ClientIpAddress')">
+              {{ auditLogModel.clientIpAddress }}
+            </DescriptionsItem>
+            <DescriptionsItem :label="$t('AbpAuditLogging.ClientName')">
+              {{ auditLogModel.clientName }}
+            </DescriptionsItem>
+            <DescriptionsItem :label="$t('AbpAuditLogging.CorrelationId')">
+              {{ auditLogModel.correlationId }}
+            </DescriptionsItem>
+            <DescriptionsItem
+              :label="$t('AbpAuditLogging.BrowserInfo')"
+              :label-style="{ width: '110px' }"
+              :span="2"
+            >
+              {{ auditLogModel.browserInfo }}
+            </DescriptionsItem>
+            <DescriptionsItem :label="$t('AbpAuditLogging.Comments')" :span="2">
+              {{ auditLogModel.comments }}
+            </DescriptionsItem>
+            <DescriptionsItem
+              :label="$t('AbpAuditLogging.Exception')"
+              :span="2"
+            >
+              {{ auditLogModel.exceptions }}
+            </DescriptionsItem>
+            <DescriptionsItem
+              :label="$t('AbpAuditLogging.Additional')"
+              :span="2"
+            >
+              {{ auditLogModel.extraProperties }}
+            </DescriptionsItem>
+          </Descriptions>
+        </TabPane>
+        <TabPane
+          v-if="auditLogModel.actions?.length"
+          key="opera"
+          :tab="`${$t('AbpAuditLogging.InvokeMethod')}(${auditLogModel.actions?.length})`"
+        >
+          <ActionsGrid>
+            <template #parameters="{ row }">
+              <Descriptions :colon="false" :column="1" bordered size="small">
+                <DescriptionsItem :label="$t('AbpAuditLogging.Parameters')">
+                  <CodeEditor
+                    :mode="MODE.JSON"
+                    :value="row.parameters"
+                    readonly
+                  />
+                </DescriptionsItem>
+                <DescriptionsItem :label="$t('AbpAuditLogging.Additional')">
+                  <CodeEditor
+                    :mode="MODE.JSON"
+                    :value="row.extraProperties"
+                    readonly
+                  />
+                </DescriptionsItem>
+              </Descriptions>
+            </template>
+          </ActionsGrid>
+        </TabPane>
+        <!-- <TabPane
+          v-if="auditLogModel.entityChanges?.length"
+          key="changes"
+          :tab="`${$t('AbpAuditLogging.EntitiesChanged')}(${auditLogModel.entityChanges?.length})`"
+        >
+          <EntityChangeTable :data="auditLogModel.entityChanges" />
+        </TabPane> -->
+      </Tabs>
+    </div>
+  </Drawer>
 </template>
+
+<style scoped></style>
