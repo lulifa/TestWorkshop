@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Volo.Abp.BackgroundWorkers;
 using Volo.Abp.BlobStoring;
 
 namespace TestWorkshop.EntityFrameworkCore;

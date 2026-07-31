@@ -64,6 +64,7 @@ public class TestWorkshopEntityFrameworkCoreModule : AbpModule
 
     public override void OnApplicationInitialization(ApplicationInitializationContext context)
     {
+        context.AddBackgroundWorkerAsync<LogCleanupBackgroundWorker>();
         context.AddBackgroundWorkerAsync<WorkshopTelemetryWorker>();
         context.AddBackgroundWorkerAsync<WorkshopTelemetryFileCleanupWorker>();
     }
