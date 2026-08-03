@@ -18,7 +18,7 @@ export default defineConfig(async () => {
             changeOrigin: true,
             target: 'http://localhost:44349/',
           },
-          '/signalr-hubs': {
+          '/signalr': {
             changeOrigin: true,
             target: 'http://localhost:44349/',
             ws: true,
@@ -27,4 +27,4 @@ export default defineConfig(async () => {
       },
     },
   };
-});
+}) as ReturnType<typeof defineConfig>;

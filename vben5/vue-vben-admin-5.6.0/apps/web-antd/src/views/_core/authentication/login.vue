@@ -11,7 +11,7 @@ import { $t } from '@vben/locales';
 import {
   useAbpStore,
   useApplicationConfigurationApi,
-  useSettings,
+  // useSettings,
 } from '@abp/core';
 import { Modal } from 'ant-design-vue';
 
@@ -31,7 +31,7 @@ const abpStore = useAbpStore();
 
 const authStore = useAuthStore();
 
-const { isTrue } = useSettings();
+// const { isTrue } = useSettings();
 
 const { getConfigApi } = useApplicationConfigurationApi();
 

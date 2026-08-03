@@ -1,9 +1,10 @@
 <script lang="ts" setup>
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 
 import { useAntdDesignTokens } from '@vben/hooks';
 import { preferences, usePreferences } from '@vben/preferences';
 
+import { useEventBus, useNotification, useSignalR } from '@abp/core'; // ✅ 新增 useEventBus
 import { App, ConfigProvider, theme } from 'ant-design-vue';
 
 import { antdLocale } from '#/locales';
@@ -27,6 +28,32 @@ const tokenTheme = computed(() => {
     algorithm,
     token: tokens,
   };
+});
+
+const signalR = useSignalR();
+const { publish } = useEventBus();
+const notification = useNotification();
+
+onMounted(async () => {
+  // 1. 初始化 SignalR 配置（但不自动连接！autoStart: false）
+  await signalR.init({
+    serverUrl: '/signalr/notification',
+    automaticReconnect: true,
+    autoStart: false, // 👈 关键：不自动连接，等登录后再启动
+    useAccessToken: true,
+  });
+
+  // 接收普通文本消息（私信）
+  signalR.on('ReceiveTextMessageAsync', (message: any) => {
+    publish('signalR:ReceiveTextMessage', message);
+  });
+
+  // 接收广播消息（通告）
+  signalR.on('ReceiveBroadCastMessageAsync', (message: any) => {
+    publish('signalR:ReceiveBroadCastMessage', message);
+  });
+
+  notification.register();
 });
 </script>
 
