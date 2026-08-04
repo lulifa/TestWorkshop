@@ -23,6 +23,10 @@ public class TestWorkshopDbContext : AbpDbContext<TestWorkshopDbContext>, ITenan
     public DbSet<Data> Datas { get; set; }
     public DbSet<DataItem> DataItems { get; set; }
 
+    public DbSet<Notification> Notifications { get; set; }
+    public DbSet<NotificationSubscription> NotificationSubscriptions { get; set; }
+
+
 
     // Identity
     public DbSet<IdentityUser> Users { get; set; }

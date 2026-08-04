@@ -35,4 +35,8 @@
     <EmbeddedResource Include="TestWorkshop\Localization\Saas\*.json" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\frameworks\signalR\TestWorkshop.SignalR\TestWorkshop.SignalR.csproj" />
+  </ItemGroup>
+
 </Project>

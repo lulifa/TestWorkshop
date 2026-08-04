@@ -29,7 +29,7 @@
     <PackageReference Update="Volo.Abp.Settings" Version="$(VoloAbpPackageVersion)" />
     <PackageReference Update="Volo.Abp.Swashbuckle" Version="$(VoloAbpPackageVersion)"/>
     <PackageReference Update="Volo.Abp.Validation" Version="$(VoloAbpPackageVersion)"/>
-
+    <PackageReference Update="Volo.Abp.AspNetCore.SignalR"  Version="$(VoloAbpPackageVersion)"/>
 
     <PackageReference Update="Volo.Abp.Account.Application" Version="$(VoloAbpPackageVersion)" />
     <PackageReference Update="Volo.Abp.Account.Application.Contracts" Version="$(VoloAbpPackageVersion)"/>
@@ -55,7 +55,7 @@
     <PackageReference Update="Volo.Abp.Ddd.Application.Contracts" Version="$(VoloAbpPackageVersion)"/>
     <PackageReference Update="Volo.Abp.Ddd.Domain" Version="$(VoloAbpPackageVersion)"/>
     <PackageReference Update="Volo.Abp.Ddd.Domain.Shared" Version="$(VoloAbpPackageVersion)"/>
-    
+
     <PackageReference Update="Volo.Abp.FeatureManagement.Application" Version="$(VoloAbpPackageVersion)" />
     <PackageReference Update="Volo.Abp.FeatureManagement.Application.Contracts" Version="$(VoloAbpPackageVersion)" />
     <PackageReference Update="Volo.Abp.FeatureManagement.Domain" Version="$(VoloAbpPackageVersion)" />

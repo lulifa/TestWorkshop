@@ -65,4 +65,31 @@ public static class TestWorkshopErrorCodes
     /// 已经存在名为 {Name} 的企业信息!
     /// </summary>
     public const string DuplicateEnterpriseName = Namespace + ":07101";
+
+    /// <summary>
+    /// 接收人不能为空
+    /// </summary>
+    public const string ReceiverNotNull = Namespace + ":100001";
+    /// <summary>
+    /// 消息不存在
+    /// </summary>
+    public const string MessageNotExist = Namespace + ":100002";
+    /// <summary>
+    /// 未知的消息类型
+    /// </summary>
+    public const string MessageTypeUnknown = Namespace + ":100003";
+    /// <summary>
+    /// 当前用户未订阅消息
+    /// </summary>
+    public const string UserUnSubscription = Namespace + ":100004";
+    /// <summary>
+    /// 消息标题不能为空
+    /// </summary>
+    public const string MessageTitle = Namespace + ":100005";
+    /// <summary>
+    /// 消息内容不能为空
+    /// </summary>
+    public const string MessageContent = Namespace + ":100006";
+
+
 }

@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using TestWorkshop.SignalR;
 using Volo.Abp.AutoMapper;
 using Volo.Abp.BlobStoring;
 
@@ -16,7 +17,8 @@ namespace TestWorkshop;
     typeof(AbpIdentityDomainModule),
     typeof(AbpOpenIddictDomainModule),
     typeof(AbpTenantManagementDomainModule),
-    typeof(AbpBlobStoringModule)
+    typeof(AbpBlobStoringModule),
+    typeof(AbpSignalRModule)
     )]
 public class TestWorkshopDomainModule : AbpModule
 {
