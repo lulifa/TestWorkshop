@@ -15,6 +15,20 @@ public static class TestWorkshopPermissions
         public const string Delete = Default + ".Delete";
     }
 
+
+    public static class Notification
+    {
+        public const string Default = GroupName + ".Notification";
+
+        public const string Create = Default + ".Create";
+
+        public const string Update = Default + ".Update";
+
+        public const string Delete = Default + ".Delete";
+
+    }
+
+
     public static class DataDictionary
     {
         public const string Default = GroupName + ".DataDictionary";

@@ -11,6 +11,11 @@ public class TestWorkshopPermissionDefinitionProvider : PermissionDefinitionProv
         workshopDevice.AddChild(TestWorkshopPermissions.WorkshopDevice.Update, L("Permission:Update"));
         workshopDevice.AddChild(TestWorkshopPermissions.WorkshopDevice.Delete, L("Permission:Delete"));
 
+        var notification = platform.AddPermission(TestWorkshopPermissions.Notification.Default, L("Permission:Notification"));
+        notification.AddChild(TestWorkshopPermissions.Notification.Create, L("Permission:Create"));
+        notification.AddChild(TestWorkshopPermissions.Notification.Update, L("Permission:Update"));
+        notification.AddChild(TestWorkshopPermissions.Notification.Delete, L("Permission:Delete"));
+
         var dataDictionary = platform.AddPermission(TestWorkshopPermissions.DataDictionary.Default, L("Permission:DataDictionary"));
         dataDictionary.AddChild(TestWorkshopPermissions.DataDictionary.Create, L("Permission:Create"));
         dataDictionary.AddChild(TestWorkshopPermissions.DataDictionary.Update, L("Permission:Update"));

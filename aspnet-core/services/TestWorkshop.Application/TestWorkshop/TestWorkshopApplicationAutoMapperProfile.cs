@@ -8,7 +8,8 @@ public class TestWorkshopApplicationAutoMapperProfile : Profile
     public TestWorkshopApplicationAutoMapperProfile()
     {
         CreateMap<WorkshopTelemetryTask, WorkshopTelemetryTaskDto>();
-
+        CreateMap<Notification, NotificationOutput>();
+        CreateMap<NotificationSubscription, NotificationSubscriptionOutput>();
 
         CreateMap<DataItem, DataItemDto>();
         CreateMap<Data, DataDto>();

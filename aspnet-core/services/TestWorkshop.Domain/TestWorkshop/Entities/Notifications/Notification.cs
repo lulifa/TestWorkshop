@@ -106,7 +106,6 @@ public class Notification : FullAuditedAggregateRoot<Guid>, IMultiTenant
 
     private void SetSenderUserId(Guid senderUserId)
     {
-        Check.NotNull(senderUserId, nameof(senderUserId));
         SenderUserId = senderUserId;
     }
 
@@ -129,13 +128,13 @@ public class Notification : FullAuditedAggregateRoot<Guid>, IMultiTenant
 
     private void SetTitle(string title)
     {
-        Check.NotNull(title, nameof(title));
+        Check.NotNullOrWhiteSpace(title, nameof(title));
         Title = title;
     }
 
     private void SetContent(string content)
     {
-        Check.NotNull(content, nameof(content));
+        Check.NotNullOrWhiteSpace(content, nameof(content));
         Content = content;
     }
 

@@ -39,7 +39,7 @@ public class MessageManager : IMessageManager, ITransientDependency
         var messageId = _guidGenerator.Create();
         if (messageType == MessageType.Common)
         {
-            if (string.IsNullOrWhiteSpace(receiverUserId.ToString()))
+            if (string.IsNullOrWhiteSpace(receiverUserId?.ToString()))
             {
                 _logger.LogError($"发送消息失败：接收用户ID为空,消息Id：{messageId}");
                 return;
