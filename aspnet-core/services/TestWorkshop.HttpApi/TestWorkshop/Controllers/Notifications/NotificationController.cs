@@ -13,56 +13,56 @@ public class NotificationController : TestWorkshopController, INotificationAppSe
     }
 
     [HttpPost]
-    [Route("SendCommon")]
+    [Route("send-common")]
     public Task SendCommonMessageAsync(SendCommonMessageInput input)
     {
         return Service.SendCommonMessageAsync(input);
     }
 
     [HttpPost]
-    [Route("SendBroadCast")]
+    [Route("send-broadcast")]
     public Task SendBroadCastMessageAsync(SendBroadCastMessageInput input)
     {
         return Service.SendBroadCastMessageAsync(input);
     }
 
     [HttpPut]
-    [Route("SetRead")]
+    [Route("set-read")]
     public Task SetReadAsync(NotificationCoreInput input)
     {
         return Service.SetReadAsync(input);
     }
 
     [HttpPut]
-    [Route("SetBatchRead")]
+    [Route("set-batchread")]
     public Task SetBatchReadAsync(SetBatchReadInput input)
     {
         return Service.SetBatchReadAsync(input);
     }
 
     [HttpDelete]
-    [Route("Delete")]
+    [Route("delete")]
     public Task DeleteAsync(NotificationDeleteInput input)
     {
         return Service.DeleteAsync(input);
     }
 
     [HttpGet]
-    [Route("GetMyNotification")]
+    [Route("my-notification")]
     public Task<PagedResultDto<NotificationOutput>> GetMyNotificationListAsync(NotificationInput input)
     {
         return Service.GetMyNotificationListAsync(input);
     }
 
     [HttpGet]
-    [Route("GetNotification")]
+    [Route("notification")]
     public Task<PagedResultDto<NotificationOutput>> GetNotificationListAsync(NotificationInput input)
     {
         return Service.GetNotificationListAsync(input);
     }
 
     [HttpGet]
-    [Route("GetSubscription")]
+    [Route("subscription")]
     public Task<PagedResultDto<NotificationSubscriptionOutput>> GetSubscriptionListAsync(NotificationSubscriptionInput input)
     {
         return Service.GetSubscriptionListAsync(input);

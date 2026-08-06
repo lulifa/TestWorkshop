@@ -10,8 +10,10 @@ import { preferences } from '@vben/preferences';
 import { resetAllStores, useAccessStore, useUserStore } from '@vben/stores';
 
 import {
+  Events,
   useAbpStore,
   useApplicationConfigurationApi,
+  useEventBus,
   useOAuthService,
 } from '@abp/core';
 import { notification } from 'ant-design-vue';
@@ -20,6 +22,8 @@ import { defineStore } from 'pinia';
 import { $t } from '#/locales';
 
 export const useAuthStore = defineStore('auth', () => {
+  const { publish } = useEventBus();
+
   const { getConfigApi } = useApplicationConfigurationApi();
   const accessStore = useAccessStore();
   const userStore = useUserStore();
@@ -101,6 +105,8 @@ export const useAuthStore = defineStore('auth', () => {
     resetAllStores();
     accessStore.setLoginExpired(false);
 
+    publish(Events.UserLogout);
+
     // 回登录页带上当前路由地址
     await router.replace({
       path: LOGIN_PATH,
@@ -164,6 +170,8 @@ export const useAuthStore = defineStore('auth', () => {
       userInfo = await fetchUserInfo();
 
       userStore.setUserInfo(userInfo);
+
+      publish(Events.UserLogin, userInfo);
 
       if (accessStore.loginExpired) {
         accessStore.setLoginExpired(false);

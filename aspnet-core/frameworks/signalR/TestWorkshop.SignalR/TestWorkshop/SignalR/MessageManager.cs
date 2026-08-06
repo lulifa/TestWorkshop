@@ -1,4 +1,7 @@
-﻿namespace TestWorkshop.SignalR;
+﻿using Volo.Abp;
+using Volo.Abp.Identity;
+
+namespace TestWorkshop.SignalR;
 
 public class MessageManager : IMessageManager, ITransientDependency
 {
@@ -8,8 +11,9 @@ public class MessageManager : IMessageManager, ITransientDependency
     private readonly ICurrentUser _currentUser;
     private readonly ICurrentTenant _currentTenant;
     private readonly IGuidGenerator _guidGenerator;
+    private readonly IdentityUserManager _userManager;
 
-    public MessageManager(IHubContext<NotificationHub, INotificationHub> hubContext, ILogger<MessageManager> logger, ILocalEventBus localEventBus, ICurrentUser currentUser, ICurrentTenant currentTenant, IGuidGenerator guidGenerator)
+    public MessageManager(IHubContext<NotificationHub, INotificationHub> hubContext, ILogger<MessageManager> logger, ILocalEventBus localEventBus, ICurrentUser currentUser, ICurrentTenant currentTenant, IGuidGenerator guidGenerator, IdentityUserManager userManager)
     {
         _hubContext = hubContext;
         _logger = logger;
@@ -17,6 +21,7 @@ public class MessageManager : IMessageManager, ITransientDependency
         _currentUser = currentUser;
         _currentTenant = currentTenant;
         _guidGenerator = guidGenerator;
+        _userManager = userManager;
     }
 
 
@@ -43,6 +48,13 @@ public class MessageManager : IMessageManager, ITransientDependency
             {
                 _logger.LogError($"发送消息失败：接收用户ID为空,消息Id：{messageId}");
                 return;
+            }
+
+            var receiver = await _userManager.FindByIdAsync(receiverUserId.Value.ToString());
+            if (receiver == null)
+            {
+                _logger.LogWarning($"发送私信失败：接收用户 {receiverUserId} 不存在");
+                throw new UserFriendlyException("接收用户不存在");
             }
 
             await _hubContext.Clients
