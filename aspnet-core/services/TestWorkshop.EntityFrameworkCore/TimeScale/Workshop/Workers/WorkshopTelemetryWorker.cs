@@ -3,7 +3,6 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using NpgsqlTypes;
 using System.Globalization;
-using Volo.Abp.BlobStoring;
 
 namespace TestWorkshop.EntityFrameworkCore;
 
@@ -44,6 +43,7 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
             using var scope = _scopeFactory.CreateScope();
             var taskRepo = scope.ServiceProvider.GetRequiredService<IWorkshopTelemetryTaskRepository>();
 
+            // ✅ 依然用原来的方法获取待处理任务（Status = 0）
             var tasks = await taskRepo.ClaimPendingTasksAsync(take: 5);
             if (tasks.Count == 0) return;
 
@@ -61,12 +61,14 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
 
     private async Task ProcessTaskAsync(long taskId, IServiceProvider sp, CancellationToken ct)
     {
+        // ✅ 注入新服务
+        var taskManager = sp.GetRequiredService<IWorkshopTelemetryTaskManager>();      // 新增
         var taskRepo = sp.GetRequiredService<IWorkshopTelemetryTaskRepository>();
-        var blobContainer = sp.GetRequiredService<IBlobContainer>();
         var db = sp.GetRequiredService<TestWorkshopDbContext>();
 
-        var telemetryTask = await taskRepo.GetAsync(taskId, cancellationToken: ct);
-        if (telemetryTask == null || telemetryTask.Status != 1)
+        // ✅ 获取任务（含 FileObject 关联）
+        var (telemetryTask, fileObject) = await taskManager.GetTaskWithFileAsync(taskId);
+        if (telemetryTask == null || telemetryTask.Status != 1)  // Status 1 = Processing（已被 Claim 方法标记）
         {
             _logger.LogWarning("任务 {TaskId} 状态非 Processing，跳过", taskId);
             return;
@@ -79,7 +81,10 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
 
         try
         {
-            await using var stream = await blobContainer.GetAsync(telemetryTask.BlobName, ct);
+            // ✅ 通过 FileObjectManager 获取文件流（替代原来的 blobContainer.GetAsync）
+            var fileManager = sp.GetRequiredService<IFileObjectManager>();  // 新增
+            var (stream, _, _) = await fileManager.GetFileAsync(fileObject.Id);
+
             var deviceMap = await GetDeviceMapAsync(db, ct);
             var recordCount = await BulkInsertFromStreamAsync(
                 db,
@@ -88,21 +93,21 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
                 npgsqlTransaction,
                 ct);
 
-            telemetryTask.Status = 2;
-            telemetryTask.ProcessedAt = DateTime.UtcNow;
-            telemetryTask.RecordCount = recordCount;
+            // ✅ 使用任务实体的行为方法更新状态（而不是直接赋值）
+            telemetryTask.MarkAsSuccess(recordCount);
             await taskRepo.UpdateAsync(telemetryTask);
             await db.SaveChangesAsync(ct);
 
             await transaction.CommitAsync(ct);
 
+            // ✅ 处理成功后，通过 FileObjectManager 删除物理文件
             try
             {
-                await blobContainer.DeleteAsync(telemetryTask.BlobName, ct);
+                await fileManager.DeleteFileAsync(fileObject.Id);
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "删除 Blob 失败 {BlobName}", telemetryTask.BlobName);
+                _logger.LogWarning(ex, "删除物理文件失败: {FileObjectId}", fileObject.Id);
             }
 
             _logger.LogInformation("✅ 任务 {TaskId} 处理完成，记录数 {Count}", taskId, recordCount);
@@ -112,25 +117,9 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
             await transaction.RollbackAsync(ct);
             _logger.LogError(ex, "❌ 任务 {TaskId} 处理失败", taskId);
 
-            using var retryScope = _scopeFactory.CreateScope();
-            var retryRepo = retryScope.ServiceProvider.GetRequiredService<IWorkshopTelemetryTaskRepository>();
-            var latest = await retryRepo.GetAsync(taskId, cancellationToken: ct);
-            if (latest == null) return;
-
-            latest.RetryCount++;
-            latest.Error = ex.Message;
-
-            if (latest.RetryCount >= 3)
-            {
-                latest.Status = 3;
-            }
-            else
-            {
-                latest.Status = 0;
-                var delayMinutes = Math.Min(60, Math.Pow(2, latest.RetryCount));
-                latest.NextRetryTime = DateTime.UtcNow.AddMinutes(delayMinutes);
-            }
-            await retryRepo.UpdateAsync(latest);
+            // ✅ 使用任务实体的行为方法标记失败（包含指数退避）
+            telemetryTask.MarkAsFailed(ex.Message);
+            await taskRepo.UpdateAsync(telemetryTask);
         }
         finally
         {
@@ -147,7 +136,7 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
     {
         var entityType = db.Model.FindEntityType(typeof(WorkshopDeviceTelemetry));
         var rawTableName = entityType?.GetTableName() ?? "AppWorkshopDeviceTelemetries";
-        var tableName = $"\"{rawTableName}\"";   // 强制加双引号
+        var tableName = $"\"{rawTableName}\"";
 
         using var writer = transaction.Connection.BeginBinaryImport(
             $"COPY {tableName} (\"DeviceId\",\"MetricType\",\"Value\",\"Timestamp\",\"TestedDeviceCode\",\"TestedDeviceName\") FROM STDIN (FORMAT BINARY)");
@@ -217,8 +206,8 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
                 return;
             }
 
-            var testedDeviceCode = parts[4].Trim();   // 新增
-            var testedDeviceName = parts[5].Trim();   // 新增
+            var testedDeviceCode = parts[4].Trim();
+            var testedDeviceName = parts[5].Trim();
 
             if (!deviceMap.TryGetValue(deviceCode, out var deviceId))
             {
@@ -232,8 +221,8 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
             writer.Write(metricType, NpgsqlDbType.Text);
             writer.Write(value, NpgsqlDbType.Double);
             writer.Write(timestamp, NpgsqlDbType.TimestampTz);
-            writer.Write(testedDeviceCode, NpgsqlDbType.Text);   // 新增
-            writer.Write(testedDeviceName, NpgsqlDbType.Text);   // 新增
+            writer.Write(testedDeviceCode, NpgsqlDbType.Text);
+            writer.Write(testedDeviceName, NpgsqlDbType.Text);
             count++;
         }
         catch (Exception ex)
@@ -253,6 +242,7 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
         }) ?? new Dictionary<string, Guid>();
     }
 
+    // ✅ ResetStuckTasksAsync 需要微调：用新的任务状态字段名
     private async Task ResetStuckTasksAsync(CancellationToken ct)
     {
         try
@@ -263,6 +253,7 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
             var stuckTime = DateTime.UtcNow.AddMinutes(-10);
             var retryTime = DateTime.UtcNow.AddSeconds(30);
 
+            // ⚠️ 注意：新表有 FileObjectId 字段，但 Status 字段名保持不变
             var sql = @"
                 UPDATE ""AppWorkshopTelemetryTasks""
                 SET ""Status"" = 0,
@@ -276,10 +267,10 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
                 sql,
                 new object[]
                 {
-                new NpgsqlParameter("@RetryTime", retryTime),
-                new NpgsqlParameter("@StuckTime", stuckTime)
+                    new NpgsqlParameter("@RetryTime", retryTime),
+                    new NpgsqlParameter("@StuckTime", stuckTime)
                 },
-                ct);   // ✅ 正确传递取消令牌
+                ct);
 
             if (rowsAffected > 0)
                 _logger.LogInformation("🔄 原子性恢复了 {Count} 个卡死的任务", rowsAffected);
@@ -289,4 +280,5 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
             _logger.LogError(ex, "恢复卡死任务时发生异常");
         }
     }
+
 }

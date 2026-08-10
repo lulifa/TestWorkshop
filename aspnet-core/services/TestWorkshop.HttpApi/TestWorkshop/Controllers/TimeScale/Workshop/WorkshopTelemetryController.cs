@@ -17,7 +17,6 @@ public class WorkshopTelemetryController : TestWorkshopController
     /// 上传遥测文件
     /// </summary>
     [HttpPost("upload")]
-    [AllowAnonymous]
     public async Task<WorkshopTelemetryTaskDto> UploadAsync([Required] IFormFile file)
     {
         return await Service.UploadAsync(file);
@@ -44,7 +43,7 @@ public class WorkshopTelemetryController : TestWorkshopController
     /// <summary>
     /// 分页查询
     /// </summary>
-    [HttpGet("list")]
+    [HttpGet]
     public async Task<PagedResultDto<WorkshopTelemetryTaskDto>> GetListAsync(WorkshopTelemetryTaskListInput input)
     {
         return await Service.GetListAsync(input);

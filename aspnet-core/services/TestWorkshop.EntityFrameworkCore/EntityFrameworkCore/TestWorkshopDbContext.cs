@@ -26,6 +26,8 @@ public class TestWorkshopDbContext : AbpDbContext<TestWorkshopDbContext>, ITenan
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<NotificationSubscription> NotificationSubscriptions { get; set; }
 
+    public DbSet<FileObject> FileObjects { get; set; }
+
 
 
     // Identity

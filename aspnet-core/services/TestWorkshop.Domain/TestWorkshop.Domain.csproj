@@ -24,11 +24,7 @@
     <PackageReference Include="MySqlConnector" />
     <PackageReference Include="Npgsql" />
     <PackageReference Include="Volo.Abp.BlobStoring" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Volo.Abp.OpenIddict.Domain" />
-    <PackageReference Include="Volo.Abp.Identity.Domain" />
     <PackageReference Include="Volo.Abp.TenantManagement.Domain" />
   </ItemGroup>
 

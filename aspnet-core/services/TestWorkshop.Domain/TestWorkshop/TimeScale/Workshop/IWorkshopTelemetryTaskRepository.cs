@@ -6,39 +6,43 @@
 public interface IWorkshopTelemetryTaskRepository : IRepository<WorkshopTelemetryTask, long>
 {
     /// <summary>
-    /// 原子性地锁定一批待处理任务（改为 Processing 状态）并返回。
-    /// 使用 SKIP LOCKED 防止并发重复获取。
+    /// 原子获取待处理任务并标记为 Processing
     /// </summary>
-    /// <param name="take">最大获取数量</param>
     Task<List<WorkshopTelemetryTask>> ClaimPendingTasksAsync(int take = 5);
 
     /// <summary>
-    /// 根据文件名模糊搜索
+    /// 根据文件名搜索（JOIN FileObject）
     /// </summary>
     Task<List<WorkshopTelemetryTask>> SearchByFileNameAsync(string fileName);
 
     /// <summary>
-    /// 获取已过期且处于终态的任务（Success 或 Failed），用于安全清理
+    /// 分页查询任务列表（JOIN FileObject）
     /// </summary>
-    Task<List<WorkshopTelemetryTask>> GetExpiredCompletedTasksAsync();
+    Task<PagedResultDto<WorkshopTelemetryTask>> GetPagedListAsync(string fileName = null, int? status = null, int skipCount = 0, int maxResultCount = 10);
 
     /// <summary>
-    /// 分页查询任务列表
+    /// 获取任务关联的 FileObject
     /// </summary>
-    Task<PagedResultDto<WorkshopTelemetryTask>> GetListAsync(
-        string fileName = null,
-        int? status = null,
-        int skipCount = 0,
-        int maxResultCount = 10);
+    Task<FileObject> GetFileObjectAsync(Guid fileObjectId);
 
     /// <summary>
-    /// 获取统计数据（原始数值元组）
+    /// 获取统计信息
     /// </summary>
-    Task<(int TotalFiles, long TotalSize, int PendingCount, int ProcessingCount, int SuccessCount, int FailedCount, long TotalRecords)>
-        GetStatisticsDataAsync();
+    Task<(int TotalFiles, long TotalSize, int PendingCount, int ProcessingCount, int SuccessCount, int FailedCount, long TotalRecords)> GetStatisticsDataAsync();
 
     /// <summary>
-    /// 批量更新任务（内部会调用 SaveChanges）
+    /// 获取已过期且可清理的任务（返回 Task + FileObject）
+    /// </summary>
+    Task<List<(WorkshopTelemetryTask Task, FileObject FileObject)>> GetExpiredCompletedTasksAsync(int take = 100);
+
+    /// <summary>
+    /// 批量更新
     /// </summary>
     Task UpdateManyAsync(List<WorkshopTelemetryTask> tasks);
+
+    /// <summary>
+    /// 物理删除任务（真删除）
+    /// </summary>
+    Task DeleteAsync(WorkshopTelemetryTask task);
+
 }

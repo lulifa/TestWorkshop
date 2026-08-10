@@ -7,11 +7,10 @@ public class WorkshopTelemetryTaskRepository :
     EfCoreRepository<TestWorkshopDbContext, WorkshopTelemetryTask, long>,
     IWorkshopTelemetryTaskRepository
 {
-    private readonly ICurrentTenant _currentTenant;
-    public WorkshopTelemetryTaskRepository(IDbContextProvider<TestWorkshopDbContext> dbContextProvider, ICurrentTenant currentTenant)
+    public WorkshopTelemetryTaskRepository(
+        IDbContextProvider<TestWorkshopDbContext> dbContextProvider)
         : base(dbContextProvider)
     {
-        _currentTenant = currentTenant;
     }
 
     /// <summary>
@@ -30,6 +29,7 @@ public class WorkshopTelemetryTaskRepository :
 
         var now = DateTime.UtcNow;
 
+        // ✅ 去掉 AND ""IsDeleted"" = false
         var sql = $@"
             UPDATE {fullTableName}
             SET ""Status"" = 1,
@@ -51,86 +51,156 @@ public class WorkshopTelemetryTaskRepository :
             .IgnoreQueryFilters()
             .ToListAsync();
 
-        // 无需再调用 SaveChangesAsync，因为状态已在数据库中更新
-        // 返回的实体对象已拥有最新的 Status 和 ProcessingStartedAt
-
         return tasks;
     }
 
+    // ========== 查询方法（需 JOIN FileObject） ==========
+
+    /// <summary>
+    /// 根据文件名搜索（JOIN FileObject 表）
+    /// </summary>
     public async Task<List<WorkshopTelemetryTask>> SearchByFileNameAsync(string fileName)
     {
         if (string.IsNullOrWhiteSpace(fileName))
             return new List<WorkshopTelemetryTask>();
 
-        var dbSet = await GetDbSetAsync();
-        return await dbSet
-            .Where(t => t.FileName.Contains(fileName) && !t.IsDeleted)
-            .OrderByDescending(t => t.CreatedAt)
-            .ToListAsync();
+        var dbContext = await GetDbContextAsync();
+
+        // ✅ 去掉 where task.IsDeleted == false
+        var query = from task in dbContext.TelemetryTasks
+                    join file in dbContext.FileObjects on task.FileObjectId equals file.Id
+                    where file.FileName.Contains(fileName)
+                    orderby task.CreatedAt descending
+                    select task;
+
+        return await query.ToListAsync();
     }
 
     /// <summary>
-    /// 只获取已过期且状态为 Success(2) 或 Failed(3) 的任务，用于安全清理
+    /// 分页查询任务列表（JOIN FileObject 表获取文件信息）
     /// </summary>
-    public async Task<List<WorkshopTelemetryTask>> GetExpiredCompletedTasksAsync()
-    {
-        var dbSet = await GetDbSetAsync();
-        return await dbSet
-            .Where(t => t.ExpiresAt <= DateTime.UtcNow
-                        && !t.IsDeleted
-                        && (t.Status == 2 || t.Status == 3))
-            .OrderBy(t => t.CreatedAt)
-            .ToListAsync();
-    }
-
-    public async Task<PagedResultDto<WorkshopTelemetryTask>> GetListAsync(
-        string fileName = null,
+    public async Task<PagedResultDto<WorkshopTelemetryTask>> GetPagedListAsync(
+        string? fileName = null,
         int? status = null,
         int skipCount = 0,
         int maxResultCount = 10)
     {
-        var dbSet = await GetDbSetAsync();
-        var query = dbSet.Where(t => !t.IsDeleted).AsQueryable();
+        var dbContext = await GetDbContextAsync();
 
+        // ✅ 去掉 where task.IsDeleted == false
+        var query = from task in dbContext.TelemetryTasks
+                    join file in dbContext.FileObjects on task.FileObjectId equals file.Id
+                    select new { Task = task, File = file };
+
+        // 按文件名过滤
         if (!string.IsNullOrWhiteSpace(fileName))
-            query = query.Where(t => t.FileName.Contains(fileName));
-        if (status.HasValue)
-            query = query.Where(t => t.Status == status.Value);
+        {
+            query = query.Where(x => x.File.FileName.Contains(fileName));
+        }
 
+        // 按状态过滤
+        if (status.HasValue)
+        {
+            query = query.Where(x => x.Task.Status == status.Value);
+        }
+
+        // 统计总数
         var totalCount = await query.CountAsync();
+
+        // 分页查询
         var items = await query
-            .OrderByDescending(t => t.CreatedAt)
+            .OrderByDescending(x => x.Task.CreatedAt)
             .Skip(skipCount)
             .Take(maxResultCount)
+            .Select(x => x.Task)
             .ToListAsync();
 
         return new PagedResultDto<WorkshopTelemetryTask>(totalCount, items);
     }
 
+    /// <summary>
+    /// 获取任务关联的 FileObject（用于展示文件名/大小）
+    /// </summary>
+    public async Task<FileObject> GetFileObjectAsync(Guid fileObjectId)
+    {
+        var dbContext = await GetDbContextAsync();
+        return await dbContext.FileObjects
+            .FirstOrDefaultAsync(f => f.Id == fileObjectId);
+    }
+
+    // ========== 统计方法（JOIN FileObject 表） ==========
+
+    /// <summary>
+    /// 获取统计信息（JOIN FileObject 表获取文件大小）
+    /// </summary>
     public async Task<(int TotalFiles, long TotalSize, int PendingCount, int ProcessingCount, int SuccessCount, int FailedCount, long TotalRecords)>
         GetStatisticsDataAsync()
     {
-        var dbSet = await GetDbSetAsync();
+        var dbContext = await GetDbContextAsync();
 
-        var totalFiles = await dbSet.CountAsync(t => !t.IsDeleted);
-        var totalSize = await dbSet.Where(t => !t.IsDeleted).SumAsync(t => t.FileSize);
-        var pendingCount = await dbSet.CountAsync(t => t.Status == 0);
-        var processingCount = await dbSet.CountAsync(t => t.Status == 1);
-        var successCount = await dbSet.CountAsync(t => t.Status == 2);
-        var failedCount = await dbSet.CountAsync(t => t.Status == 3);
-        var totalRecords = await dbSet
-            .Where(t => t.Status == 2)
-            .SumAsync(t => t.RecordCount ?? 0);
+        // ✅ 去掉 where task.IsDeleted == false
+        var query = from task in dbContext.TelemetryTasks
+                    join file in dbContext.FileObjects on task.FileObjectId equals file.Id
+                    select new { Task = task, File = file };
+
+        // 统计各项数据（一次查询完成）
+        var totalFiles = await query.CountAsync();
+        var totalSize = await query.SumAsync(x => x.File.FileSize);
+        var pendingCount = await query.CountAsync(x => x.Task.Status == 0);
+        var processingCount = await query.CountAsync(x => x.Task.Status == 1);
+        var successCount = await query.CountAsync(x => x.Task.Status == 2);
+        var failedCount = await query.CountAsync(x => x.Task.Status == 3);
+        var totalRecords = await query
+            .Where(x => x.Task.Status == 2)
+            .SumAsync(x => x.Task.RecordCount ?? 0);
 
         return (totalFiles, totalSize, pendingCount, processingCount, successCount, failedCount, totalRecords);
     }
 
+    // ========== 过期任务查询（返回 Task + FileObject，用于级联删除） ==========
+
+    /// <summary>
+    /// 获取已过期且可清理的任务（返回 Task 和关联的 FileObject）
+    /// </summary>
+    public async Task<List<(WorkshopTelemetryTask Task, FileObject FileObject)>> GetExpiredCompletedTasksAsync(int take = 100)
+    {
+        var dbContext = await GetDbContextAsync();
+
+        var now = DateTime.UtcNow;
+
+        // ✅ 没有 IsDeleted 条件
+        var query = from task in dbContext.TelemetryTasks
+                    join file in dbContext.FileObjects on task.FileObjectId equals file.Id
+                    where task.ExpiresAt <= now
+                      && (task.Status == 2 || task.Status == 3) // Success 或 Failed
+                    orderby task.CreatedAt
+                    select new { Task = task, File = file };
+
+        var results = await query.Take(take).ToListAsync();
+
+        return results.Select(x => (x.Task, x.File)).ToList();
+    }
+
+    /// <summary>
+    /// 批量更新
+    /// </summary>
     public async Task UpdateManyAsync(List<WorkshopTelemetryTask> tasks)
     {
         if (tasks == null || tasks.Count == 0) return;
 
         var dbSet = await GetDbSetAsync();
         dbSet.UpdateRange(tasks);
+        var dbContext = await GetDbContextAsync();
+        await dbContext.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// 物理删除任务（真删除）
+    /// </summary>
+    public async Task DeleteAsync(WorkshopTelemetryTask task)
+    {
+        var dbSet = await GetDbSetAsync();
+        dbSet.Remove(task);
         var dbContext = await GetDbContextAsync();
         await dbContext.SaveChangesAsync();
     }

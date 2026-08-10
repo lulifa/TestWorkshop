@@ -6,24 +6,19 @@
 public class WorkshopTelemetryTaskDto : EntityDto<long>
 {
     /// <summary>
-    /// 文件ID
+    /// 关联的 FileObject ID
     /// </summary>
-    public Guid FileId { get; set; }
+    public Guid FileObjectId { get; set; }
 
     /// <summary>
-    /// 原始文件名
+    /// 原始文件名（来自 FileObject）
     /// </summary>
     public string FileName { get; set; }
 
     /// <summary>
-    /// 文件大小（字节）
+    /// 文件大小（字节）（来自 FileObject）
     /// </summary>
     public long FileSize { get; set; }
-
-    /// <summary>
-    /// Blob存储文件名
-    /// </summary>
-    public string BlobName { get; set; }
 
     /// <summary>
     /// 处理状态 (0=Pending 1=Processing 2=Success 3=Failed)
@@ -66,16 +61,6 @@ public class WorkshopTelemetryTaskDto : EntityDto<long>
     public DateTime ExpiresAt { get; set; }
 
     /// <summary>
-    /// 是否已删除
-    /// </summary>
-    public bool IsDeleted { get; set; }
-
-    /// <summary>
-    /// 删除时间
-    /// </summary>
-    public DateTime? DeletedAt { get; set; }
-
-    /// <summary>
     /// 状态描述
     /// </summary>
     public string StatusName => GetStatusName(Status);
@@ -84,11 +69,11 @@ public class WorkshopTelemetryTaskDto : EntityDto<long>
     {
         return status switch
         {
-            0 => "Pending",
-            1 => "Processing",
-            2 => "Success",
-            3 => "Failed",
-            _ => "Unknown"
+            0 => "待处理",
+            1 => "处理中",
+            2 => "已处理",
+            3 => "失败",
+            _ => "未知"
         };
     }
 }

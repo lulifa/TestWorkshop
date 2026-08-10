@@ -36,30 +36,19 @@ public static class TestWorkshopDbContextModelCreatingExtensions
             b.HasIndex(x => x.Code).IsUnique();
         });
 
-        // ✅ 新增：TelemetryTask 配置
+        // ✅ WorkshopTelemetryTask 配置（清爽版）
         builder.Entity<WorkshopTelemetryTask>(b =>
         {
             b.ToTable(TestWorkshopDbProperties.DbTablePrefix + "WorkshopTelemetryTasks", TestWorkshopDbProperties.DbSchema);
 
             b.HasKey(x => x.Id);
 
-            b.Property(p => p.FileId)
+            // 关联 FileObject 的外键
+            b.Property(p => p.FileObjectId)
                 .IsRequired()
-                .HasComment("文件ID");
+                .HasComment("关联的 FileObject ID");
 
-            b.Property(p => p.FileName)
-                .HasMaxLength(TestWorkshopConsts.MaxLength256)
-                .IsRequired()
-                .HasComment("原始文件名");
-
-            b.Property(p => p.FileSize)
-                .IsRequired()
-                .HasComment("文件大小（字节）");
-
-            b.Property(p => p.BlobName)
-                .HasMaxLength(TestWorkshopConsts.MaxLength256)
-                .HasComment("Blob存储文件名");
-
+            // 业务状态
             b.Property(p => p.Status)
                 .IsRequired()
                 .HasComment("处理状态 (0=Pending 1=Processing 2=Success 3=Failed)");
@@ -74,11 +63,13 @@ public static class TestWorkshopDbContextModelCreatingExtensions
                 .HasComment("下次重试时间");
 
             b.Property(p => p.Error)
+                .HasMaxLength(2000)
                 .HasComment("错误信息");
 
             b.Property(p => p.RecordCount)
                 .HasComment("解析的记录数");
 
+            // 时间字段
             b.Property(p => p.CreatedAt)
                 .HasColumnType("timestamp with time zone")
                 .IsRequired()
@@ -97,32 +88,19 @@ public static class TestWorkshopDbContextModelCreatingExtensions
                 .IsRequired()
                 .HasComment("过期时间");
 
-            b.Property(p => p.IsDeleted)
-                .IsRequired()
-                .HasDefaultValue(false)
-                .HasComment("是否已删除");
-
-            b.Property(p => p.DeletedAt)
-                .HasColumnType("timestamp with time zone")
-                .HasComment("删除时间");
-
+            // 多租户
             b.Property(p => p.TenantId)
                 .HasComment("租户ID");
 
             b.ConfigureByConvention();
 
-            // ✅ 创建索引以提高查询性能
-            b.HasIndex(x => x.FileName);
+            b.HasIndex(x => x.FileObjectId);
 
-            b.HasIndex(x => x.Status);
+            b.HasIndex(x => new { x.Status, x.CreatedAt });
 
-            b.HasIndex(x => new { x.ExpiresAt, x.IsDeleted });
+            b.HasIndex(x => new { x.ExpiresAt, x.Status });
 
             b.HasIndex(x => x.CreatedAt);
-
-            b.HasIndex(x => x.FileId).IsUnique();
-
-            b.HasIndex(x => new { x.Status, x.NextRetryTime, x.CreatedAt });
 
         });
     }

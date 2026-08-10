@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System.IO;
 using TestWorkshop.TimeScale;
-using Volo.Abp.BlobStoring;
-using Volo.Abp.Domain.Entities;
 
 namespace TestWorkshop;
 
@@ -11,17 +9,20 @@ namespace TestWorkshop;
 /// </summary>
 public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTelemetryAppService
 {
-    private readonly IBlobContainer _blobContainer;
-    private readonly IWorkshopTelemetryTaskRepository _telemetryTaskRepository;
+    private readonly IWorkshopTelemetryTaskManager _taskManager;
+    private readonly IWorkshopTelemetryTaskRepository _taskRepository;
+    private readonly IFileObjectRepository _fileObjectRepository;
     private readonly ICurrentTenant _currentTenant;
 
     public WorkshopTelemetryAppService(
-        IBlobContainer blobContainer,
-        IWorkshopTelemetryTaskRepository telemetryTaskRepository,
+        IWorkshopTelemetryTaskManager taskManager,
+        IWorkshopTelemetryTaskRepository taskRepository,
+        IFileObjectRepository fileObjectRepository,
         ICurrentTenant currentTenant)
     {
-        _blobContainer = blobContainer;
-        _telemetryTaskRepository = telemetryTaskRepository;
+        _taskManager = taskManager;
+        _taskRepository = taskRepository;
+        _fileObjectRepository = fileObjectRepository;
         _currentTenant = currentTenant;
     }
 
@@ -31,55 +32,34 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
     public async Task<WorkshopTelemetryTaskDto> UploadAsync(IFormFile file)
     {
         if (file == null || file.Length == 0)
-            throw new UserFriendlyException("Please select a file to upload");
+            throw new UserFriendlyException("请选择有效的文件");
 
         var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
         if (extension != ".csv")
-            throw new UserFriendlyException("Only .csv files are supported");
+            throw new UserFriendlyException("仅支持 .csv 文件");
 
-        var fileId = GuidGenerator.Create();
-        var datePart = DateTime.UtcNow.ToString("yyyy/MM/dd");
-        var blobName = $"{datePart}/{fileId:N}{extension}";
+        var task = await _taskManager.CreateTaskFromFileAsync(
+            stream: file.OpenReadStream(),
+            fileName: file.FileName,
+            contentType: file.ContentType
+        );
 
+        var fileObject = await _fileObjectRepository.GetAsync(task.FileObjectId);
 
-        try
+        return new WorkshopTelemetryTaskDto
         {
-            // 1️⃣ 保存文件到 Blob 存储
-            await using var stream = file.OpenReadStream();
-            await _blobContainer.SaveAsync(blobName, stream, true);
-
-            // 2️⃣ 创建任务记录
-            var task = new WorkshopTelemetryTask
-            {
-                FileId = fileId,
-                BlobName = blobName,
-                FileName = file.FileName,
-                FileSize = file.Length,
-                Status = 0, // Pending
-                CreatedAt = DateTime.UtcNow,
-                ExpiresAt = DateTime.UtcNow.AddDays(7),
-                IsDeleted = false,
-                TenantId = _currentTenant.Id,
-                RetryCount = 0
-            };
-
-            await _telemetryTaskRepository.InsertAsync(task);
-
-            // ✅ 使用 ObjectMapper 进行转换
-            return ObjectMapper.Map<WorkshopTelemetryTask, WorkshopTelemetryTaskDto>(task);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Upload failed, attempting to cleanup blob {BlobName}", blobName);
-            // 如果数据库操作失败，删除已上传的文件
-            try
-            {
-                await _blobContainer.DeleteAsync(blobName);
-            }
-            catch { /* 忽略清理异常 */ }
-
-            throw;
-        }
+            Id = task.Id,
+            FileObjectId = task.FileObjectId,
+            FileName = fileObject.FileName,
+            FileSize = fileObject.FileSize,
+            Status = task.Status,
+            RetryCount = task.RetryCount,
+            Error = task.Error,
+            RecordCount = task.RecordCount,
+            CreatedAt = task.CreatedAt,
+            ProcessedAt = task.ProcessedAt,
+            ExpiresAt = task.ExpiresAt
+        };
     }
 
     /// <summary>
@@ -87,9 +67,22 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
     /// </summary>
     public async Task<WorkshopTelemetryTaskDto> GetAsync(long id)
     {
-        var task = await _telemetryTaskRepository.GetAsync(id);
-        // ✅ 使用 ObjectMapper 进行转换
-        return ObjectMapper.Map<WorkshopTelemetryTask, WorkshopTelemetryTaskDto>(task);
+        var (task, fileObject) = await _taskManager.GetTaskWithFileAsync(id);
+
+        return new WorkshopTelemetryTaskDto
+        {
+            Id = task.Id,
+            FileObjectId = task.FileObjectId,
+            FileName = fileObject.FileName,
+            FileSize = fileObject.FileSize,
+            Status = task.Status,
+            RetryCount = task.RetryCount,
+            Error = task.Error,
+            RecordCount = task.RecordCount,
+            CreatedAt = task.CreatedAt,
+            ProcessedAt = task.ProcessedAt,
+            ExpiresAt = task.ExpiresAt
+        };
     }
 
     /// <summary>
@@ -97,9 +90,30 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
     /// </summary>
     public async Task<List<WorkshopTelemetryTaskDto>> SearchByFileNameAsync(string fileName)
     {
-        var tasks = await _telemetryTaskRepository.SearchByFileNameAsync(fileName);
-        // ✅ 使用 ObjectMapper 进行转换
-        return ObjectMapper.Map<List<WorkshopTelemetryTask>, List<WorkshopTelemetryTaskDto>>(tasks);
+        // ✅ 用 Repository 已有的方法
+        var tasks = await _taskRepository.SearchByFileNameAsync(fileName);
+        var dtos = new List<WorkshopTelemetryTaskDto>();
+
+        foreach (var task in tasks)
+        {
+            var fileObject = await _fileObjectRepository.GetAsync(task.FileObjectId);
+            dtos.Add(new WorkshopTelemetryTaskDto
+            {
+                Id = task.Id,
+                FileObjectId = task.FileObjectId,
+                FileName = fileObject.FileName,
+                FileSize = fileObject.FileSize,
+                Status = task.Status,
+                RetryCount = task.RetryCount,
+                Error = task.Error,
+                RecordCount = task.RecordCount,
+                CreatedAt = task.CreatedAt,
+                ProcessedAt = task.ProcessedAt,
+                ExpiresAt = task.ExpiresAt
+            });
+        }
+
+        return dtos;
     }
 
     /// <summary>
@@ -107,14 +121,32 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
     /// </summary>
     public async Task<PagedResultDto<WorkshopTelemetryTaskDto>> GetListAsync(WorkshopTelemetryTaskListInput input)
     {
-        var result = await _telemetryTaskRepository.GetListAsync(
+        // ✅ 用 Repository 已有的方法
+        var result = await _taskRepository.GetPagedListAsync(
             input.FileName,
             input.Status,
             input.SkipCount,
             input.MaxResultCount);
 
-        // ✅ 使用 ObjectMapper 进行转换
-        var dtos = ObjectMapper.Map<List<WorkshopTelemetryTask>, List<WorkshopTelemetryTaskDto>>(result.Items.ToList());
+        var dtos = new List<WorkshopTelemetryTaskDto>();
+        foreach (var task in result.Items)
+        {
+            var fileObject = await _fileObjectRepository.GetAsync(task.FileObjectId);
+            dtos.Add(new WorkshopTelemetryTaskDto
+            {
+                Id = task.Id,
+                FileObjectId = task.FileObjectId,
+                FileName = fileObject.FileName,
+                FileSize = fileObject.FileSize,
+                Status = task.Status,
+                RetryCount = task.RetryCount,
+                Error = task.Error,
+                RecordCount = task.RecordCount,
+                CreatedAt = task.CreatedAt,
+                ProcessedAt = task.ProcessedAt,
+                ExpiresAt = task.ExpiresAt
+            });
+        }
 
         return new PagedResultDto<WorkshopTelemetryTaskDto>(result.TotalCount, dtos);
     }
@@ -125,7 +157,7 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
     public async Task<WorkshopTelemetryStatisticsDto> GetStatisticsAsync()
     {
         var (totalFiles, totalSize, pendingCount, processingCount, successCount, failedCount, totalRecords)
-            = await _telemetryTaskRepository.GetStatisticsDataAsync();
+            = await _taskRepository.GetStatisticsDataAsync();
 
         return new WorkshopTelemetryStatisticsDto
         {
@@ -140,31 +172,11 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
     }
 
     /// <summary>
-    /// 删除任务
+    /// 删除任务（级联删除 FileObject 和物理文件）
     /// </summary>
     public async Task DeleteAsync(long id)
     {
-        var task = await _telemetryTaskRepository.GetAsync(id);
-
-        if (task != null)
-        {
-            // ✅ 禁止删除正在处理的任务
-            if (task.Status == 1)
-                throw new UserFriendlyException("Cannot delete a task that is currently being processed");
-
-            // 删除 Blob 存储中的文件
-            if (!string.IsNullOrEmpty(task.BlobName))
-            {
-                try
-                {
-                    await _blobContainer.DeleteAsync(task.BlobName);
-                }
-                catch { /* Blob 文件可能已删除 */ }
-            }
-
-            // 物理删除数据库记录
-            await _telemetryTaskRepository.DeleteAsync(task);
-        }
+        await _taskManager.DeleteTaskAsync(id);
     }
 
     /// <summary>
@@ -172,20 +184,6 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
     /// </summary>
     public async Task RetryAsync(long id)
     {
-        var task = await _telemetryTaskRepository.GetAsync(id);
-
-        if (task == null)
-            throw new EntityNotFoundException($"Telemetry task {id} not found");
-
-        if (task.Status != 3)
-            throw new UserFriendlyException("Only failed tasks can be retried");
-
-        // 重置任务状态
-        task.Status = 0; // Pending
-        task.RetryCount = 0;
-        task.Error = null;
-        task.NextRetryTime = null;
-
-        await _telemetryTaskRepository.UpdateAsync(task);
+        await _taskManager.RetryTaskAsync(id);
     }
 }
