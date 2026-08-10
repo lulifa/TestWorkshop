@@ -13,7 +13,7 @@ using Volo.Abp.EntityFrameworkCore;
 namespace TestWorkshop.Migrations
 {
     [DbContext(typeof(TestWorkshopDbContext))]
-    [Migration("20260513081915_InitialDatabase")]
+    [Migration("20260810014623_InitialDatabase")]
     partial class InitialDatabase
     {
         /// <inheritdoc />
@@ -211,6 +211,80 @@ namespace TestWorkshop.Migrations
                     b.HasIndex("Name");
 
                     b.ToTable("AppDataItems", (string)null);
+                });
+
+            modelBuilder.Entity("TestWorkshop.FileObject", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("BlobPath")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("ConcurrencyStamp");
+
+                    b.Property<string>("ContentType")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<Guid?>("DeleterId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("DeleterId");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("DeletionTime");
+
+                    b.Property<string>("ExtraProperties")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("ExtraProperties");
+
+                    b.Property<string>("FileName")
+                        .HasColumnType("text");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("IsDeleted");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("LastModificationTime");
+
+                    b.Property<Guid?>("LastModifierId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("LastModifierId");
+
+                    b.Property<string>("OwnerId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("OwnerType")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("TenantId");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("FileObjects");
                 });
 
             modelBuilder.Entity("TestWorkshop.Layout", b =>
@@ -411,6 +485,192 @@ namespace TestWorkshop.Migrations
                     b.ToTable("AppMenus", (string)null);
                 });
 
+            modelBuilder.Entity("TestWorkshop.Notification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("ConcurrencyStamp");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)")
+                        .HasComment("消息内容");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<Guid?>("DeleterId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("DeleterId");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("DeletionTime");
+
+                    b.Property<string>("ExtraProperties")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("ExtraProperties");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("IsDeleted");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("LastModificationTime");
+
+                    b.Property<Guid?>("LastModifierId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("LastModifierId");
+
+                    b.Property<int>("MessageLevel")
+                        .HasColumnType("integer")
+                        .HasComment("消息等级");
+
+                    b.Property<int>("MessageType")
+                        .HasColumnType("integer")
+                        .HasComment("消息类型");
+
+                    b.Property<bool>("Read")
+                        .HasColumnType("boolean")
+                        .HasComment("是否已读");
+
+                    b.Property<DateTime?>("ReadTime")
+                        .HasColumnType("timestamp without time zone")
+                        .HasComment("已读时间");
+
+                    b.Property<Guid?>("ReceiveUserId")
+                        .HasColumnType("uuid")
+                        .HasComment("接收人用户Id");
+
+                    b.Property<string>("ReceiveUserName")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasComment("接收人用户名");
+
+                    b.Property<Guid>("SenderUserId")
+                        .HasColumnType("uuid")
+                        .HasComment("发送人用户Id");
+
+                    b.Property<string>("SenderUserName")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasComment("发送人用户名");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("TenantId")
+                        .HasComment("租户id");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasComment("消息标题");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AppNotifications", (string)null);
+                });
+
+            modelBuilder.Entity("TestWorkshop.NotificationSubscription", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("ConcurrencyStamp");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<Guid?>("DeleterId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("DeleterId");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("DeletionTime");
+
+                    b.Property<string>("ExtraProperties")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("ExtraProperties");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("IsDeleted");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("LastModificationTime");
+
+                    b.Property<Guid?>("LastModifierId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("LastModifierId");
+
+                    b.Property<Guid>("NotificationId")
+                        .HasColumnType("uuid")
+                        .HasComment("消息Id");
+
+                    b.Property<bool>("Read")
+                        .HasColumnType("boolean")
+                        .HasComment("是否已读");
+
+                    b.Property<DateTime>("ReadTime")
+                        .HasColumnType("timestamp without time zone")
+                        .HasComment("已读时间");
+
+                    b.Property<Guid>("ReceiveUserId")
+                        .HasColumnType("uuid")
+                        .HasComment("接收人用户Id");
+
+                    b.Property<string>("ReceiveUserName")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasComment("接收人用户名");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("TenantId")
+                        .HasComment("租户id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NotificationId");
+
+                    b.HasIndex("ReceiveUserId");
+
+                    b.ToTable("AppNotificationSubscriptions", (string)null);
+                });
+
             modelBuilder.Entity("TestWorkshop.RoleMenu", b =>
                 {
                     b.Property<Guid>("Id")
@@ -496,46 +756,22 @@ namespace TestWorkshop.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<string>("BlobName")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)")
-                        .HasComment("Blob存储文件名");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasComment("创建时间");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasComment("删除时间");
-
                     b.Property<string>("Error")
-                        .HasColumnType("text")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
                         .HasComment("错误信息");
 
                     b.Property<DateTime>("ExpiresAt")
                         .HasColumnType("timestamp with time zone")
                         .HasComment("过期时间");
 
-                    b.Property<Guid>("FileId")
+                    b.Property<Guid>("FileObjectId")
                         .HasColumnType("uuid")
-                        .HasComment("文件ID");
-
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)")
-                        .HasComment("原始文件名");
-
-                    b.Property<long>("FileSize")
-                        .HasColumnType("bigint")
-                        .HasComment("文件大小（字节）");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasComment("是否已删除");
+                        .HasComment("关联的 FileObject ID");
 
                     b.Property<DateTime?>("NextRetryTime")
                         .HasColumnType("timestamp with time zone")
@@ -572,16 +808,11 @@ namespace TestWorkshop.Migrations
 
                     b.HasIndex("CreatedAt");
 
-                    b.HasIndex("FileId")
-                        .IsUnique();
+                    b.HasIndex("FileObjectId");
 
-                    b.HasIndex("FileName");
+                    b.HasIndex("ExpiresAt", "Status");
 
-                    b.HasIndex("Status");
-
-                    b.HasIndex("ExpiresAt", "IsDeleted");
-
-                    b.HasIndex("Status", "NextRetryTime", "CreatedAt");
+                    b.HasIndex("Status", "CreatedAt");
 
                     b.ToTable("AppWorkshopTelemetryTasks", (string)null);
                 });

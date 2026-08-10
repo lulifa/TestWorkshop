@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace TestWorkshop.Migrations
 {
     /// <inheritdoc />
-    public partial class AddTimeScaleEntities : Migration
+    public partial class AddTimeScaleDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -27,7 +27,6 @@ namespace TestWorkshop.Migrations
                     table.PrimaryKey("PK_AppWorkshopDeviceTelemetries", x => new { x.DeviceId, x.Timestamp, x.MetricType });
                 });
 
-
             // TimescaleDB 扩展核心配置（手动添加）
             migrationBuilder.Sql(@"CREATE EXTENSION IF NOT EXISTS timescaledb;");
 
@@ -38,12 +37,11 @@ namespace TestWorkshop.Migrations
                     if_not_exists => TRUE
                 );
             ");
-            
+
             migrationBuilder.Sql(@"
                 CREATE INDEX IF NOT EXISTS idx_device_time
                 ON ""AppWorkshopDeviceTelemetries"" (""DeviceId"", ""Timestamp"" DESC);
             ");
-
         }
 
         /// <inheritdoc />

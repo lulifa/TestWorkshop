@@ -13,8 +13,8 @@ using Volo.Abp.EntityFrameworkCore;
 namespace TestWorkshop.Migrations
 {
     [DbContext(typeof(TestWorkshopDbContext))]
-    [Migration("20260806062354_AddNotificationTable")]
-    partial class AddNotificationTable
+    [Migration("20260810014650_AddTimeScaleDb")]
+    partial class AddTimeScaleDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -211,6 +211,80 @@ namespace TestWorkshop.Migrations
                     b.HasIndex("Name");
 
                     b.ToTable("AppDataItems", (string)null);
+                });
+
+            modelBuilder.Entity("TestWorkshop.FileObject", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("BlobPath")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("ConcurrencyStamp");
+
+                    b.Property<string>("ContentType")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<Guid?>("DeleterId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("DeleterId");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("DeletionTime");
+
+                    b.Property<string>("ExtraProperties")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("ExtraProperties");
+
+                    b.Property<string>("FileName")
+                        .HasColumnType("text");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("IsDeleted");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("LastModificationTime");
+
+                    b.Property<Guid?>("LastModifierId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("LastModifierId");
+
+                    b.Property<string>("OwnerId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("OwnerType")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("TenantId");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("FileObjects");
                 });
 
             modelBuilder.Entity("TestWorkshop.Layout", b =>
@@ -709,46 +783,22 @@ namespace TestWorkshop.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<string>("BlobName")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)")
-                        .HasComment("Blob存储文件名");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasComment("创建时间");
 
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasComment("删除时间");
-
                     b.Property<string>("Error")
-                        .HasColumnType("text")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
                         .HasComment("错误信息");
 
                     b.Property<DateTime>("ExpiresAt")
                         .HasColumnType("timestamp with time zone")
                         .HasComment("过期时间");
 
-                    b.Property<Guid>("FileId")
+                    b.Property<Guid>("FileObjectId")
                         .HasColumnType("uuid")
-                        .HasComment("文件ID");
-
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)")
-                        .HasComment("原始文件名");
-
-                    b.Property<long>("FileSize")
-                        .HasColumnType("bigint")
-                        .HasComment("文件大小（字节）");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasComment("是否已删除");
+                        .HasComment("关联的 FileObject ID");
 
                     b.Property<DateTime?>("NextRetryTime")
                         .HasColumnType("timestamp with time zone")
@@ -785,16 +835,11 @@ namespace TestWorkshop.Migrations
 
                     b.HasIndex("CreatedAt");
 
-                    b.HasIndex("FileId")
-                        .IsUnique();
+                    b.HasIndex("FileObjectId");
 
-                    b.HasIndex("FileName");
+                    b.HasIndex("ExpiresAt", "Status");
 
-                    b.HasIndex("Status");
-
-                    b.HasIndex("ExpiresAt", "IsDeleted");
-
-                    b.HasIndex("Status", "NextRetryTime", "CreatedAt");
+                    b.HasIndex("Status", "CreatedAt");
 
                     b.ToTable("AppWorkshopTelemetryTasks", (string)null);
                 });
