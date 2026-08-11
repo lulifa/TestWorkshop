@@ -278,23 +278,23 @@ public class FileObjectManager : DomainService, IFileObjectManager
     protected virtual string GenerateBlobPath(string ownerType, string ownerId, Guid fileId, string ext)
     {
         var now = DateTime.UtcNow;
+        var lowerType = ownerType.ToLowerInvariant();
 
-        // ===== 系统文件：ownerId = null =====
         if (string.IsNullOrEmpty(ownerId))
         {
             var tenantId = CurrentTenant.Id;
             var basePath = tenantId.HasValue ? $"system/tenants/{tenantId}" : "system/global";
-            return $"{basePath}/{ownerType}/{fileId:N}{ext}";
+            return $"{basePath}/{lowerType}/{fileId:N}{ext}";
         }
 
         // ===== 日志型文件 =====
         if (FileOwnerTypeCategories.IsLogData(ownerType))
         {
-            return $"rawdata/{ownerType}/{now:yyyy}/{now:MM}/{now:dd}/{fileId:N}{ext}";
+            return $"rawdata/{lowerType}/{now:yyyy}/{now:MM}/{now:dd}/{fileId:N}{ext}";
         }
 
         // ===== 业务文件：ownerId 有值 =====
-        return $"business/{ownerType}/{ownerId}/{fileId:N}{ext}";
+        return $"business/{lowerType}/{ownerId}/{fileId:N}{ext}";
     }
 
     /// <summary>

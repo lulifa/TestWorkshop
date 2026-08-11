@@ -260,8 +260,7 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
                     ""RetryCount"" = ""RetryCount"" + 1,
                     ""NextRetryTime"" = @RetryTime
                 WHERE ""Status"" = 1
-                  AND ""ProcessingStartedAt"" < @StuckTime
-                  AND ""IsDeleted"" = false";
+                  AND ""ProcessingStartedAt"" < @StuckTime";
 
             var rowsAffected = await db.Database.ExecuteSqlRawAsync(
                 sql,

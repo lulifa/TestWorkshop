@@ -32,7 +32,7 @@ public class FileController : TestWorkshopController
     /// </summary>
     [HttpPost("batch")]
     public async Task<List<FileObjectDto>> BatchUploadAsync(
-        [FromForm] List<IRemoteStreamContent> files,
+        List<IRemoteStreamContent> files,
         string ownerType,
         string ownerId)
     {
@@ -76,7 +76,7 @@ public class FileController : TestWorkshopController
     }
 
     /// <summary>
-    /// 删除文件
+    /// 批量删除文件
     /// </summary>
     [HttpDelete]
     public async Task DeleteFilesAsync(string ownerType, string ownerId = null)
