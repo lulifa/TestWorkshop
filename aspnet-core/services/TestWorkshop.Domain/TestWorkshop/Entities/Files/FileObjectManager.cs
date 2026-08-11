@@ -4,40 +4,218 @@ namespace TestWorkshop;
 
 public class FileObjectManager : DomainService, IFileObjectManager
 {
-
     private readonly IBlobContainer _blobContainer;
     private readonly IFileObjectRepository _fileObjectRepository;
     private readonly IGuidGenerator _guidGenerator;
-    private readonly IUnitOfWorkManager _unitOfWorkManager;
     private readonly ILogger<FileObjectManager> _logger;
 
     public FileObjectManager(
         IBlobContainer blobContainer,
         IFileObjectRepository fileObjectRepository,
         IGuidGenerator guidGenerator,
-        IUnitOfWorkManager unitOfWorkManager,
         ILogger<FileObjectManager> logger)
     {
         _blobContainer = blobContainer;
         _fileObjectRepository = fileObjectRepository;
         _guidGenerator = guidGenerator;
-        _unitOfWorkManager = unitOfWorkManager;
         _logger = logger;
     }
 
-    public virtual async Task<FileObject> UploadAsync(
-        Stream stream,
-        string fileName,
+    /// <summary>
+    /// 上传单个文件（覆盖模式：上传新文件，自动删除同 ownerType + ownerId 的所有旧文件）
+    /// </summary>
+    [UnitOfWork]
+    public virtual async Task<FileObject> UploadAsync(Stream stream, string fileName, string ownerType, string ownerId = null, string contentType = null)
+    {
+        return await UploadCoreAsync(stream, fileName, ownerType, ownerId, contentType, deleteOld: true);
+    }
+
+    /// <summary>
+    /// 批量上传文件（覆盖模式：上传所有新文件，再统一删除同 ownerType + ownerId 的所有旧文件）
+    /// </summary>
+    [UnitOfWork]
+    public virtual async Task<List<FileObject>> BatchUploadAsync(List<(Stream Stream, string FileName, string ContentType)> files, string ownerType, string ownerId)
+    {
+        Check.NotNullOrWhiteSpace(ownerType, nameof(ownerType));
+        Check.NotNullOrWhiteSpace(ownerId, nameof(ownerId));
+
+        if (files == null || !files.Any())
+        {
+            _logger.LogWarning("批量上传文件列表为空，跳过");
+            return new List<FileObject>();
+        }
+
+        var uploadedFiles = new List<FileObject>();
+        var uploadedIds = new List<Guid>();
+
+        // 1. 先上传所有新文件（不删除旧文件）
+        foreach (var (stream, fileName, contentType) in files)
+        {
+            var file = await UploadCoreAsync(stream, fileName, ownerType, ownerId, contentType, deleteOld: false);
+            uploadedFiles.Add(file);
+            uploadedIds.Add(file.Id);
+        }
+
+        // 2. 再统一删除旧文件（排除刚上传的）
+        var oldFiles = await _fileObjectRepository.GetListAsync(
+            f => f.OwnerType == ownerType && f.OwnerId == ownerId && !uploadedIds.Contains(f.Id)
+        );
+
+        foreach (var oldFile in oldFiles)
+        {
+            try
+            {
+                await _blobContainer.DeleteAsync(oldFile.BlobPath);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "删除旧物理文件失败: {BlobPath}", oldFile.BlobPath);
+            }
+            await _fileObjectRepository.HardDeleteAsync(oldFile, true);
+        }
+
+        _logger.LogInformation(
+            "批量上传完成: {OwnerType}/{OwnerId}, 新文件数: {NewCount}, 旧文件数: {OldCount}",
+            ownerType, ownerId, files.Count, oldFiles.Count);
+
+        return uploadedFiles;
+    }
+
+    /// <summary>
+    /// 获取文件列表（ownerId 为 null 查系统文件，有值查业务文件）
+    /// </summary>
+    public virtual async Task<PagedResultDto<FileObject>> GetListAsync(
+        string keyword = null,
         string ownerType = null,
         string ownerId = null,
-        string contentType = null)
+        DateTime? startTime = null,
+        DateTime? endTime = null,
+        int skipCount = 0,
+        int maxResultCount = 10)
+    {
+        if (string.IsNullOrEmpty(ownerId) && !string.IsNullOrEmpty(ownerType))
+        {
+            if (!SystemFileTypes.IsValid(ownerType))
+            {
+                throw new BusinessException($"非法的系统文件类型: {ownerType}，允许的类型: {string.Join(", ", SystemFileTypes.AllowedTypes)}");
+            }
+        }
+
+        return await _fileObjectRepository.GetListAsync(
+            keyword: keyword,
+            ownerType: ownerType,
+            ownerId: ownerId,
+            startTime: startTime,
+            endTime: endTime,
+            skipCount: skipCount,
+            maxResultCount: maxResultCount
+        );
+    }
+
+    /// <summary>
+    /// 删除文件（ownerId 为 null 删系统文件，有值删业务文件）
+    /// </summary>
+    [UnitOfWork]
+    public virtual async Task DeleteFilesAsync(string ownerType, string ownerId = null)
+    {
+        Check.NotNullOrWhiteSpace(ownerType, nameof(ownerType));
+
+        // 系统文件校验
+        if (string.IsNullOrEmpty(ownerId) && !SystemFileTypes.IsValid(ownerType))
+        {
+            throw new BusinessException($"非法的系统文件类型: {ownerType}，允许的类型: {string.Join(", ", SystemFileTypes.AllowedTypes)}");
+        }
+
+        var files = await _fileObjectRepository.GetListAsync(f => f.OwnerType == ownerType && f.OwnerId == ownerId);
+
+        if (!files.Any())
+        {
+            _logger.LogInformation("没有找到要删除的文件: {OwnerType}/{OwnerId}", ownerType, ownerId ?? "(系统)");
+            return;
+        }
+
+        foreach (var file in files)
+        {
+            try
+            {
+                await _blobContainer.DeleteAsync(file.BlobPath);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "删除物理文件失败: {BlobPath}", file.BlobPath);
+            }
+        }
+
+        await _fileObjectRepository.HardDeleteAsync(files, true);
+
+        var target = string.IsNullOrEmpty(ownerId) ? "系统文件" : "业务文件";
+        _logger.LogInformation("已删除 {Target}: {OwnerType}/{OwnerId}, 数量: {Count}",
+            target, ownerType, ownerId ?? "(系统)", files.Count);
+    }
+
+    /// <summary>
+    /// 删除单个文件
+    /// </summary>
+    [UnitOfWork]
+    public virtual async Task DeleteFileAsync(Guid fileId)
+    {
+        var file = await _fileObjectRepository.GetAsync(fileId);
+        if (file == null)
+            throw new UserFriendlyException($"文件不存在: {fileId}");
+
+        try
+        {
+            await _blobContainer.DeleteAsync(file.BlobPath);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "删除物理文件失败: {BlobPath}", file.BlobPath);
+        }
+
+        await _fileObjectRepository.HardDeleteAsync(file, true);
+        _logger.LogInformation("已删除文件: {FileId}", fileId);
+    }
+
+    /// <summary>
+    /// 获取文件流（用于下载/预览）
+    /// </summary>
+    public virtual async Task<(Stream Content, string ContentType, string FileName)> GetFileAsync(Guid fileId)
+    {
+        var fileObject = await _fileObjectRepository.GetAsync(fileId);
+        if (fileObject == null)
+            throw new UserFriendlyException($"文件不存在: {fileId}");
+
+        var stream = await _blobContainer.GetOrNullAsync(fileObject.BlobPath);
+        if (stream == null)
+            throw new UserFriendlyException($"物理文件不存在: {fileObject.BlobPath}");
+
+        return (stream, fileObject.ContentType, fileObject.FileName);
+    }
+
+    /// <summary>
+    /// 获取文件元数据
+    /// </summary>
+    public virtual async Task<FileObject> GetFileObjectAsync(Guid fileId)
+    {
+        var file = await _fileObjectRepository.GetAsync(fileId);
+        if (file == null)
+            throw new UserFriendlyException($"文件不存在: {fileId}");
+        return file;
+    }
+
+    /// <summary>
+    /// 核心上传逻辑
+    /// </summary>
+    private async Task<FileObject> UploadCoreAsync(Stream stream, string fileName, string ownerType, string ownerId, string contentType, bool deleteOld)
     {
         Check.NotNull(stream, nameof(stream));
         Check.NotNullOrWhiteSpace(fileName, nameof(fileName));
+        Check.NotNullOrWhiteSpace(ownerType, nameof(ownerType));
 
-        if (!string.IsNullOrEmpty(ownerType) && string.IsNullOrEmpty(ownerId))
+        // 系统文件校验：ownerId 为空，检查是否在白名单中
+        if (string.IsNullOrEmpty(ownerId) && !SystemFileTypes.IsValid(ownerType))
         {
-            throw new BusinessException("业务文件必须同时指定 OwnerType 和 OwnerId");
+            throw new BusinessException($"非法的系统文件类型: {ownerType}，允许的类型: {string.Join(", ", SystemFileTypes.AllowedTypes)}");
         }
 
         var fileId = _guidGenerator.Create();
@@ -45,7 +223,7 @@ public class FileObjectManager : DomainService, IFileObjectManager
         var ext = Path.GetExtension(fileName).ToLowerInvariant();
         var finalContentType = contentType ?? GetContentTypeByExtension(ext);
 
-        var blobPath = GenerateBlobPath(fileName, ownerType, ownerId, fileId, ext);
+        var blobPath = GenerateBlobPath(ownerType, ownerId, fileId, ext);
 
         stream.Position = 0;
         await _blobContainer.SaveAsync(blobPath, stream, true);
@@ -63,122 +241,65 @@ public class FileObjectManager : DomainService, IFileObjectManager
 
         await _fileObjectRepository.InsertAsync(fileObject);
 
+        // 覆盖模式：删除同 ownerType + ownerId 的所有旧文件
+        if (deleteOld)
+        {
+            var oldFiles = await _fileObjectRepository.GetListAsync(
+                f => f.OwnerType == ownerType && f.OwnerId == ownerId && f.Id != fileId
+            );
+
+            foreach (var oldFile in oldFiles)
+            {
+                try
+                {
+                    await _blobContainer.DeleteAsync(oldFile.BlobPath);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "删除旧物理文件失败: {BlobPath}", oldFile.BlobPath);
+                }
+                await _fileObjectRepository.HardDeleteAsync(oldFile, true);
+            }
+
+            if (oldFiles.Any())
+            {
+                _logger.LogInformation("删除了 {Count} 个旧文件 (OwnerType={OwnerType}, OwnerId={OwnerId})",
+                    oldFiles.Count, ownerType, ownerId ?? "(系统)");
+            }
+        }
+
         _logger.LogInformation("文件上传成功: {BlobPath}", blobPath);
         return fileObject;
     }
 
-    [UnitOfWork]
-    public virtual async Task DeleteBusinessFilesAsync(string ownerType, string ownerId)
-    {
-        Check.NotNullOrWhiteSpace(ownerType, nameof(ownerType));
-        Check.NotNullOrWhiteSpace(ownerId, nameof(ownerId));
-
-        var files = await _fileObjectRepository.GetListAsync(f => f.OwnerType == ownerType && f.OwnerId == ownerId
-        );
-
-        if (!files.Any()) return;
-
-        foreach (var file in files)
-        {
-            try
-            {
-                await _blobContainer.DeleteAsync(file.BlobPath);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "删除物理文件失败: {BlobPath}", file.BlobPath);
-            }
-        }
-
-        await _fileObjectRepository.DeleteManyAsync(files);
-        _logger.LogInformation("已删除业务对象所有文件: {OwnerType}/{OwnerId}, 数量: {Count}", ownerType, ownerId, files.Count);
-    }
-
-    [UnitOfWork]
-    public virtual async Task DeleteFileAsync(Guid fileId)
-    {
-        var file = await _fileObjectRepository.GetAsync(fileId);
-        if (file == null) throw new UserFriendlyException($"文件不存在: {fileId}");
-
-        try
-        {
-            await _blobContainer.DeleteAsync(file.BlobPath);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "删除物理文件失败: {BlobPath}", file.BlobPath);
-        }
-
-        await _fileObjectRepository.DeleteAsync(file);
-    }
-
-    public virtual async Task<(Stream Content, string ContentType, string FileName)> GetFileAsync(Guid fileId)
-    {
-        var fileObject = await _fileObjectRepository.GetAsync(fileId);
-        if (fileObject == null) throw new UserFriendlyException($"文件不存在: {fileId}");
-
-        var stream = await _blobContainer.GetAsync(fileObject.BlobPath);
-        if (stream == null) throw new UserFriendlyException($"物理文件不存在: {fileObject.BlobPath}");
-
-        return (stream, fileObject.ContentType, fileObject.FileName);
-    }
-
-    public virtual async Task<List<FileObject>> GetFilesByOwnerAsync(string ownerType, string ownerId)
-    {
-        Check.NotNullOrWhiteSpace(ownerType, nameof(ownerType));
-        Check.NotNullOrWhiteSpace(ownerId, nameof(ownerId));
-
-        return await _fileObjectRepository.GetListAsync(f => f.OwnerType == ownerType && f.OwnerId == ownerId);
-    }
-
-    [UnitOfWork]
-    public virtual async Task ReplaceFilesAsync(
-        string ownerType,
-        string ownerId,
-        List<(Stream Stream, string FileName, string ContentType)> newFiles)
-    {
-        await DeleteBusinessFilesAsync(ownerType, ownerId);
-
-        foreach (var (stream, fileName, contentType) in newFiles)
-        {
-            await UploadAsync(stream, fileName, ownerType, ownerId, contentType);
-        }
-
-        _logger.LogInformation("已替换业务对象所有文件: {OwnerType}/{OwnerId}, 新文件数: {Count}", ownerType, ownerId, newFiles.Count);
-    }
-
-    protected virtual string GenerateBlobPath(
-        string fileName,
-        string ownerType,
-        string ownerId,
-        Guid fileId,
-        string ext)
+    /// <summary>
+    /// 生成物理存储路径
+    /// </summary>
+    protected virtual string GenerateBlobPath(string ownerType, string ownerId, Guid fileId, string ext)
     {
         var now = DateTime.UtcNow;
 
-        // 系统级文件
-        if (string.IsNullOrEmpty(ownerType))
+        // ===== 系统文件：ownerId = null =====
+        if (string.IsNullOrEmpty(ownerId))
         {
             var tenantId = CurrentTenant.Id;
-            return tenantId.HasValue
-                ? $"system/tenants/{tenantId}/{fileId:N}{ext}"
-                : $"system/global/{fileId:N}{ext}";
+            var basePath = tenantId.HasValue ? $"system/tenants/{tenantId}" : "system/global";
+            return $"{basePath}/{ownerType}/{fileId:N}{ext}";
         }
 
-        // 日志型（注册表）
+        // ===== 日志型文件 =====
         if (FileOwnerTypeCategories.IsLogData(ownerType))
         {
             return $"rawdata/{ownerType}/{now:yyyy}/{now:MM}/{now:dd}/{fileId:N}{ext}";
         }
 
-        // 状态型（默认）
-        if (string.IsNullOrEmpty(ownerId))
-        {
-            throw new BusinessException($"状态型数据必须指定 OwnerId，OwnerType: {ownerType}");
-        }
+        // ===== 业务文件：ownerId 有值 =====
         return $"business/{ownerType}/{ownerId}/{fileId:N}{ext}";
     }
 
+    /// <summary>
+    /// 根据扩展名推断 ContentType
+    /// </summary>
     protected virtual string GetContentTypeByExtension(string ext)
     {
         return ext.ToLowerInvariant() switch
@@ -202,5 +323,4 @@ public class FileObjectManager : DomainService, IFileObjectManager
             _ => "application/octet-stream"
         };
     }
-
 }
