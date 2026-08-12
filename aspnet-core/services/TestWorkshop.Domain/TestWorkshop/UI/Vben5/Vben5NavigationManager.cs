@@ -147,6 +147,15 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
               icon: "material-symbols:dictionary-outline",
               description: "数据字典")
             .SetProperty("title", "abp.modules.platform.dataDictionaries"));
+        modules.AddItem(
+          new ApplicationMenu(
+              name: "Vben5ModulesPlatformFiles",
+              displayName: "文件管理",
+              url: "/modules/platform/files",
+              component: "/modules/platform/files/index",
+              icon: "mdi-light:file",
+              description: "文件管理")
+            .SetProperty("title", "abp.modules.platform.files"));
 
         return
         [

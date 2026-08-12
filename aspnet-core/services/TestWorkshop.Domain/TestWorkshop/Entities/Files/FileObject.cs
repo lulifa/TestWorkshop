@@ -31,7 +31,7 @@ public class FileObject : FullAuditedAggregateRoot<Guid>, IMultiTenant
     public virtual string ContentType { get; protected set; }
 
     /// <summary>
-    /// 业务归属ID（核心！）
+    /// 业务ID（核心！）
     /// 例如: Vessel 表的 Id, Unit 表的 Id, 用户的 Id
     /// </summary>
     public virtual string OwnerId { get; protected set; }

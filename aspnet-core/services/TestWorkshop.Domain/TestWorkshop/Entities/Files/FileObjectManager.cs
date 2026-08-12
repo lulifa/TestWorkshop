@@ -317,6 +317,7 @@ public class FileObjectManager : DomainService, IFileObjectManager
             ".xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             ".txt" => "text/plain",
             ".csv" => "text/csv",
+            ".json" => "application/json",
             ".zip" => "application/zip",
             ".rar" => "application/x-rar-compressed",
             ".7z" => "application/x-7z-compressed",

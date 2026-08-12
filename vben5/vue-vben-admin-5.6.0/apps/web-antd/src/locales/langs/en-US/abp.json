@@ -30,7 +30,8 @@
     "platform": {
       "dataDictionaries": "Data Dictionaries",
       "layouts": "Layouts",
-      "menus": "Menus"
+      "menus": "Menus",
+      "files": "Files"
     }
   },
   "system": {

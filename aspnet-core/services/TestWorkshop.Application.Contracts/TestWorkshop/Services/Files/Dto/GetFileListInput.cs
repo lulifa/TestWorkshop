@@ -11,12 +11,12 @@ public class GetFileListInput : PagedResultRequestDto, IEnablePaging
     public string Keyword { get; set; }
 
     /// <summary>
-    /// 文件类型
+    /// 业务类型
     /// </summary>
     public string OwnerType { get; set; }
 
     /// <summary>
-    /// 文件归属ID
+    /// 业务ID
     /// </summary>
     public string OwnerId { get; set; }
 

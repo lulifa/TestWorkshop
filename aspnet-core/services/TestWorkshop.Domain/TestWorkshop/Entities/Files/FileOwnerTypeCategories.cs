@@ -3,7 +3,7 @@
 namespace TestWorkshop;
 
 /// <summary>
-/// 文件归属类型分类
+/// 业务归属类型分类
 /// 默认所有类型均为"状态型"（走 business 路径）
 /// 只有明确注册为"日志型"的才走 rawdata 路径
 /// </summary>

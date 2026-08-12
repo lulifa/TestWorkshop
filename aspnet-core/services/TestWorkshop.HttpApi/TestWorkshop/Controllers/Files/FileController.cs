@@ -32,7 +32,7 @@ public class FileController : TestWorkshopController
     /// </summary>
     [HttpPost("batch")]
     public async Task<List<FileObjectDto>> BatchUploadAsync(
-        List<IRemoteStreamContent> files,
+        [FromForm] List<IRemoteStreamContent> files,
         string ownerType,
         string ownerId)
     {

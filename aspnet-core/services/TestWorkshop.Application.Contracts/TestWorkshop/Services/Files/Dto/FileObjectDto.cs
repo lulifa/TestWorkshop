@@ -26,12 +26,12 @@ public class FileObjectDto
     public string ContentType { get; set; }
 
     /// <summary>
-    /// 业务对象ID
+    /// 业务ID
     /// </summary>
     public string OwnerId { get; set; }
 
     /// <summary>
-    /// 业务对象类型
+    /// 业务类型
     /// </summary>
     public string OwnerType { get; set; }
 
