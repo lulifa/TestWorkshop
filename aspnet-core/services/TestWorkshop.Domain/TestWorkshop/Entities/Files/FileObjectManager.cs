@@ -186,6 +186,21 @@ public class FileObjectManager : DomainService, IFileObjectManager
     }
 
     /// <summary>
+    /// 按 ownerType + ownerId 获取文件（ownerId 为 null 时获取系统文件，不存在返回 null）
+    /// </summary>
+    public virtual async Task<FileObject> GetFileObjectByOwnerAsync(
+        string ownerType,
+        string ownerId = null)
+    {
+        Check.NotNullOrWhiteSpace(ownerType, nameof(ownerType));
+
+        var files = await _fileObjectRepository.GetListAsync(
+            f => f.OwnerType == ownerType && f.OwnerId == ownerId);
+
+        return files.FirstOrDefault();
+    }
+
+    /// <summary>
     /// 获取文件元数据
     /// </summary>
     public virtual async Task<FileObject> GetFileObjectAsync(Guid fileId)

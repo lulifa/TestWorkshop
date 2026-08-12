@@ -49,6 +49,15 @@ public class FileController : TestWorkshopController
     }
 
     /// <summary>
+    /// 按 ownerType + ownerId 下载文件（ownerId 为 null 时获取系统文件）
+    /// </summary>
+    [HttpGet("by-owner")]
+    public async Task<IRemoteStreamContent> DownloadByOwnerAsync(string ownerType, string ownerId = null)
+    {
+        return await Service.DownloadByOwnerAsync(ownerType, ownerId);
+    }
+
+    /// <summary>
     /// 获取单个文件信息
     /// </summary>
     [HttpGet("{id}")]

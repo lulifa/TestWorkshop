@@ -19,6 +19,7 @@ import {
 import { notification } from 'ant-design-vue';
 import { defineStore } from 'pinia';
 
+import { getDefaultAvatarApi } from '#/api';
 import { $t } from '#/locales';
 
 export const useAuthStore = defineStore('auth', () => {
@@ -125,9 +126,14 @@ export const useAuthStore = defineStore('auth', () => {
     if (user) {
       userInfoRes = user.profile;
     }
-    const abpConfig = await getConfigApi();
-    // const picture = await getPictureApi();
-    // const avatar=URL.createObjectURL(picture);
+    // 两个请求相互独立，并行获取；头像失败只回退默认头像。
+    const [abpConfig, picture] = await Promise.all([
+      getConfigApi(),
+      getDefaultAvatarApi().catch(() => undefined),
+    ]);
+    const avatar = picture
+      ? URL.createObjectURL(picture)
+      : preferences.app.defaultAvatar;
     userInfo = {
       userId: userInfoRes.sub ?? abpConfig.currentUser.id,
       username: userInfoRes.uniqueName ?? abpConfig.currentUser.userName,
@@ -135,8 +141,7 @@ export const useAuthStore = defineStore('auth', () => {
         userInfoRes.name ??
         abpConfig.currentUser.name ??
         abpConfig.currentUser.userName,
-      avatar:
-        'http://www.photo.lulifa.com/uploads/medium/e7/e0/014ee539401b2bf72d67409e5579.jpg',
+      avatar,
       desc: userInfoRes.uniqueName ?? userInfoRes.name,
       email: userInfoRes.email ?? userInfoRes.email,
       emailVerified:
@@ -199,7 +204,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   function $reset() {
     const userInfo = userStore.userInfo;
-    if (userInfo?.avatar) {
+    if (userInfo?.avatar?.startsWith('blob:')) {
       URL.revokeObjectURL(userInfo?.avatar);
     }
     loginLoading.value = false;

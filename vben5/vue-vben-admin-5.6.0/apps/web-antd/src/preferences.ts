@@ -8,6 +8,7 @@ import { defineOverridesPreferences } from '@vben/preferences';
 export const overridesPreferences = defineOverridesPreferences({
   // overrides
   app: {
+    defaultAvatar: '/avatar/default-avatar.svg',
     name: import.meta.env.VITE_APP_TITLE,
     accessMode: 'backend',
     enableRefreshToken: true,

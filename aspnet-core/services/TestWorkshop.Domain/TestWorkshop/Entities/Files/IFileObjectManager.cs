@@ -51,6 +51,13 @@ public interface IFileObjectManager
     Task<(Stream Content, string ContentType, string FileName)> GetFileAsync(Guid fileId);
 
     /// <summary>
+    /// 按 ownerType + ownerId 获取文件（ownerId 为 null 时获取系统文件，不存在返回 null）
+    /// </summary>
+    Task<FileObject> GetFileObjectByOwnerAsync(
+        string ownerType,
+        string ownerId = null);
+
+    /// <summary>
     /// 获取文件元数据
     /// </summary>
     Task<FileObject> GetFileObjectAsync(Guid fileId);

@@ -117,6 +117,22 @@ public class FileAppService : ApplicationService, IFileAppService
     }
 
     /// <summary>
+    /// 按 ownerType + ownerId 下载文件（ownerId 为 null 时获取系统文件）
+    /// </summary>
+    public virtual async Task<IRemoteStreamContent> DownloadByOwnerAsync(string ownerType, string ownerId = null)
+    {
+        if (string.IsNullOrWhiteSpace(ownerType))
+            throw new UserFriendlyException("ownerType 不能为空");
+
+        var fileObject = await _fileObjectManager.GetFileObjectByOwnerAsync(ownerType, ownerId);
+        if (fileObject == null)
+            return null;
+
+        var (stream, contentType, fileName) = await _fileObjectManager.GetFileAsync(fileObject.Id);
+        return new RemoteStreamContent(stream, fileName, contentType);
+    }
+
+    /// <summary>
     /// 删除单个文件
     /// </summary>
     public virtual async Task DeleteAsync(Guid id)

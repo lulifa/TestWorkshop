@@ -35,6 +35,11 @@ public interface IFileAppService : IApplicationService
     Task<IRemoteStreamContent> DownloadAsync(Guid id);
 
     /// <summary>
+    /// 按 ownerType + ownerId 下载文件（ownerId 为 null 时获取系统文件）
+    /// </summary>
+    Task<IRemoteStreamContent> DownloadByOwnerAsync(string ownerType, string ownerId = null);
+
+    /// <summary>
     /// 删除单个文件
     /// </summary>
     Task DeleteAsync(Guid id);
