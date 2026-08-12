@@ -10,6 +10,7 @@ import { $t } from '@vben/locales';
 import { useFileApi } from '@abp/core';
 import {
   DeleteOutlined,
+  EyeOutlined,
   FileExcelOutlined,
   FileImageOutlined,
   FileOutlined,
@@ -19,7 +20,7 @@ import {
   FileZipOutlined,
   InboxOutlined,
 } from '@ant-design/icons-vue';
-import { Button, message, Tag, UploadDragger } from 'ant-design-vue';
+import { Button, Image, message, Tag, UploadDragger } from 'ant-design-vue';
 
 const emits = defineEmits<{
   (event: 'change'): void;
@@ -260,12 +261,18 @@ async function onSubmit() {
             :key="file.uid"
             class="flex items-center gap-3 rounded-md border border-border p-2.5"
           >
-            <img
+            <Image
               v-if="file.thumbUrl"
               :alt="file.name"
+              :height="40"
               :src="file.thumbUrl"
+              :width="40"
               class="size-10 shrink-0 rounded-md border border-border object-cover"
-            />
+            >
+              <template #previewMask>
+                <EyeOutlined />
+              </template>
+            </Image>
             <div
               v-else
               class="flex size-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-lg text-primary"
