@@ -1,6 +1,6 @@
 ﻿namespace TestWorkshop;
 
-[Authorize(IdentityPermissions.Users.Default)]
+[Authorize]
 public class SystemIdentityUserAppService : TestWorkshopAppService, ISystemIdentityUserAppService
 {
     protected IdentityUserAppService IdentityUserAppService { get; }

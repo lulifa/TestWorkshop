@@ -7,7 +7,7 @@ import type { VxeGridListeners, VxeGridProps } from '#/adapter/vxe-table';
 
 import { defineAsyncComponent, h, ref } from 'vue';
 
-import { Page, useVbenDrawer } from '@vben/common-ui';
+import { Page, useVbenDrawer, useVbenModal } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 
 import {
@@ -15,10 +15,11 @@ import {
   NotificationMessageLevel,
   useNotificationsApi,
 } from '@abp/core';
-import { ReadOutlined } from '@ant-design/icons-vue';
+import { ReadOutlined, SendOutlined } from '@ant-design/icons-vue';
 import { Button, message, Space, Tag, Tooltip } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { useNotificationStore } from '#/store';
 
 defineOptions({
   name: 'MyMessage',
@@ -26,6 +27,7 @@ defineOptions({
 
 const { getMyNotificationListApi, setBatchReadApi, setReadApi } =
   useNotificationsApi();
+const notificationStore = useNotificationStore();
 
 const selectedRows = ref<NotificationOutput[]>([]);
 
@@ -262,6 +264,13 @@ const [Grid, gridApi] = useVbenVxeGrid({
   gridOptions,
 });
 
+const [SendModal, sendModalApi] = useVbenModal({
+  connectedComponent: defineAsyncComponent(
+    () =>
+      import('#/views/modules/platform/notifications/components/SendNotificationModal.vue'),
+  ),
+});
+
 function syncSelectedRows() {
   selectedRows.value = (gridApi.grid.getCheckboxRecords() ??
     []) as NotificationOutput[];
@@ -286,10 +295,20 @@ function onPreview(row: NotificationOutput) {
   detailDrawerApi.open();
 }
 
+function onSend() {
+  sendModalApi.open();
+}
+
+function onSendSuccess() {
+  void gridApi.query();
+  void notificationStore.refresh();
+}
+
 async function onSetRead(row: NotificationOutput) {
   await setReadApi({ id: row.id });
   message.success($t('AbpUi.SavedSuccessfully'));
   await gridApi.query();
+  await notificationStore.refresh();
 }
 
 async function onBatchRead() {
@@ -300,6 +319,7 @@ async function onBatchRead() {
   await setBatchReadApi({ ids });
   message.success($t('AbpUi.SavedSuccessfully'));
   await gridApi.query();
+  await notificationStore.refresh();
 }
 </script>
 
@@ -308,6 +328,9 @@ async function onBatchRead() {
     <Grid :table-title="$t('TestWorkshop.Notification:MyMessage')">
       <template #toolbar-tools>
         <Space :size="8">
+          <Button :icon="h(SendOutlined)" type="primary" @click="onSend">
+            {{ $t('TestWorkshop.Notification:SendMessage') }}
+          </Button>
           <Button
             v-if="selectedRows.length > 0"
             class="!border-green-500 !bg-green-500 !text-white hover:!border-green-600 hover:!bg-green-600"
@@ -363,6 +386,7 @@ async function onBatchRead() {
       </template>
     </Grid>
 
+    <SendModal mode="message" @change="onSendSuccess" />
     <DetailDrawer />
   </Page>
 </template>

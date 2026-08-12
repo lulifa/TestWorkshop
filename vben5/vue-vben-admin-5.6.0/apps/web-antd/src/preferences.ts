@@ -18,7 +18,7 @@ export const overridesPreferences = defineOverridesPreferences({
     radius: '0.25',
   },
   widget: {
-    notification: false,
+    notification: true,
     timezone: false,
   },
 });

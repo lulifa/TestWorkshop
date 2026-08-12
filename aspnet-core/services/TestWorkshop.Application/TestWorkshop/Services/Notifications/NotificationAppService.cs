@@ -17,7 +17,6 @@ public class NotificationAppService : TestWorkshopAppService, INotificationAppSe
         _messageManager = messageManager;
     }
 
-    [Authorize(TestWorkshopPermissions.Notification.Create)]
     public virtual async Task SendCommonMessageAsync(SendCommonMessageInput input)
     {
         await _messageManager.SendMessageAsync(input.Title, input.Content, MessageType.Common, input.MessageLevel, CurrentUser.GetId(), CurrentUser.UserName, input.ReceiveUserId, input.ReceiveUserName, CurrentTenant.Id);

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { WorkbenchTodoItem, WorkbenchTrendItem } from '@vben/common-ui';
+import type { WorkbenchTodoItem } from '@vben/common-ui';
 
 import type { FavoriteMenu } from '../types';
 
@@ -12,11 +12,9 @@ import { preferences } from '@vben/preferences';
 import { useUserStore } from '@vben/stores';
 
 import { useMyFavoriteMenusApi } from '@abp/core';
-// import {
-//   useMyNotifilersApi,
-//   useNotificationSerializer,
-// } from '@abp/notifications';
 import { Empty, message } from 'ant-design-vue';
+
+import { useNotificationStore } from '#/store';
 
 import WorkbenchHeader from './WorkbenchHeader.vue';
 import WorkbenchQuickNav from './WorkbenchQuickNav.vue';
@@ -28,10 +26,9 @@ defineEmits<{
 }>();
 
 const userStore = useUserStore();
-// const { getMyNotifilersApi } = useMyNotifilersApi();
 const { getListApi: getFavoriteMenusApi, deleteApi: deleteFavoriteMenuApi } =
   useMyFavoriteMenusApi();
-// const { deserialize } = useNotificationSerializer();
+const notificationStore = useNotificationStore();
 const { uiFramework } = useAppConfig(import.meta.env, import.meta.env.PROD);
 
 const defaultMenus: FavoriteMenu[] = [
@@ -52,8 +49,6 @@ const defaultMenus: FavoriteMenu[] = [
   //   isDefault: true,
   // },
 ];
-const unReadNotifilerCount = ref(0);
-const unReadNotifilers = ref<WorkbenchTrendItem[]>([]);
 const favoriteMenus = ref<FavoriteMenu[]>([]);
 const todoList = ref<WorkbenchTodoItem[]>([]);
 
@@ -93,8 +88,8 @@ const [WorkbenchQuickNavModal, quickNavModalApi] = useVbenModal({
 async function onInit() {
   await Promise.all([
     onInitFavoriteMenus(),
-    // onInitNotifiers(),
     onInitTodoList(),
+    notificationStore.refresh(),
   ]);
 }
 async function onInitFavoriteMenus() {
@@ -107,22 +102,6 @@ async function onInitFavoriteMenus() {
     };
   });
 }
-// async function onInitNotifiers() {
-//   const { items, totalCount } = await getMyNotifilersApi({
-//     maxResultCount: 10,
-//     readState: NotificationReadState.UnRead,
-//   });
-//   unReadNotifilers.value = items.map((item) => {
-//     const notifier = deserialize(item);
-//     return {
-//       avatar: '',
-//       date: formatToDateTime(item.creationTime),
-//       title: notifier.title,
-//       content: notifier.message,
-//     };
-//   });
-//   unReadNotifilerCount.value = totalCount;
-// }
 async function onInitTodoList() {
   // TODO: 实现待办事项列表
   todoList.value = [];
@@ -146,7 +125,7 @@ onMounted(onInit);
     <WorkbenchHeader
       :avatar="userStore.userInfo?.avatar || preferences.app.defaultAvatar"
       :text="userStore.userInfo?.realName"
-      :notifier-count="unReadNotifilerCount"
+      :notifier-count="notificationStore.unreadCount"
     >
       <template #title>
         {{ getWelcomeTitle }}
@@ -176,7 +155,7 @@ onMounted(onInit);
       </div>
       <div class="w-full lg:w-2/5">
         <WorkbenchTrends
-          :items="unReadNotifilers"
+          :items="notificationStore.unreadTrends"
           :title="$t('workbench.content.trends.title')"
         >
           <template #empty>
