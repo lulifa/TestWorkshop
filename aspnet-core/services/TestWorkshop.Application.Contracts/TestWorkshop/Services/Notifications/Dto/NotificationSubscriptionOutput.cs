@@ -38,6 +38,11 @@ public class NotificationSubscriptionOutput
     public DateTime ReadTime { get; set; }
 
     /// <summary>
+    /// 创建时间
+    /// </summary>
+    public DateTime CreationTime { get; set; }
+
+    /// <summary>
     /// 消息标题
     /// </summary>
     public string Title { get; set; }

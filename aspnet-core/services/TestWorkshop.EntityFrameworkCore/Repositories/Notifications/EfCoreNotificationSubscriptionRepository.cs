@@ -6,10 +6,10 @@ public class EfCoreNotificationSubscriptionRepository : EfCoreRepository<TestWor
     {
     }
 
-    public async Task<List<NotificationSubscription>> GetListAsync(Guid notificationId, Guid? receiverUserId, string receiverUserName, DateTime? startReadTime, DateTime? endReadTime, int maxResultCount = 10, int skipCount = 0, CancellationToken cancellationToken = default)
+    public async Task<List<NotificationSubscription>> GetListAsync(Guid? notificationId, Guid? receiverUserId, string receiverUserName, DateTime? startReadTime, DateTime? endReadTime, int maxResultCount = 10, int skipCount = 0, CancellationToken cancellationToken = default)
     {
         return await (await GetDbSetAsync())
-            .Where(e => e.NotificationId == notificationId)
+            .WhereIf(notificationId.HasValue, e => e.NotificationId == notificationId.Value)
             .WhereIf(receiverUserId.HasValue, e => e.ReceiveUserId == receiverUserId.Value)
             .WhereIf(!receiverUserName.IsNullOrWhiteSpace(), e => e.ReceiveUserName == receiverUserName)
             .WhereIf(startReadTime.HasValue, e => e.ReadTime >= startReadTime.Value)
@@ -19,10 +19,10 @@ public class EfCoreNotificationSubscriptionRepository : EfCoreRepository<TestWor
             .ToListAsync(GetCancellationToken(cancellationToken));
     }
 
-    public async Task<long> GetCountAsync(Guid notificationId, Guid? receiverUserId, string receiverUserName, DateTime? startReadTime, DateTime? endReadTime, CancellationToken cancellationToken = default)
+    public async Task<long> GetCountAsync(Guid? notificationId, Guid? receiverUserId, string receiverUserName, DateTime? startReadTime, DateTime? endReadTime, CancellationToken cancellationToken = default)
     {
         return await (await GetDbSetAsync())
-            .Where(e => e.NotificationId == notificationId)
+            .WhereIf(notificationId.HasValue, e => e.NotificationId == notificationId.Value)
             .WhereIf(receiverUserId.HasValue, e => e.ReceiveUserId == receiverUserId.Value)
             .WhereIf(!receiverUserName.IsNullOrWhiteSpace(), e => e.ReceiveUserName == receiverUserName)
             .WhereIf(startReadTime.HasValue, e => e.ReadTime >= startReadTime.Value)

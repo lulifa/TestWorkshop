@@ -47,6 +47,27 @@ public class NotificationController : TestWorkshopController, INotificationAppSe
         return Service.DeleteAsync(input);
     }
 
+    [HttpPut]
+    [Route("subscription/set-read")]
+    public Task SetSubscriptionReadAsync(NotificationCoreInput input)
+    {
+        return Service.SetSubscriptionReadAsync(input);
+    }
+
+    [HttpPut]
+    [Route("subscription/set-batchread")]
+    public Task SetSubscriptionBatchReadAsync(SetBatchReadInput input)
+    {
+        return Service.SetSubscriptionBatchReadAsync(input);
+    }
+
+    [HttpDelete]
+    [Route("subscription/delete")]
+    public Task DeleteSubscriptionAsync(NotificationCoreInput input)
+    {
+        return Service.DeleteSubscriptionAsync(input);
+    }
+
     [HttpGet]
     [Route("my-notification")]
     public Task<PagedResultDto<NotificationOutput>> GetMyNotificationListAsync(NotificationInput input)

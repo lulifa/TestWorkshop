@@ -1,11 +1,12 @@
 <script lang="ts" setup>
-import type { NotificationOutput } from '@abp/core';
+import type { NotificationSubscriptionOutput } from '@abp/core';
 
 import type { VbenFormProps } from '@vben/common-ui';
 
 import type { VxeGridListeners, VxeGridProps } from '#/adapter/vxe-table';
 
-import { defineAsyncComponent } from 'vue';
+import { defineAsyncComponent, h, ref } from 'vue';
+import { useRoute } from 'vue-router';
 
 import { Page, useVbenDrawer } from '@vben/common-ui';
 import { $t } from '@vben/locales';
@@ -13,18 +14,28 @@ import { $t } from '@vben/locales';
 import {
   formatToDateTime,
   NotificationMessageLevel,
-  NotificationMessageType,
   useNotificationsApi,
 } from '@abp/core';
-import { Button, Tag } from 'ant-design-vue';
+import { DeleteOutlined, ReadOutlined } from '@ant-design/icons-vue';
+import { Button, message, Space, Tag, Tooltip } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { useNotificationStore } from '#/store';
 
 defineOptions({
   name: 'MyBroadcast',
 });
 
-const { getNotificationListApi } = useNotificationsApi();
+const {
+  deleteSubscriptionApi,
+  getSubscriptionListApi,
+  setSubscriptionBatchReadApi,
+  setSubscriptionReadApi,
+} = useNotificationsApi();
+const notificationStore = useNotificationStore();
+const route = useRoute();
+
+const selectedRows = ref<NotificationSubscriptionOutput[]>([]);
 
 const levelColorMap: Record<NotificationMessageLevel, string> = {
   [NotificationMessageLevel.Error]: 'error',
@@ -56,8 +67,19 @@ const levelOptions = [
   },
 ];
 
+const readOptions = [
+  {
+    label: $t('TestWorkshop.Notification:Read'),
+    value: true,
+  },
+  {
+    label: $t('TestWorkshop.Notification:Unread'),
+    value: false,
+  },
+];
+
 const formOptions: VbenFormProps = {
-  collapsed: true,
+  collapsed: false,
   commonConfig: {
     colon: true,
     componentProps: {
@@ -71,7 +93,7 @@ const formOptions: VbenFormProps = {
         allowClear: true,
       },
       fieldName: 'title',
-      formItemClass: 'col-span-2 items-baseline',
+      formItemClass: 'col-span-1 items-baseline',
       label: $t('TestWorkshop.DisplayName:Subject'),
     },
     {
@@ -80,7 +102,7 @@ const formOptions: VbenFormProps = {
         allowClear: true,
       },
       fieldName: 'content',
-      formItemClass: 'col-span-2 items-baseline',
+      formItemClass: 'col-span-1 items-baseline',
       label: $t('TestWorkshop.DisplayName:Content'),
     },
     {
@@ -92,14 +114,40 @@ const formOptions: VbenFormProps = {
       fieldName: 'messageLevel',
       label: $t('TestWorkshop.Notification:Level'),
     },
+    {
+      component: 'Select',
+      componentProps: {
+        allowClear: true,
+        options: readOptions,
+      },
+      defaultValue: route.query.read === 'false' ? false : undefined,
+      fieldName: 'read',
+      label: $t('TestWorkshop.Notification:ReadState'),
+    },
   ],
-  showCollapseButton: true,
+  showCollapseButton: false,
   submitOnEnter: true,
   wrapperClass: 'grid-cols-4',
 };
 
-const gridOptions: VxeGridProps<NotificationOutput> = {
+function buildParams(values: Record<string, any>, extra?: Record<string, any>) {
+  const params: Record<string, any> = {
+    ...values,
+    ...extra,
+  };
+  if (params.read !== undefined && params.read !== null) {
+    params.read = params.read === 'true' || params.read === true;
+  }
+  return params;
+}
+
+const gridOptions: VxeGridProps<NotificationSubscriptionOutput> = {
   columns: [
+    {
+      align: 'center',
+      type: 'checkbox',
+      width: 50,
+    },
     {
       align: 'center',
       type: 'seq',
@@ -137,6 +185,28 @@ const gridOptions: VxeGridProps<NotificationOutput> = {
       minWidth: 130,
       title: $t('TestWorkshop.DisplayName:SendTime'),
     },
+    {
+      align: 'center',
+      field: 'read',
+      slots: { default: 'read' },
+      title: $t('TestWorkshop.Notification:ReadState'),
+      width: 80,
+    },
+    {
+      field: 'readTime',
+      formatter: ({ cellValue }) => {
+        return cellValue ? formatToDateTime(cellValue) : '';
+      },
+      minWidth: 130,
+      title: $t('TestWorkshop.Notification:ReadTime'),
+    },
+    {
+      field: 'action',
+      fixed: 'right',
+      slots: { default: 'action' },
+      title: $t('AbpUi.Actions'),
+      width: 90,
+    },
   ],
   exportConfig: {},
   height: 'auto',
@@ -145,23 +215,25 @@ const gridOptions: VxeGridProps<NotificationOutput> = {
     ajax: {
       query: async ({ page, sort }, formValues) => {
         const sorting = sort.order ? `${sort.field} ${sort.order}` : undefined;
-        return await getNotificationListApi({
-          ...(formValues as Record<string, any>),
+        const params = buildParams(formValues as Record<string, any>, {
           maxResultCount: page.pageSize,
-          messageType: NotificationMessageType.BroadCast,
           skipCount: (page.currentPage - 1) * page.pageSize,
           sorting,
         });
+        return await getSubscriptionListApi(params);
       },
       queryAll: async ({ sort }) => {
         const formValues = await gridApi.formApi.getValues();
         const sorting = sort.order ? `${sort.field} ${sort.order}` : undefined;
-        return await getNotificationListApi({
-          ...formValues,
-          isPaged: false,
-          messageType: NotificationMessageType.BroadCast,
-          sorting,
-        });
+        return await getSubscriptionListApi(
+          buildParams(formValues, {
+            isPaged: false,
+            sorting,
+          }),
+        );
+      },
+      querySuccess: () => {
+        selectedRows.value = [];
       },
     },
     response: {
@@ -180,7 +252,9 @@ const gridOptions: VxeGridProps<NotificationOutput> = {
   },
 };
 
-const gridEvents: VxeGridListeners<NotificationOutput> = {
+const gridEvents: VxeGridListeners<NotificationSubscriptionOutput> = {
+  checkboxAll: syncSelectedRows,
+  checkboxChange: syncSelectedRows,
   sortChange: () => {
     gridApi.query();
   },
@@ -206,15 +280,57 @@ function levelLabel(level: NotificationMessageLevel) {
   return levelLabelMap[level];
 }
 
-function onPreview(row: NotificationOutput) {
+function syncSelectedRows() {
+  selectedRows.value = (gridApi.grid.getCheckboxRecords() ??
+    []) as NotificationSubscriptionOutput[];
+}
+
+function onPreview(row: NotificationSubscriptionOutput) {
   detailDrawerApi.setData(row);
   detailDrawerApi.open();
+}
+
+async function onSetRead(row: NotificationSubscriptionOutput) {
+  await setSubscriptionReadApi({ id: row.id });
+  message.success($t('AbpUi.SavedSuccessfully'));
+  await gridApi.query();
+  await notificationStore.refresh();
+}
+
+async function onBatchRead() {
+  const ids = selectedRows.value.map((item) => item.id);
+  if (ids.length === 0) {
+    return;
+  }
+  await setSubscriptionBatchReadApi({ ids });
+  message.success($t('AbpUi.SavedSuccessfully'));
+  await gridApi.query();
+  await notificationStore.refresh();
+}
+
+async function onDelete(row: NotificationSubscriptionOutput) {
+  await deleteSubscriptionApi({ id: row.id });
+  message.success($t('AbpUi.SavedSuccessfully'));
+  await gridApi.query();
+  await notificationStore.refresh();
 }
 </script>
 
 <template>
   <Page auto-content-height>
     <Grid :table-title="$t('TestWorkshop.Notification:MyBroadcast')">
+      <template #toolbar-tools>
+        <Space :size="8">
+          <Button
+            v-if="selectedRows.length > 0"
+            class="!border-green-500 !bg-green-500 !text-white hover:!border-green-600 hover:!bg-green-600"
+            :icon="h(ReadOutlined)"
+            @click="onBatchRead"
+          >
+            {{ $t('TestWorkshop.Notification:BatchRead') }}
+          </Button>
+        </Space>
+      </template>
       <template #title="{ row }">
         <Button
           class="h-auto p-0 text-left"
@@ -234,6 +350,37 @@ function onPreview(row: NotificationOutput) {
         <Tag :color="levelColor(row.messageLevel)">
           {{ levelLabel(row.messageLevel) }}
         </Tag>
+      </template>
+      <template #read="{ row }">
+        <Tag :color="row.read ? 'success' : 'warning'">
+          {{
+            row.read
+              ? $t('TestWorkshop.Notification:Read')
+              : $t('TestWorkshop.Notification:Unread')
+          }}
+        </Tag>
+      </template>
+      <template #action="{ row }">
+        <Space :size="4">
+          <Tooltip
+            v-if="!row.read"
+            :title="$t('TestWorkshop.Notification:SetRead')"
+          >
+            <Button
+              :icon="h(ReadOutlined)"
+              type="link"
+              @click="onSetRead(row)"
+            />
+          </Tooltip>
+          <Tooltip :title="$t('common.delete')">
+            <Button
+              :icon="h(DeleteOutlined)"
+              danger
+              type="link"
+              @click="onDelete(row)"
+            />
+          </Tooltip>
+        </Space>
       </template>
     </Grid>
 

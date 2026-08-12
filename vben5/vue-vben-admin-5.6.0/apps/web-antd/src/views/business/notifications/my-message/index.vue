@@ -6,6 +6,7 @@ import type { VbenFormProps } from '@vben/common-ui';
 import type { VxeGridListeners, VxeGridProps } from '#/adapter/vxe-table';
 
 import { defineAsyncComponent, h, ref } from 'vue';
+import { useRoute } from 'vue-router';
 
 import { Page, useVbenDrawer, useVbenModal } from '@vben/common-ui';
 import { $t } from '@vben/locales';
@@ -28,6 +29,7 @@ defineOptions({
 const { getMyNotificationListApi, setBatchReadApi, setReadApi } =
   useNotificationsApi();
 const notificationStore = useNotificationStore();
+const route = useRoute();
 
 const selectedRows = ref<NotificationOutput[]>([]);
 
@@ -73,7 +75,7 @@ const readOptions = [
 ];
 
 const formOptions: VbenFormProps = {
-  collapsed: true,
+  collapsed: false,
   commonConfig: {
     colon: true,
     componentProps: {
@@ -87,7 +89,7 @@ const formOptions: VbenFormProps = {
         allowClear: true,
       },
       fieldName: 'title',
-      formItemClass: 'col-span-2 items-baseline',
+      formItemClass: 'col-span-1 items-baseline',
       label: $t('TestWorkshop.DisplayName:Subject'),
     },
     {
@@ -96,7 +98,7 @@ const formOptions: VbenFormProps = {
         allowClear: true,
       },
       fieldName: 'content',
-      formItemClass: 'col-span-2 items-baseline',
+      formItemClass: 'col-span-1 items-baseline',
       label: $t('TestWorkshop.DisplayName:Content'),
     },
     {
@@ -114,11 +116,12 @@ const formOptions: VbenFormProps = {
         allowClear: true,
         options: readOptions,
       },
+      defaultValue: route.query.read === 'false' ? false : undefined,
       fieldName: 'read',
       label: $t('TestWorkshop.Notification:ReadState'),
     },
   ],
-  showCollapseButton: true,
+  showCollapseButton: false,
   submitOnEnter: true,
   wrapperClass: 'grid-cols-4',
 };

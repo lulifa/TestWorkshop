@@ -17,9 +17,10 @@ import { Empty, message } from 'ant-design-vue';
 import { useNotificationStore } from '#/store';
 
 import WorkbenchHeader from './WorkbenchHeader.vue';
+import WorkbenchNotificationList from './WorkbenchNotificationList.vue';
 import WorkbenchQuickNav from './WorkbenchQuickNav.vue';
 import WorkbenchTodo from './WorkbenchTodo.vue';
-import WorkbenchTrends from './WorkbenchTrends.vue';
+import WorkbenchWeather from './WorkbenchWeather.vue';
 
 defineEmits<{
   (event: 'navTo', menu: FavoriteMenu): void;
@@ -125,13 +126,15 @@ onMounted(onInit);
     <WorkbenchHeader
       :avatar="userStore.userInfo?.avatar || preferences.app.defaultAvatar"
       :text="userStore.userInfo?.realName"
+      :broadcast-count="notificationStore.unreadBroadcastCount"
       :notifier-count="notificationStore.unreadCount"
     >
       <template #title>
         {{ getWelcomeTitle }}
       </template>
-      <template #description> 今日晴，20℃ - 32℃！ </template>
     </WorkbenchHeader>
+
+    <WorkbenchWeather />
 
     <div class="mt-5 flex flex-col lg:flex-row">
       <div class="mr-4 w-full lg:w-3/5">
@@ -154,14 +157,15 @@ onMounted(onInit);
         </WorkbenchTodo>
       </div>
       <div class="w-full lg:w-2/5">
-        <WorkbenchTrends
-          :items="notificationStore.unreadTrends"
-          :title="$t('workbench.content.trends.title')"
+        <WorkbenchNotificationList
+          :broadcasts="notificationStore.broadcastTrends"
+          :messages="notificationStore.unreadTrends"
+          :title="$t('workbench.content.notificationCenter.title')"
         >
           <template #empty>
             <Empty />
           </template>
-        </WorkbenchTrends>
+        </WorkbenchNotificationList>
       </div>
     </div>
     <WorkbenchQuickNavModal @change="onInitFavoriteMenus" />

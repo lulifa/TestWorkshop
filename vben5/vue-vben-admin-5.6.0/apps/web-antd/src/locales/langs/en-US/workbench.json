@@ -30,6 +30,12 @@
     "trends": {
       "title": "Latest News"
     },
+    "broadcastTrends": {
+      "title": "Latest Broadcasts"
+    },
+    "notificationCenter": {
+      "title": "Messages / Broadcasts"
+    },
     "todo": {
       "title": "Todo List"
     }

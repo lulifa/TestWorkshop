@@ -16,8 +16,8 @@ import {
   NotificationMessageType,
   useNotificationsApi,
 } from '@abp/core';
-import { SendOutlined } from '@ant-design/icons-vue';
-import { Button, Tag } from 'ant-design-vue';
+import { DeleteOutlined, SendOutlined } from '@ant-design/icons-vue';
+import { Button, message, Space, Tag, Tooltip } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 
@@ -25,7 +25,7 @@ defineOptions({
   name: 'BroadcastManagement',
 });
 
-const { getNotificationListApi } = useNotificationsApi();
+const { deleteApi, getNotificationListApi } = useNotificationsApi();
 
 const levelColorMap: Record<NotificationMessageLevel, string> = {
   [NotificationMessageLevel.Error]: 'error',
@@ -57,8 +57,19 @@ const levelOptions = [
   },
 ];
 
+const readOptions = [
+  {
+    label: $t('TestWorkshop.Notification:Read'),
+    value: true,
+  },
+  {
+    label: $t('TestWorkshop.Notification:Unread'),
+    value: false,
+  },
+];
+
 const formOptions: VbenFormProps = {
-  collapsed: true,
+  collapsed: false,
   commonConfig: {
     colon: true,
     componentProps: {
@@ -72,7 +83,7 @@ const formOptions: VbenFormProps = {
         allowClear: true,
       },
       fieldName: 'title',
-      formItemClass: 'col-span-2 items-baseline',
+      formItemClass: 'col-span-1 items-baseline',
       label: $t('TestWorkshop.DisplayName:Subject'),
     },
     {
@@ -81,7 +92,7 @@ const formOptions: VbenFormProps = {
         allowClear: true,
       },
       fieldName: 'content',
-      formItemClass: 'col-span-2 items-baseline',
+      formItemClass: 'col-span-1 items-baseline',
       label: $t('TestWorkshop.DisplayName:Content'),
     },
     {
@@ -93,11 +104,32 @@ const formOptions: VbenFormProps = {
       fieldName: 'messageLevel',
       label: $t('TestWorkshop.Notification:Level'),
     },
+    {
+      component: 'Select',
+      componentProps: {
+        allowClear: true,
+        options: readOptions,
+      },
+      fieldName: 'read',
+      label: $t('TestWorkshop.Notification:ReadState'),
+    },
   ],
-  showCollapseButton: true,
+  showCollapseButton: false,
   submitOnEnter: true,
   wrapperClass: 'grid-cols-4',
 };
+
+function buildParams(values: Record<string, any>, extra?: Record<string, any>) {
+  const params: Record<string, any> = {
+    ...values,
+    ...extra,
+    messageType: NotificationMessageType.BroadCast,
+  };
+  if (params.read !== undefined && params.read !== null) {
+    params.read = params.read === 'true' || params.read === true;
+  }
+  return params;
+}
 
 const gridOptions: VxeGridProps<NotificationOutput> = {
   columns: [
@@ -126,6 +158,21 @@ const gridOptions: VxeGridProps<NotificationOutput> = {
       width: 90,
     },
     {
+      align: 'center',
+      field: 'read',
+      slots: { default: 'read' },
+      title: $t('TestWorkshop.Notification:ReadState'),
+      width: 80,
+    },
+    {
+      field: 'readTime',
+      formatter: ({ cellValue }) => {
+        return cellValue ? formatToDateTime(cellValue) : '';
+      },
+      minWidth: 130,
+      title: $t('TestWorkshop.Notification:ReadTime'),
+    },
+    {
       field: 'senderUserName',
       minWidth: 90,
       title: $t('TestWorkshop.DisplayName:From'),
@@ -138,6 +185,13 @@ const gridOptions: VxeGridProps<NotificationOutput> = {
       minWidth: 130,
       title: $t('TestWorkshop.DisplayName:SendTime'),
     },
+    {
+      field: 'action',
+      fixed: 'right',
+      slots: { default: 'action' },
+      title: $t('AbpUi.Actions'),
+      width: 70,
+    },
   ],
   exportConfig: {},
   height: 'auto',
@@ -146,23 +200,23 @@ const gridOptions: VxeGridProps<NotificationOutput> = {
     ajax: {
       query: async ({ page, sort }, formValues) => {
         const sorting = sort.order ? `${sort.field} ${sort.order}` : undefined;
-        return await getNotificationListApi({
-          ...(formValues as Record<string, any>),
-          maxResultCount: page.pageSize,
-          messageType: NotificationMessageType.BroadCast,
-          skipCount: (page.currentPage - 1) * page.pageSize,
-          sorting,
-        });
+        return await getNotificationListApi(
+          buildParams(formValues as Record<string, any>, {
+            maxResultCount: page.pageSize,
+            skipCount: (page.currentPage - 1) * page.pageSize,
+            sorting,
+          }),
+        );
       },
       queryAll: async ({ sort }) => {
         const formValues = await gridApi.formApi.getValues();
         const sorting = sort.order ? `${sort.field} ${sort.order}` : undefined;
-        return await getNotificationListApi({
-          ...formValues,
-          isPaged: false,
-          messageType: NotificationMessageType.BroadCast,
-          sorting,
-        });
+        return await getNotificationListApi(
+          buildParams(formValues, {
+            isPaged: false,
+            sorting,
+          }),
+        );
       },
     },
     response: {
@@ -221,6 +275,12 @@ function onPreview(row: NotificationOutput) {
 function onSend() {
   sendModalApi.open();
 }
+
+async function onDelete(row: NotificationOutput) {
+  await deleteApi({ id: row.id });
+  message.success($t('AbpUi.SavedSuccessfully'));
+  await gridApi.query();
+}
 </script>
 
 <template>
@@ -250,6 +310,27 @@ function onSend() {
         <Tag :color="levelColor(row.messageLevel)">
           {{ levelLabel(row.messageLevel) }}
         </Tag>
+      </template>
+      <template #read="{ row }">
+        <Tag :color="row.read ? 'success' : 'warning'">
+          {{
+            row.read
+              ? $t('TestWorkshop.Notification:Read')
+              : $t('TestWorkshop.Notification:Unread')
+          }}
+        </Tag>
+      </template>
+      <template #action="{ row }">
+        <Space :size="4">
+          <Tooltip :title="$t('common.delete')">
+            <Button
+              :icon="h(DeleteOutlined)"
+              danger
+              type="link"
+              @click="onDelete(row)"
+            />
+          </Tooltip>
+        </Space>
       </template>
     </Grid>
 

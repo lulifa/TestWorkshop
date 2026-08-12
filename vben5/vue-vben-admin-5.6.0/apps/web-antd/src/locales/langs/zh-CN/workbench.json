@@ -30,6 +30,12 @@
     "trends": {
       "title": "最新消息"
     },
+    "broadcastTrends": {
+      "title": "最新通告"
+    },
+    "notificationCenter": {
+      "title": "消息 / 通告"
+    },
     "todo": {
       "title": "待办事项"
     }

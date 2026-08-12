@@ -43,18 +43,25 @@ withDefaults(defineProps<Props>(), {
               class="size-10 flex-none rounded-full"
             />
             <div class="min-w-0 flex-auto">
-              <p class="text-sm font-semibold leading-6 text-foreground">
+              <p
+                class="text-sm font-semibold leading-6 text-foreground"
+                :title="item.title"
+              >
                 {{ item.title }}
               </p>
               <!-- eslint-disable vue/no-v-html -->
               <p
                 class="mt-1 truncate text-xs leading-5 text-foreground/80 *:text-primary"
+                :title="item.content"
                 v-html="item.content"
               ></p>
             </div>
           </div>
           <div class="hidden h-full shrink-0 sm:flex sm:flex-col sm:items-end">
-            <span class="mt-6 text-xs leading-6 text-foreground/80">
+            <span
+              class="mt-6 text-xs leading-6 text-foreground/80"
+              :title="item.date"
+            >
               {{ item.date }}
             </span>
           </div>

@@ -13,6 +13,12 @@ public interface INotificationAppService : IApplicationService
 
     Task DeleteAsync(NotificationDeleteInput input);
 
+    Task SetSubscriptionReadAsync(NotificationCoreInput input);
+
+    Task SetSubscriptionBatchReadAsync(SetBatchReadInput input);
+
+    Task DeleteSubscriptionAsync(NotificationCoreInput input);
+
     Task<PagedResultDto<NotificationOutput>> GetMyNotificationListAsync(NotificationInput input);
 
     Task<PagedResultDto<NotificationOutput>> GetNotificationListAsync(NotificationInput input);

@@ -77,7 +77,17 @@ function handleNoticeClear() {
 }
 
 function handleViewAll() {
-  router.push('/business/notifications/my-message');
+  router.push({
+    path: '/business/notifications/my-message',
+    query: { read: 'false' },
+  });
+}
+
+function handleViewBroadcastAll() {
+  router.push({
+    path: '/business/notifications/my-broadcast',
+    query: { read: 'false' },
+  });
 }
 
 onMounted(() => {
@@ -120,11 +130,20 @@ watch(
     </template>
     <template #notification>
       <Notification
+        :broadcasts="notificationStore.broadcasts"
         :dot="notificationStore.showDot"
         :notifications="notificationStore.notifications"
         :removable="false"
         @clear="handleNoticeClear"
+        @clear-broadcasts="notificationStore.clearBroadcasts"
         @read="(item) => item.id && notificationStore.markRead(item.id)"
+        @read-broadcast="
+          (item) => item.id && notificationStore.markBroadcastRead(item.id)
+        "
+        @remove-broadcast="
+          (item) => item.id && notificationStore.removeBroadcast(item.id)
+        "
+        @view-broadcast-all="handleViewBroadcastAll"
         @view-all="handleViewAll"
       />
     </template>

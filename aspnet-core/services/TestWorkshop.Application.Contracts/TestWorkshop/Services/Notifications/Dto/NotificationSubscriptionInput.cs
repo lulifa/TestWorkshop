@@ -3,7 +3,7 @@
 public class NotificationSubscriptionInput : PagedAndSortedResultRequestDto, IEnablePaging
 {
 
-    public Guid NotificationId { get; set; }
+    public Guid? NotificationId { get; set; }
 
 
     /// <summary>

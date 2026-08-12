@@ -8,10 +8,15 @@ public interface INotificationSubscriptionManager
     Task SetReadAsync(Guid receiveUserId, string receiveUserName, Guid notificationId);
 
     /// <summary>
+    /// 按订阅记录设置已读
+    /// </summary>
+    Task SetReadAsync(Guid id, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// 分页获取消息
     /// </summary>
     Task<List<NotificationSubscription>> GetListAsync(
-        Guid notificationId,
+        Guid? notificationId,
         Guid? receiverUserId,
         string receiverUserName,
         DateTime? startReadTime,
@@ -24,7 +29,7 @@ public interface INotificationSubscriptionManager
     /// 获取消息总条数
     /// </summary>
     Task<long> GetCountAsync(
-        Guid notificationId,
+        Guid? notificationId,
         Guid? receiverUserId,
         string receiverUserName,
         DateTime? startReadTime,

@@ -79,7 +79,7 @@ const readOptions = [
 ];
 
 const formOptions: VbenFormProps = {
-  collapsed: true,
+  collapsed: false,
   commonConfig: {
     colon: true,
     componentProps: {
@@ -93,7 +93,7 @@ const formOptions: VbenFormProps = {
         allowClear: true,
       },
       fieldName: 'title',
-      formItemClass: 'col-span-2 items-baseline',
+      formItemClass: 'col-span-1 items-baseline',
       label: $t('TestWorkshop.DisplayName:Subject'),
     },
     {
@@ -102,7 +102,7 @@ const formOptions: VbenFormProps = {
         allowClear: true,
       },
       fieldName: 'content',
-      formItemClass: 'col-span-2 items-baseline',
+      formItemClass: 'col-span-1 items-baseline',
       label: $t('TestWorkshop.DisplayName:Content'),
     },
     {
@@ -124,7 +124,7 @@ const formOptions: VbenFormProps = {
       label: $t('TestWorkshop.Notification:ReadState'),
     },
   ],
-  showCollapseButton: true,
+  showCollapseButton: false,
   submitOnEnter: true,
   wrapperClass: 'grid-cols-4',
 };

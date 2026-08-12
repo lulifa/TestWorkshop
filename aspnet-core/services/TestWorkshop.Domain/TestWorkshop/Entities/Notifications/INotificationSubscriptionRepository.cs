@@ -7,7 +7,7 @@ public interface INotificationSubscriptionRepository : IBasicRepository<Notifica
     /// 分页获取消息
     /// </summary>
     Task<List<NotificationSubscription>> GetListAsync(
-        Guid notificationId,
+        Guid? notificationId,
         Guid? receiverUserId,
         string receiverUserName,
         DateTime? startReadTime,
@@ -20,7 +20,7 @@ public interface INotificationSubscriptionRepository : IBasicRepository<Notifica
     /// 获取消息总条数
     /// </summary>
     Task<long> GetCountAsync(
-        Guid notificationId,
+        Guid? notificationId,
         Guid? receiverUserId,
         string receiverUserName,
         DateTime? startReadTime,

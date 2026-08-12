@@ -15,6 +15,11 @@ public class NotificationSubscriptionManager : DomainService, INotificationSubsc
         var subscription = await _notificationSubscriptionRepository.FindAsync(receiveUserId, notificationId);
         if (subscription != null)
         {
+            if (!subscription.Read)
+            {
+                subscription.SetRead(Clock.Now);
+                await _notificationSubscriptionRepository.UpdateAsync(subscription);
+            }
             return;
         }
 
@@ -22,7 +27,15 @@ public class NotificationSubscriptionManager : DomainService, INotificationSubsc
         await _notificationSubscriptionRepository.InsertAsync(subscription);
     }
 
-    public async Task<List<NotificationSubscription>> GetListAsync(Guid notificationId, Guid? receiverUserId, string receiverUserName, DateTime? startReadTime, DateTime? endReadTime, int maxResultCount = 10, int skipCount = 0,
+    public async Task SetReadAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var subscription = await _notificationSubscriptionRepository.FindAsync(id, false, cancellationToken);
+        if (subscription == null) throw new NotificationDomainException(TestWorkshopErrorCodes.MessageNotExist);
+        subscription.SetRead(Clock.Now);
+        await _notificationSubscriptionRepository.UpdateAsync(subscription, false, cancellationToken);
+    }
+
+    public async Task<List<NotificationSubscription>> GetListAsync(Guid? notificationId, Guid? receiverUserId, string receiverUserName, DateTime? startReadTime, DateTime? endReadTime, int maxResultCount = 10, int skipCount = 0,
         CancellationToken cancellationToken = default)
     {
         var list = await _notificationSubscriptionRepository.GetListAsync(notificationId, receiverUserId, receiverUserName, startReadTime, endReadTime, maxResultCount, skipCount, cancellationToken);
@@ -48,7 +61,7 @@ public class NotificationSubscriptionManager : DomainService, INotificationSubsc
         await _notificationSubscriptionRepository.DeleteAsync(subscription.Id, false, cancellationToken);
     }
 
-    public async Task<long> GetCountAsync(Guid notificationId, Guid? receiverUserId, string receiverUserName, DateTime? startReadTime, DateTime? endReadTime, CancellationToken cancellationToken = default)
+    public async Task<long> GetCountAsync(Guid? notificationId, Guid? receiverUserId, string receiverUserName, DateTime? startReadTime, DateTime? endReadTime, CancellationToken cancellationToken = default)
     {
         return await _notificationSubscriptionRepository.GetCountAsync(notificationId, receiverUserId, receiverUserName, startReadTime, endReadTime, cancellationToken);
     }
