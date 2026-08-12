@@ -4,6 +4,7 @@ import type { FileObjectDto } from '@abp/core';
 import { computed, h, ref } from 'vue';
 
 import { useVbenModal } from '@vben/common-ui';
+import { $t } from '@vben/locales';
 import { downloadFileFromBlob } from '@vben/utils';
 
 import { useFileApi } from '@abp/core';
@@ -149,13 +150,15 @@ function revokeObjectUrl() {
           </div>
         </div>
         <Button :icon="h(DownloadOutlined)" type="link" @click="onDownload">
-          下载
+          {{ $t('TestWorkshop.FileManager:Download') }}
         </Button>
       </div>
       <div
         class="flex min-h-0 flex-1 items-center justify-center overflow-hidden p-4"
       >
-        <div v-if="loading">正在加载预览...</div>
+        <div v-if="loading">
+          {{ $t('TestWorkshop.FileManager:LoadingPreview') }}
+        </div>
         <img
           v-else-if="isImage"
           :src="objectUrl"
@@ -190,18 +193,18 @@ function revokeObjectUrl() {
               v-if="isLargeText"
               class="shrink-0 border-t px-4 py-2 text-xs opacity-70"
             >
-              文件较大，当前仅预览前 200KB，完整内容请下载查看。
+              {{ $t('TestWorkshop.FileManager:LargeFilePreviewNotice') }}
             </div>
           </div>
         </template>
         <div v-else class="text-center">
-          <p>当前格式暂不支持浏览器在线预览，可以下载后查看。</p>
+          <p>{{ $t('TestWorkshop.FileManager:PreviewNotSupported') }}</p>
           <Button
             :icon="h(DownloadOutlined)"
             type="primary"
             @click="onDownload"
           >
-            下载文件
+            {{ $t('TestWorkshop.FileManager:DownloadFile') }}
           </Button>
         </div>
       </div>

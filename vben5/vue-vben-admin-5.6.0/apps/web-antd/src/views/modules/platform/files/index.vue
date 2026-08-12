@@ -52,7 +52,7 @@ const formOptions: VbenFormProps = {
       },
       fieldName: 'keyword',
       formItemClass: 'col-span-2 items-baseline',
-      label: '关键字',
+      label: $t('TestWorkshop.DisplayName:Keyword'),
     },
     {
       component: 'Input',
@@ -60,7 +60,7 @@ const formOptions: VbenFormProps = {
         allowClear: true,
       },
       fieldName: 'ownerType',
-      label: '业务类型',
+      label: $t('TestWorkshop.DisplayName:OwnerType'),
     },
     {
       component: 'Input',
@@ -68,7 +68,7 @@ const formOptions: VbenFormProps = {
         allowClear: true,
       },
       fieldName: 'ownerId',
-      label: '业务ID',
+      label: $t('TestWorkshop.DisplayName:OwnerId'),
     },
     {
       component: 'RangePicker',
@@ -77,7 +77,7 @@ const formOptions: VbenFormProps = {
       },
       fieldName: 'uploadTime',
       formItemClass: 'col-span-2 items-baseline',
-      label: '上传时间',
+      label: $t('TestWorkshop.DisplayName:UploadTime'),
     },
   ],
   showCollapseButton: true,
@@ -98,31 +98,31 @@ const gridOptions: VxeGridProps<FileObjectDto> = {
       field: 'fileName',
       fixed: 'left',
       minWidth: 220,
-      title: '文件名',
+      title: $t('TestWorkshop.DisplayName:FileName'),
     },
     {
       align: 'left',
       field: 'contentType',
       minWidth: 160,
-      title: '文件类型',
+      title: $t('TestWorkshop.DisplayName:ContentType'),
     },
     {
       align: 'left',
       field: 'fileSizeText',
       minWidth: 100,
-      title: '文件大小',
+      title: $t('TestWorkshop.DisplayName:FileSize'),
     },
     {
       align: 'left',
       field: 'ownerType',
       minWidth: 110,
-      title: '业务类型',
+      title: $t('TestWorkshop.DisplayName:OwnerType'),
     },
     {
       align: 'left',
       field: 'ownerId',
       minWidth: 280,
-      title: '业务ID',
+      title: $t('TestWorkshop.DisplayName:OwnerId'),
     },
     {
       align: 'left',
@@ -131,7 +131,7 @@ const gridOptions: VxeGridProps<FileObjectDto> = {
         return cellValue ? formatToDateTime(cellValue) : cellValue;
       },
       minWidth: 180,
-      title: '上传时间',
+      title: $t('TestWorkshop.DisplayName:UploadTime'),
     },
     {
       field: 'action',
@@ -230,14 +230,14 @@ function onDelete(row: FileObjectDto) {
             type="primary"
             @click="onCreate(false)"
           >
-            单文件上传
+            {{ $t('TestWorkshop.FileManager:SingleUpload') }}
           </Button>
           <Button
             :icon="h(CloudUploadOutlined)"
             type="primary"
             @click="onCreate(true)"
           >
-            多文件上传
+            {{ $t('TestWorkshop.FileManager:MultipleUpload') }}
           </Button>
         </Space>
       </template>
@@ -250,7 +250,7 @@ function onDelete(row: FileObjectDto) {
               type="link"
               @click="onPreview(row)"
             >
-              预览
+              {{ $t('TestWorkshop.FileManager:Preview') }}
             </Button>
             <Button
               :icon="h(DeleteOutlined)"

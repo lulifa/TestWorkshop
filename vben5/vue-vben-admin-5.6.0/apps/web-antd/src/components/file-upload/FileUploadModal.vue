@@ -36,11 +36,13 @@ const [Modal, modalApi] = useVbenModal({
       ownerId.value = data.ownerId ?? '';
       fileList.value = [];
       modalApi.setState({
-        title: multiple.value ? '多文件上传' : '单文件上传',
+        title: multiple.value
+          ? $t('TestWorkshop.FileManager:MultipleUpload')
+          : $t('TestWorkshop.FileManager:SingleUpload'),
       });
     }
   },
-  title: '单文件上传',
+  title: $t('TestWorkshop.FileManager:SingleUpload'),
 });
 
 function onBeforeUpload(file: FileType) {
@@ -66,15 +68,15 @@ async function onSubmit() {
     return file ? [file] : [];
   });
   if (files.length === 0) {
-    message.warning('请先选择要上传的文件');
+    message.warning($t('TestWorkshop.FileManager:PleaseSelectFile'));
     return;
   }
   if (!ownerType.value.trim()) {
-    message.warning('请通过业务对象传入业务类型');
+    message.warning($t('TestWorkshop.FileManager:OwnerTypeRequired'));
     return;
   }
   if (!multiple.value && files.length > 1) {
-    message.warning('单文件上传只能选择一个文件');
+    message.warning($t('TestWorkshop.FileManager:SingleUploadOnlyOneFile'));
     return;
   }
   const [firstFile] = files;
@@ -83,7 +85,9 @@ async function onSubmit() {
     modalApi.setState({ submitting: true });
     if (multiple.value) {
       if (!ownerId.value.trim()) {
-        message.warning('批量上传必须填写业务ID');
+        message.warning(
+          $t('TestWorkshop.FileManager:BatchUploadRequiresOwnerId'),
+        );
         return;
       }
       await batchUploadApi(files, ownerType.value.trim(), ownerId.value.trim());
@@ -111,7 +115,9 @@ async function onSubmit() {
       :multiple="multiple"
       @remove="onRemove"
     >
-      <Button :icon="h(UploadOutlined)">选择文件</Button>
+      <Button :icon="h(UploadOutlined)">
+        {{ $t('TestWorkshop.FileManager:SelectFile') }}
+      </Button>
     </Upload>
   </Modal>
 </template>
