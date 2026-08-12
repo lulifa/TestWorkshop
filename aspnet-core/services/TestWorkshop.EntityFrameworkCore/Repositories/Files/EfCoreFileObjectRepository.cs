@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using Autofac.Features.OwnedInstances;
+using System.Linq.Expressions;
 using TestWorkshop.EntityFrameworkCore;
 
 namespace TestWorkshop.FileManagement
@@ -66,15 +67,9 @@ namespace TestWorkshop.FileManagement
                 query = query.Where(f => f.OwnerType == ownerType);
             }
 
-            if (ownerId != null)
+            if (!string.IsNullOrWhiteSpace(ownerId))
             {
-                // ownerId 有值 → 查业务文件
                 query = query.Where(f => f.OwnerId == ownerId);
-            }
-            else if (!string.IsNullOrWhiteSpace(ownerType))
-            {
-                // ownerId 为空，但 ownerType 有值 → 查系统文件
-                query = query.Where(f => f.OwnerId == null);
             }
 
             // 时间范围过滤

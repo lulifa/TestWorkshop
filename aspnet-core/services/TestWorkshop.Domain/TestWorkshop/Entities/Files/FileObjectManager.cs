@@ -93,13 +93,6 @@ public class FileObjectManager : DomainService, IFileObjectManager
         int skipCount = 0,
         int maxResultCount = 10)
     {
-        if (string.IsNullOrEmpty(ownerId) && !string.IsNullOrEmpty(ownerType))
-        {
-            if (!SystemFileTypes.IsValid(ownerType))
-            {
-                throw new BusinessException($"非法的系统文件类型: {ownerType}，允许的类型: {string.Join(", ", SystemFileTypes.AllowedTypes)}");
-            }
-        }
 
         return await _fileObjectRepository.GetListAsync(
             keyword: keyword,
