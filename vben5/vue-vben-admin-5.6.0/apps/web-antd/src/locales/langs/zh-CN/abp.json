@@ -31,7 +31,11 @@
       "dataDictionaries": "数据字典",
       "layouts": "布局管理",
       "menus": "菜单管理",
-      "files": "文件管理"
+      "files": "文件管理",
+      "notifications": {
+        "broadcast": "通告管理",
+        "message": "消息管理"
+      }
     }
   },
   "system": {

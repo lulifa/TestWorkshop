@@ -50,6 +50,24 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
               icon: "arcticons:tenantcloud-pro",
               description: "车间设备管理")
             .SetProperty("title", "page.business.workshopdevices"));
+        business.AddItem(
+          new ApplicationMenu(
+              name: "Vben5BusinessMyBroadcast",
+              displayName: "我的通告",
+              url: "/business/notifications/my-broadcast",
+              component: "/business/notifications/my-broadcast/index",
+              icon: "lucide:megaphone",
+              description: "我的通告")
+            .SetProperty("title", "page.business.notifications.broadcast"));
+        business.AddItem(
+          new ApplicationMenu(
+              name: "Vben5BusinessMyMessage",
+              displayName: "我的消息",
+              url: "/business/notifications/my-message",
+              component: "/business/notifications/my-message/index",
+              icon: "lucide:mail-open",
+              description: "我的消息")
+            .SetProperty("title", "page.business.notifications.message"));
 
         return
         [
@@ -156,6 +174,24 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
               icon: "mdi-light:file",
               description: "文件管理")
             .SetProperty("title", "abp.modules.platform.files"));
+        modules.AddItem(
+          new ApplicationMenu(
+              name: "Vben5ModulesPlatformBroadcast",
+              displayName: "通告管理",
+              url: "/modules/platform/notifications/broadcast",
+              component: "/modules/platform/notifications/broadcast/index",
+              icon: "lucide:megaphone",
+              description: "通告管理")
+            .SetProperty("title", "abp.modules.platform.notifications.broadcast"));
+        modules.AddItem(
+          new ApplicationMenu(
+              name: "Vben5ModulesPlatformMessage",
+              displayName: "消息管理",
+              url: "/modules/platform/notifications/message",
+              component: "/modules/platform/notifications/message/index",
+              icon: "lucide:mail-open",
+              description: "消息管理")
+            .SetProperty("title", "abp.modules.platform.notifications.message"));
 
         return
         [

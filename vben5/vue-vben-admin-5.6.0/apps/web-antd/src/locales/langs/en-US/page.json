@@ -17,6 +17,10 @@
   },
   "business": {
     "title": "Business",
+    "notifications": {
+      "broadcast": "My Broadcasts",
+      "message": "My Messages"
+    },
     "workshopdevices": "Workshop Devices"
   }
 }

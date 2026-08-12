@@ -31,7 +31,11 @@
       "dataDictionaries": "Data Dictionaries",
       "layouts": "Layouts",
       "menus": "Menus",
-      "files": "Files"
+      "files": "Files",
+      "notifications": {
+        "broadcast": "Broadcasts",
+        "message": "Messages"
+      }
     }
   },
   "system": {

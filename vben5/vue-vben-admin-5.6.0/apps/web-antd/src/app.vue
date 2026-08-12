@@ -3,6 +3,7 @@ import { computed, onMounted } from 'vue';
 
 import { useAntdDesignTokens } from '@vben/hooks';
 import { preferences, usePreferences } from '@vben/preferences';
+import { useAccessStore } from '@vben/stores';
 
 import { useEventBus, useNotification, useSignalR } from '@abp/core'; // ✅ 新增 useEventBus
 import { App, ConfigProvider, theme } from 'ant-design-vue';
@@ -33,6 +34,7 @@ const tokenTheme = computed(() => {
 const signalR = useSignalR();
 const { publish } = useEventBus();
 const notification = useNotification();
+const accessStore = useAccessStore();
 
 onMounted(async () => {
   // 1. 初始化 SignalR 配置（但不自动连接！autoStart: false）
@@ -54,6 +56,11 @@ onMounted(async () => {
   });
 
   notification.register();
+
+  // 刷新页面或恢复登录态时不会再次触发 UserLogin，这里直接恢复连接。
+  if (accessStore.accessToken) {
+    await signalR.start();
+  }
 });
 </script>
 
