@@ -190,7 +190,9 @@ public class FileObjectManager : DomainService, IFileObjectManager
         Check.NotNullOrWhiteSpace(ownerId, nameof(ownerId));
 
         var files = await _fileObjectRepository.GetListAsync(
-            f => f.OwnerType == ownerType && f.OwnerId == ownerId);
+            f => f.OwnerType == ownerType && f.OwnerId == ownerId,
+            f => f.CreationTime,
+            descending: true);
 
         return files.FirstOrDefault();
     }

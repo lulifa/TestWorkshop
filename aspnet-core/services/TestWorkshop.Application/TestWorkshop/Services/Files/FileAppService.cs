@@ -60,6 +60,19 @@ public class FileAppService : ApplicationService, IFileAppService
             ownerId: input.OwnerId
         );
 
+        if (input.OwnerType == SystemFileTypes.UserAvatar)
+        {
+            var avatar = await _fileObjectManager.GetFileObjectByOwnerAsync(input.OwnerType, input.OwnerId);
+            if (avatar != null)
+            {
+                var extraFiles = fileObjects.Where(f => f.Id != avatar.Id).ToList();
+                foreach (var extraFile in extraFiles)
+                {
+                    await _fileObjectManager.DeleteFileAsync(extraFile.Id);
+                }
+            }
+        }
+
         return ObjectMapper.Map<List<FileObject>, List<FileObjectDto>>(fileObjects);
     }
 

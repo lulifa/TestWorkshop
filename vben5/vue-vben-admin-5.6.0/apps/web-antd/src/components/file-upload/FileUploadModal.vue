@@ -6,6 +6,7 @@ import { h, ref } from 'vue';
 
 import { useVbenModal } from '@vben/common-ui';
 import { $t } from '@vben/locales';
+import { useUserStore } from '@vben/stores';
 
 import { useFileApi } from '@abp/core';
 import {
@@ -21,6 +22,8 @@ import {
   InboxOutlined,
 } from '@ant-design/icons-vue';
 import { Button, Image, message, Tag, UploadDragger } from 'ant-design-vue';
+
+import { getCurrentUserAvatarApi, USER_AVATAR_OWNER_TYPE } from '#/api';
 
 const emits = defineEmits<{
   (event: 'change'): void;
@@ -43,6 +46,7 @@ const ownerId = ref('');
 const ownerType = ref('');
 
 const { batchUploadApi, uploadApi } = useFileApi();
+const userStore = useUserStore();
 
 const [Modal, modalApi] = useVbenModal({
   class: 'max-w-[720px]',
@@ -168,6 +172,28 @@ function onRemove(file: UploadFile) {
   fileList.value = fileList.value.filter((item) => item.uid !== file.uid);
 }
 
+async function refreshAvatarIfNeeded(ownerType: string, ownerId: string) {
+  const current = userStore.userInfo;
+  if (
+    !current?.userId ||
+    ownerType !== USER_AVATAR_OWNER_TYPE ||
+    ownerId !== current.userId
+  ) {
+    return;
+  }
+  const avatar = await getCurrentUserAvatarApi();
+  if (!avatar) {
+    return;
+  }
+  if (current.avatar?.startsWith('blob:')) {
+    URL.revokeObjectURL(current.avatar);
+  }
+  userStore.setUserInfo({
+    ...current,
+    avatar: URL.createObjectURL(avatar),
+  });
+}
+
 async function onSubmit() {
   const files = fileList.value.flatMap((item) => {
     const file = item.originFileObj;
@@ -197,6 +223,7 @@ async function onSubmit() {
       ? batchUploadApi(files, ownerType.value.trim(), ownerId.value.trim())
       : uploadApi(firstFile, ownerType.value.trim(), ownerId.value.trim()));
     message.success($t('AbpUi.SavedSuccessfully'));
+    await refreshAvatarIfNeeded(ownerType.value.trim(), ownerId.value.trim());
     emits('change');
     modalApi.close();
   } finally {
