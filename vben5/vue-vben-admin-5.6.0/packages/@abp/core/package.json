@@ -1,0 +1,77 @@
+{
+  "name": "@abp/core",
+  "version": "9.3.5",
+  "homepage": "https://github.com/lulifa/lulifa-ruichenshuxin-vben5",
+  "bugs": "https://github.com/lulifa/lulifa-ruichenshuxin-vben5/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/colinin/lulifa-ruichenshuxin-vben5.git",
+    "directory": "packages/@abp/core"
+  },
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "pnpm vite build",
+    "prepublishOnly": "npm run build"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "development": "./src/index.ts",
+      "default": "./dist/index.mjs"
+    }
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "default": "./dist/index.mjs"
+      }
+    }
+  },
+  "dependencies": {
+    "@microsoft/signalr": "catalog:",
+    "@vben-core/preferences": "workspace:*",
+    "@vben-core/shared": "workspace:*",
+    "@vben-core/typings": "workspace:*",
+    "@vben/constants": "workspace:*",
+    "@vben/hooks": "workspace:*",
+    "@vben/layouts": "workspace:*",
+    "@vben/locales": "workspace:*",
+    "@vben/preferences": "workspace:*",
+    "@vben/request": "workspace:*",
+    "@vben/stores": "workspace:*",
+    "@vben/types": "workspace:*",
+    "@vueuse/core": "catalog:",
+    "@vueuse/integrations": "catalog:",
+    "ant-design-vue": "catalog:",
+    "axios": "catalog:",
+    "codemirror": "catalog:",
+    "dayjs": "catalog:",
+    "lodash.groupby": "catalog:",
+    "lodash.isdate": "catalog:",
+    "lodash.isnumber": "catalog:",
+    "lodash.merge": "catalog:",
+    "lodash.sortby": "catalog:",
+    "oidc-client-ts": "catalog:",
+    "pinia": "catalog:",
+    "pinia-plugin-persistedstate": "catalog:",
+    "secure-ls": "catalog:",
+    "universal-cookie": "catalog:",
+    "vue": "catalog:",
+    "vue-router": "catalog:"
+  },
+  "devDependencies": {
+    "@types/codemirror": "catalog:",
+    "@types/lodash.groupby": "catalog:",
+    "@types/lodash.isdate": "catalog:",
+    "@types/lodash.isnumber": "catalog:",
+    "@types/lodash.merge": "catalog:",
+    "@types/lodash.sortby": "catalog:"
+  }
+}

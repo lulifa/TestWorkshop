@@ -145,8 +145,8 @@ nCrunchTemp_*
 # NuGet Packages
 *.nupkg
 *.snupkg
-**/[Pp]ackages/*
-!**/[Pp]ackages/build/
+**/aspnet-core/**/[Pp]ackages/*
+!**/aspnet-core/**/[Pp]ackages/build/
 *.nuget.props
 *.nuget.targets
 
