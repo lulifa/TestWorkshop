@@ -78,7 +78,11 @@ async function onInitMenus() {
   const { items } = await getAllApi({
     framework: uiFramework,
   });
-  const menus = listToTree<MenuDto>(items, { id: 'id', pid: 'parentId' });
+  const visibleMenus = items.filter((item) => item.meta.hideInMenu !== 'true');
+  const menus = listToTree<MenuDto>(visibleMenus, {
+    id: 'id',
+    pid: 'parentId',
+  });
   availableMenus.value = menus;
 }
 
