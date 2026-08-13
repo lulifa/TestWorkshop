@@ -20,11 +20,13 @@ import { DeleteOutlined, SendOutlined } from '@ant-design/icons-vue';
 import { Button, message, Space, Tag, Tooltip } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { useNotificationStore } from '#/store';
 
 defineOptions({
   name: 'BroadcastManagement',
 });
 
+const notificationStore = useNotificationStore();
 const { deleteApi, getNotificationListApi } = useNotificationsApi();
 
 const levelColorMap: Record<NotificationMessageLevel, string> = {
@@ -276,10 +278,16 @@ function onSend() {
   sendModalApi.open();
 }
 
+function onSendSuccess() {
+  void gridApi.query();
+  void notificationStore.refresh();
+}
+
 async function onDelete(row: NotificationOutput) {
   await deleteApi({ id: row.id });
   message.success($t('AbpUi.SavedSuccessfully'));
   await gridApi.query();
+  await notificationStore.refresh();
 }
 </script>
 
@@ -334,7 +342,7 @@ async function onDelete(row: NotificationOutput) {
       </template>
     </Grid>
 
-    <SendModal mode="broadcast" @change="() => gridApi.query()" />
+    <SendModal mode="broadcast" @change="onSendSuccess" />
     <DetailDrawer />
   </Page>
 </template>
