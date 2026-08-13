@@ -1,20 +1,25 @@
-﻿namespace TestWorkshop;
+﻿using OpenIddict.Abstractions;
+
+namespace TestWorkshop;
 
 [Authorize]
 public class SystemIdentityUserAppService : TestWorkshopAppService, ISystemIdentityUserAppService
 {
     protected IdentityUserAppService IdentityUserAppService { get; }
     protected IdentityUserManager UserManager { get; }
+    protected IOpenIddictTokenManager TokenManager { get; }
     protected IOptions<IdentityOptions> IdentityOptions { get; }
 
     public SystemIdentityUserAppService(
         IdentityUserAppService identityUserAppService,
         IdentityUserManager userManager,
-        IOptions<IdentityOptions> identityOptions)
+        IOptions<IdentityOptions> identityOptions,
+        IOpenIddictTokenManager tokenManager)
     {
         IdentityUserAppService = identityUserAppService;
         UserManager = userManager;
         IdentityOptions = identityOptions;
+        TokenManager = tokenManager;
     }
 
 
@@ -42,6 +47,11 @@ public class SystemIdentityUserAppService : TestWorkshopAppService, ISystemIdent
         }
 
         await CurrentUnitOfWork.SaveChangesAsync();
+
+        await foreach (var token in TokenManager.FindBySubjectAsync(user.Id.ToString()))
+        {
+            await TokenManager.TryRevokeAsync(token);
+        }
     }
 
     [Authorize(IdentityPermissions.Users.Update)]
@@ -124,6 +134,11 @@ public class SystemIdentityUserAppService : TestWorkshopAppService, ISystemIdent
 
         (await UserManager.ChangePasswordAsync(user, input.CurrentPassword, input.NewPassword)).CheckErrors();
         await CurrentUnitOfWork.SaveChangesAsync();
+
+        await foreach (var token in TokenManager.FindBySubjectAsync(user.Id.ToString()))
+        {
+            await TokenManager.TryRevokeAsync(token);
+        }
     }
 
     public virtual async Task<IdentityUserDto> GetCurrentUserProfileAsync()

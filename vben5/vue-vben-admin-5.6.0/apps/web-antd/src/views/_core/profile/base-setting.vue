@@ -72,9 +72,7 @@ async function handleSubmit(values: Record<string, any>) {
     ...userInfo,
     avatar: userInfo?.avatar ?? preferences.app.defaultAvatar,
     email: updated.email,
-    realName:
-      [updated.surname, updated.name].filter(Boolean).join(' ') ||
-      updated.userName,
+    realName: updated.name || updated.userName,
     roles: updated.roleNames,
     userId: updated.id,
     username: updated.userName,
@@ -83,9 +81,11 @@ async function handleSubmit(values: Record<string, any>) {
 }
 </script>
 <template>
-  <ProfileBaseSetting
-    ref="profileBaseSettingRef"
-    :form-schema="formSchema"
-    @submit="handleSubmit"
-  />
+  <div class="max-w-xl">
+    <ProfileBaseSetting
+      ref="profileBaseSettingRef"
+      :form-schema="formSchema"
+      @submit="handleSubmit"
+    />
+  </div>
 </template>

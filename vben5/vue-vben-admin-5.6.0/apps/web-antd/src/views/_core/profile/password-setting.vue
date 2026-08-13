@@ -9,7 +9,10 @@ import { $t } from '@vben/locales';
 import { useUsersApi } from '@abp/core';
 import { message } from 'ant-design-vue';
 
+import { useAuthStore } from '#/store';
+
 const { changeCurrentUserPasswordApi } = useUsersApi();
+const authStore = useAuthStore();
 
 const formSchema = computed((): VbenFormSchema[] => {
   return [
@@ -65,8 +68,11 @@ async function handleSubmit(values: Record<string, any>) {
     newPassword: values.newPassword,
   });
   message.success($t('AbpUi.SavedSuccessfully'));
+  await authStore.logout(false);
 }
 </script>
 <template>
-  <ProfilePasswordSetting :form-schema="formSchema" @submit="handleSubmit" />
+  <div class="max-w-xl">
+    <ProfilePasswordSetting :form-schema="formSchema" @submit="handleSubmit" />
+  </div>
 </template>
