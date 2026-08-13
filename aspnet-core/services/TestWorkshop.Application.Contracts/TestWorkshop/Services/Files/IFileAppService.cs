@@ -11,13 +11,12 @@ public interface IFileAppService : IApplicationService
     /// <summary>
     /// 上传文件
     /// </summary>
-    Task<FileObjectDto> UploadAsync(IRemoteStreamContent file, string ownerType, string ownerId = null);
+    Task<FileObjectDto> UploadAsync(IRemoteStreamContent file, FileOwnerInput input);
 
     /// <summary>
     /// 批量上传文件
     /// </summary>
-    /// <returns></returns>
-    Task<List<FileObjectDto>> BatchUploadAsync(List<IRemoteStreamContent> files, string ownerType, string ownerId);
+    Task<List<FileObjectDto>> BatchUploadAsync(List<IRemoteStreamContent> files, FileOwnerInput input);
 
     /// <summary>
     /// 获取文件列表（分页 + 多条件过滤）
@@ -35,9 +34,14 @@ public interface IFileAppService : IApplicationService
     Task<IRemoteStreamContent> DownloadAsync(Guid id);
 
     /// <summary>
-    /// 按 ownerType + ownerId 下载文件（ownerId 为 null 时获取系统文件）
+    /// 按业务对象下载文件
     /// </summary>
-    Task<IRemoteStreamContent> DownloadByOwnerAsync(string ownerType, string ownerId = null);
+    Task<IRemoteStreamContent> DownloadByOwnerAsync(FileOwnerInput input);
+
+    /// <summary>
+    /// 获取当前用户头像，未上传时返回空
+    /// </summary>
+    Task<IRemoteStreamContent> DownloadCurrentUserAvatarAsync();
 
     /// <summary>
     /// 删除单个文件
@@ -45,7 +49,7 @@ public interface IFileAppService : IApplicationService
     Task DeleteAsync(Guid id);
 
     /// <summary>
-    /// 删除文件
+    /// 按业务对象删除文件
     /// </summary>
-    Task DeleteFilesAsync(string ownerType, string ownerId = null);
+    Task DeleteFilesAsync(FileOwnerInput input);
 }

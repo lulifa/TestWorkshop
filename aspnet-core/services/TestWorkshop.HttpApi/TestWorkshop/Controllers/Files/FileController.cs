@@ -21,10 +21,9 @@ public class FileController : TestWorkshopController
     [HttpPost("upload")]
     public async Task<FileObjectDto> UploadAsync(
         IRemoteStreamContent file,
-        string ownerType,
-        string ownerId = null)
+        [FromForm] FileOwnerInput input)
     {
-        return await Service.UploadAsync(file, ownerType, ownerId);
+        return await Service.UploadAsync(file, input);
     }
 
     /// <summary>
@@ -33,10 +32,9 @@ public class FileController : TestWorkshopController
     [HttpPost("batch")]
     public async Task<List<FileObjectDto>> BatchUploadAsync(
         [FromForm] List<IRemoteStreamContent> files,
-        string ownerType,
-        string ownerId)
+        [FromForm] FileOwnerInput input)
     {
-        return await Service.BatchUploadAsync(files, ownerType, ownerId);
+        return await Service.BatchUploadAsync(files, input);
     }
 
     /// <summary>
@@ -49,12 +47,21 @@ public class FileController : TestWorkshopController
     }
 
     /// <summary>
-    /// 按 ownerType + ownerId 下载文件（ownerId 为 null 时获取系统文件）
+    /// 按业务对象下载文件
     /// </summary>
     [HttpGet("by-owner")]
-    public async Task<IRemoteStreamContent> DownloadByOwnerAsync(string ownerType, string ownerId = null)
+    public async Task<IRemoteStreamContent> DownloadByOwnerAsync(FileOwnerInput input)
     {
-        return await Service.DownloadByOwnerAsync(ownerType, ownerId);
+        return await Service.DownloadByOwnerAsync(input);
+    }
+
+    /// <summary>
+    /// 获取当前用户头像，未上传时返回空
+    /// </summary>
+    [HttpGet("user-avatar")]
+    public async Task<IRemoteStreamContent> DownloadCurrentUserAvatarAsync()
+    {
+        return await Service.DownloadCurrentUserAvatarAsync();
     }
 
     /// <summary>
@@ -85,11 +92,11 @@ public class FileController : TestWorkshopController
     }
 
     /// <summary>
-    /// 批量删除文件
+    /// 按业务对象删除文件
     /// </summary>
     [HttpDelete]
-    public async Task DeleteFilesAsync(string ownerType, string ownerId = null)
+    public async Task DeleteFilesAsync(FileOwnerInput input)
     {
-        await Service.DeleteFilesAsync(ownerType, ownerId);
+        await Service.DeleteFilesAsync(input);
     }
 }

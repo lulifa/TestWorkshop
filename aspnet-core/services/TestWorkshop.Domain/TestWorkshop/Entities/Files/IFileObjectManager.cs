@@ -36,9 +36,9 @@ public interface IFileObjectManager
         int maxResultCount = 10);
 
     /// <summary>
-    /// 删除文件（ownerId 为 null 删系统文件，有值删业务文件）
+    /// 按 ownerType + ownerId 删除文件
     /// </summary>
-    Task DeleteFilesAsync(string ownerType, string ownerId = null);
+    Task DeleteFilesAsync(string ownerType, string ownerId);
 
     /// <summary>
     /// 删除单个文件
@@ -51,11 +51,11 @@ public interface IFileObjectManager
     Task<(Stream Content, string ContentType, string FileName)> GetFileAsync(Guid fileId);
 
     /// <summary>
-    /// 按 ownerType + ownerId 获取文件（ownerId 为 null 时获取系统文件，不存在返回 null）
+    /// 按 ownerType + ownerId 获取文件（不存在返回 null）
     /// </summary>
     Task<FileObject> GetFileObjectByOwnerAsync(
         string ownerType,
-        string ownerId = null);
+        string ownerId);
 
     /// <summary>
     /// 获取文件元数据

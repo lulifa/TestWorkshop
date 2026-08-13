@@ -181,6 +181,10 @@ async function onSubmit() {
     message.warning($t('TestWorkshop.FileManager:OwnerTypeRequired'));
     return;
   }
+  if (!ownerId.value.trim()) {
+    message.warning('请填写业务ID');
+    return;
+  }
   if (!multiple.value && files.length > 1) {
     message.warning($t('TestWorkshop.FileManager:SingleUploadOnlyOneFile'));
     return;
@@ -189,21 +193,9 @@ async function onSubmit() {
   if (!firstFile) return;
   try {
     modalApi.setState({ submitting: true });
-    if (multiple.value) {
-      if (!ownerId.value.trim()) {
-        message.warning(
-          $t('TestWorkshop.FileManager:BatchUploadRequiresOwnerId'),
-        );
-        return;
-      }
-      await batchUploadApi(files, ownerType.value.trim(), ownerId.value.trim());
-    } else {
-      await uploadApi(
-        firstFile,
-        ownerType.value.trim(),
-        ownerId.value.trim() || undefined,
-      );
-    }
+    await (multiple.value
+      ? batchUploadApi(files, ownerType.value.trim(), ownerId.value.trim())
+      : uploadApi(firstFile, ownerType.value.trim(), ownerId.value.trim()));
     message.success($t('AbpUi.SavedSuccessfully'));
     emits('change');
     modalApi.close();

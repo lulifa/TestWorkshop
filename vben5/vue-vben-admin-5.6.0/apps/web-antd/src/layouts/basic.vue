@@ -96,7 +96,6 @@ watch(
         :menus
         :text="userStore.userInfo?.realName"
         :description
-        tag-text="Pro"
         @logout="handleLogout"
       />
     </template>

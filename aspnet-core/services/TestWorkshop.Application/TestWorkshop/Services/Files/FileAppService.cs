@@ -16,21 +16,18 @@ public class FileAppService : ApplicationService, IFileAppService
     /// <summary>
     /// 上传文件
     /// </summary>
-    public virtual async Task<FileObjectDto> UploadAsync(IRemoteStreamContent file, string ownerType, string ownerId = null)
+    public virtual async Task<FileObjectDto> UploadAsync(IRemoteStreamContent file, FileOwnerInput input)
     {
         if (file == null || file.GetStream().Length == 0)
             throw new UserFriendlyException("Please select a valid file");
-
-        if (string.IsNullOrWhiteSpace(ownerType))
-            throw new UserFriendlyException("ownerType 不能为空");
 
         using var stream = file.GetStream();
 
         var fileObject = await _fileObjectManager.UploadAsync(
             stream: stream,
             fileName: file.FileName,
-            ownerType: ownerType,
-            ownerId: ownerId,
+            ownerType: input.OwnerType,
+            ownerId: input.OwnerId,
             contentType: file.ContentType
         );
 
@@ -40,13 +37,10 @@ public class FileAppService : ApplicationService, IFileAppService
     /// <summary>
     /// 批量上传文件
     /// </summary>
-    public virtual async Task<List<FileObjectDto>> BatchUploadAsync(List<IRemoteStreamContent> files, string ownerType, string ownerId)
+    public virtual async Task<List<FileObjectDto>> BatchUploadAsync(List<IRemoteStreamContent> files, FileOwnerInput input)
     {
         if (files == null || files.Count == 0)
             throw new UserFriendlyException("Please select at least one valid file");
-
-        if (string.IsNullOrWhiteSpace(ownerType))
-            throw new UserFriendlyException("ownerType 不能为空");
 
         var fileTuples = new List<(Stream Stream, string FileName, string ContentType)>();
         foreach (var file in files)
@@ -62,8 +56,8 @@ public class FileAppService : ApplicationService, IFileAppService
 
         var fileObjects = await _fileObjectManager.BatchUploadAsync(
             files: fileTuples,
-            ownerType: ownerType,
-            ownerId: ownerId
+            ownerType: input.OwnerType,
+            ownerId: input.OwnerId
         );
 
         return ObjectMapper.Map<List<FileObject>, List<FileObjectDto>>(fileObjects);
@@ -74,7 +68,6 @@ public class FileAppService : ApplicationService, IFileAppService
     /// </summary>
     public virtual async Task<PagedResultDto<FileObjectDto>> GetFilesAsync(GetFileListInput input)
     {
-
         if (!input.IsPaged)
         {
             input.SkipCount = 0;
@@ -91,11 +84,9 @@ public class FileAppService : ApplicationService, IFileAppService
             input.MaxResultCount);
 
         var totalCount = result.TotalCount;
-
         var items = ObjectMapper.Map<List<FileObject>, List<FileObjectDto>>(result.Items.ToList());
 
         return new PagedResultDto<FileObjectDto>(totalCount, items);
-
     }
 
     /// <summary>
@@ -117,14 +108,28 @@ public class FileAppService : ApplicationService, IFileAppService
     }
 
     /// <summary>
-    /// 按 ownerType + ownerId 下载文件（ownerId 为 null 时获取系统文件）
+    /// 按业务对象下载文件
     /// </summary>
-    public virtual async Task<IRemoteStreamContent> DownloadByOwnerAsync(string ownerType, string ownerId = null)
+    public virtual async Task<IRemoteStreamContent> DownloadByOwnerAsync(FileOwnerInput input)
     {
-        if (string.IsNullOrWhiteSpace(ownerType))
-            throw new UserFriendlyException("ownerType 不能为空");
+        var fileObject = await _fileObjectManager.GetFileObjectByOwnerAsync(input.OwnerType, input.OwnerId);
+        if (fileObject == null)
+            return null;
 
-        var fileObject = await _fileObjectManager.GetFileObjectByOwnerAsync(ownerType, ownerId);
+        var (stream, contentType, fileName) = await _fileObjectManager.GetFileAsync(fileObject.Id);
+        return new RemoteStreamContent(stream, fileName, contentType);
+    }
+
+    /// <summary>
+    /// 获取当前用户头像，未上传时返回空
+    /// </summary>
+    public virtual async Task<IRemoteStreamContent> DownloadCurrentUserAvatarAsync()
+    {
+        var userId = CurrentUser.Id?.ToString();
+        if (string.IsNullOrWhiteSpace(userId))
+            throw new UserFriendlyException("当前用户不存在");
+
+        var fileObject = await _fileObjectManager.GetFileObjectByOwnerAsync(SystemFileTypes.UserAvatar, userId);
         if (fileObject == null)
             return null;
 
@@ -141,14 +146,10 @@ public class FileAppService : ApplicationService, IFileAppService
     }
 
     /// <summary>
-    /// 删除文件
+    /// 按业务对象删除文件
     /// </summary>
-    public virtual async Task DeleteFilesAsync(string ownerType, string ownerId = null)
+    public virtual async Task DeleteFilesAsync(FileOwnerInput input)
     {
-        if (string.IsNullOrWhiteSpace(ownerType))
-            throw new UserFriendlyException("ownerType 不能为空");
-
-        await _fileObjectManager.DeleteFilesAsync(ownerType, ownerId);
+        await _fileObjectManager.DeleteFilesAsync(input.OwnerType, input.OwnerId);
     }
-
 }

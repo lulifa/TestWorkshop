@@ -1,19 +1,11 @@
 import { requestClient } from '@abp/core';
 
-const DEFAULT_AVATAR_OWNER_TYPE = 'DefaultAvatar';
+export const USER_AVATAR_OWNER_TYPE = 'User';
 
-/**
- * 获取系统级默认头像文件。
- * 未配置时接口会抛错，由调用方决定回退头像。
- */
-export async function getDefaultAvatarApi(): Promise<Blob | undefined> {
+/** 获取当前用户头像，未上传时为空，由前端兜底静态图。 */
+export async function getCurrentUserAvatarApi(): Promise<Blob | undefined> {
   const picture = await requestClient.download<Blob>(
-    '/api/platform/files/by-owner',
-    {
-      params: {
-        ownerType: DEFAULT_AVATAR_OWNER_TYPE,
-      },
-    },
+    '/api/platform/files/user-avatar',
   );
   return picture.size > 0 ? picture : undefined;
 }

@@ -82,7 +82,7 @@ public class FileObjectManager : DomainService, IFileObjectManager
     }
 
     /// <summary>
-    /// 获取文件列表（ownerId 为 null 查系统文件，有值查业务文件）
+    /// 按条件查询文件列表
     /// </summary>
     public virtual async Task<PagedResultDto<FileObject>> GetListAsync(
         string keyword = null,
@@ -106,18 +106,13 @@ public class FileObjectManager : DomainService, IFileObjectManager
     }
 
     /// <summary>
-    /// 删除文件（ownerId 为 null 删系统文件，有值删业务文件）
+    /// 按 ownerType + ownerId 删除文件
     /// </summary>
     [UnitOfWork]
-    public virtual async Task DeleteFilesAsync(string ownerType, string ownerId = null)
+    public virtual async Task DeleteFilesAsync(string ownerType, string ownerId)
     {
         Check.NotNullOrWhiteSpace(ownerType, nameof(ownerType));
-
-        // 系统文件校验
-        if (string.IsNullOrEmpty(ownerId) && !SystemFileTypes.IsValid(ownerType))
-        {
-            throw new BusinessException($"非法的系统文件类型: {ownerType}，允许的类型: {string.Join(", ", SystemFileTypes.AllowedTypes)}");
-        }
+        Check.NotNullOrWhiteSpace(ownerId, nameof(ownerId));
 
         var files = await _fileObjectRepository.GetListAsync(f => f.OwnerType == ownerType && f.OwnerId == ownerId);
 
@@ -141,9 +136,8 @@ public class FileObjectManager : DomainService, IFileObjectManager
 
         await _fileObjectRepository.HardDeleteAsync(files, true);
 
-        var target = string.IsNullOrEmpty(ownerId) ? "系统文件" : "业务文件";
         _logger.LogInformation("已删除 {Target}: {OwnerType}/{OwnerId}, 数量: {Count}",
-            target, ownerType, ownerId ?? "(系统)", files.Count);
+            "业务文件", ownerType, ownerId, files.Count);
     }
 
     /// <summary>
@@ -186,13 +180,14 @@ public class FileObjectManager : DomainService, IFileObjectManager
     }
 
     /// <summary>
-    /// 按 ownerType + ownerId 获取文件（ownerId 为 null 时获取系统文件，不存在返回 null）
+    /// 按 ownerType + ownerId 获取文件（不存在返回 null）
     /// </summary>
     public virtual async Task<FileObject> GetFileObjectByOwnerAsync(
         string ownerType,
-        string ownerId = null)
+        string ownerId)
     {
         Check.NotNullOrWhiteSpace(ownerType, nameof(ownerType));
+        Check.NotNullOrWhiteSpace(ownerId, nameof(ownerId));
 
         var files = await _fileObjectRepository.GetListAsync(
             f => f.OwnerType == ownerType && f.OwnerId == ownerId);
@@ -219,12 +214,6 @@ public class FileObjectManager : DomainService, IFileObjectManager
         Check.NotNull(stream, nameof(stream));
         Check.NotNullOrWhiteSpace(fileName, nameof(fileName));
         Check.NotNullOrWhiteSpace(ownerType, nameof(ownerType));
-
-        // 系统文件校验：ownerId 为空，检查是否在白名单中
-        if (string.IsNullOrEmpty(ownerId) && !SystemFileTypes.IsValid(ownerType))
-        {
-            throw new BusinessException($"非法的系统文件类型: {ownerType}，允许的类型: {string.Join(", ", SystemFileTypes.AllowedTypes)}");
-        }
 
         var fileId = _guidGenerator.Create();
         var fileSize = stream.Length;

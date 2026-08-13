@@ -19,7 +19,7 @@ import {
 import { notification } from 'ant-design-vue';
 import { defineStore } from 'pinia';
 
-import { getDefaultAvatarApi } from '#/api';
+import { getCurrentUserAvatarApi } from '#/api';
 import { $t } from '#/locales';
 
 export const useAuthStore = defineStore('auth', () => {
@@ -126,13 +126,13 @@ export const useAuthStore = defineStore('auth', () => {
     if (user) {
       userInfoRes = user.profile;
     }
-    // 两个请求相互独立，并行获取；头像失败只回退默认头像。
-    const [abpConfig, picture] = await Promise.all([
+    // 后端返回当前用户头像，前端只兜底静态图。
+    const [abpConfig, avatarBlob] = await Promise.all([
       getConfigApi(),
-      getDefaultAvatarApi().catch(() => undefined),
+      getCurrentUserAvatarApi().catch(() => undefined),
     ]);
-    const avatar = picture
-      ? URL.createObjectURL(picture)
+    const avatar = avatarBlob
+      ? URL.createObjectURL(avatarBlob)
       : preferences.app.defaultAvatar;
     userInfo = {
       userId: userInfoRes.sub ?? abpConfig.currentUser.id,
@@ -143,7 +143,7 @@ export const useAuthStore = defineStore('auth', () => {
         abpConfig.currentUser.userName,
       avatar,
       desc: userInfoRes.uniqueName ?? userInfoRes.name,
-      email: userInfoRes.email ?? userInfoRes.email,
+      email: userInfoRes.email ?? abpConfig.currentUser.email,
       emailVerified:
         userInfoRes.emailVerified ?? abpConfig.currentUser.emailVerified,
       phoneNumber: userInfoRes.phoneNumber ?? abpConfig.currentUser.phoneNumber,
