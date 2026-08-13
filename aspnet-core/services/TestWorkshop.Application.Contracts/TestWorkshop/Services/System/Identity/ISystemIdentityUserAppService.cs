@@ -77,6 +77,21 @@ public interface ISystemIdentityUserAppService
     Task UpdateRolesAsync(Guid id, IdentityUserUpdateRolesDto input);
 
     /// <summary>
+    /// 修改当前登录用户密码
+    /// </summary>
+    Task ChangeCurrentUserPasswordAsync(IdentityUserChangePasswordInput input);
+
+    /// <summary>
+    /// 获取当前登录用户资料
+    /// </summary>
+    Task<IdentityUserDto> GetCurrentUserProfileAsync();
+
+    /// <summary>
+    /// 更新当前登录用户资料
+    /// </summary>
+    Task<IdentityUserDto> UpdateCurrentUserProfileAsync(IdentityUserProfileInput input);
+
+    /// <summary>
     /// 根据用户名查找用户
     /// </summary>
     /// <param name="userName"></param>

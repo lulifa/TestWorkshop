@@ -16,6 +16,27 @@ public class SystemIdentityUserController : TestWorkshopCrudController<
     }
 
     [HttpPut]
+    [Route("my-password")]
+    public virtual async Task ChangeCurrentUserPasswordAsync(IdentityUserChangePasswordInput input)
+    {
+        await AppService.ChangeCurrentUserPasswordAsync(input);
+    }
+
+    [HttpGet]
+    [Route("my-profile")]
+    public virtual async Task<IdentityUserDto> GetCurrentUserProfileAsync()
+    {
+        return await AppService.GetCurrentUserProfileAsync();
+    }
+
+    [HttpPut]
+    [Route("my-profile")]
+    public virtual async Task<IdentityUserDto> UpdateCurrentUserProfileAsync(IdentityUserProfileInput input)
+    {
+        return await AppService.UpdateCurrentUserProfileAsync(input);
+    }
+
+    [HttpPut]
     [Route("change-password")]
     public virtual async Task ChangePasswordAsync(Guid id, IdentityUserSetPasswordInput input)
     {

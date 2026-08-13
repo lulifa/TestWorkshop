@@ -110,6 +110,51 @@ public class SystemIdentityUserAppService : TestWorkshopAppService, ISystemIdent
     #endregion
 
 
+    #region 当前用户资料
+
+    public virtual async Task ChangeCurrentUserPasswordAsync(IdentityUserChangePasswordInput input)
+    {
+        await IdentityOptions.SetAsync();
+        var user = await UserManager.GetByIdAsync(CurrentUser.GetId());
+
+        if (user.IsExternal)
+        {
+            throw new BusinessException(code: IdentityErrorCodes.ExternalUserPasswordChange);
+        }
+
+        (await UserManager.ChangePasswordAsync(user, input.CurrentPassword, input.NewPassword)).CheckErrors();
+        await CurrentUnitOfWork.SaveChangesAsync();
+    }
+
+    public virtual async Task<IdentityUserDto> GetCurrentUserProfileAsync()
+    {
+        await IdentityOptions.SetAsync();
+        var user = await UserManager.GetByIdAsync(CurrentUser.GetId());
+        return ObjectMapper.Map<IdentityUser, IdentityUserDto>(user);
+    }
+
+    public virtual async Task<IdentityUserDto> UpdateCurrentUserProfileAsync(IdentityUserProfileInput input)
+    {
+        await IdentityOptions.SetAsync();
+        var user = await UserManager.GetByIdAsync(CurrentUser.GetId());
+
+        user.Name = input.Name;
+        user.Surname = input.Surname;
+
+        if (!string.Equals(user.Email, input.Email, StringComparison.OrdinalIgnoreCase))
+        {
+            (await UserManager.SetEmailAsync(user, input.Email)).CheckErrors();
+        }
+
+        (await UserManager.UpdateAsync(user)).CheckErrors();
+
+        await CurrentUnitOfWork.SaveChangesAsync();
+        return ObjectMapper.Map<IdentityUser, IdentityUserDto>(user);
+    }
+
+    #endregion
+
+
     #region Abp用户拓展方法
 
     public virtual async Task<ListResultDto<IdentityRoleDto>> GetRolesAsync(Guid id)

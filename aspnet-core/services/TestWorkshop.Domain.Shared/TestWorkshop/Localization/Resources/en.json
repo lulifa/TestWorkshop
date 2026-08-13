@@ -1,4 +1,4 @@
-{
+﻿{
   "culture": "en",
   "texts": {
     "AppName": "TestWorkshop",
@@ -253,6 +253,9 @@
     "FileManager:OwnerTypeRequired": "Please provide the business type through the business object.",
     "FileManager:SingleUploadOnlyOneFile": "Single file upload only allows one file.",
     "FileManager:BatchUploadRequiresOwnerId": "Business ID is required for batch upload.",
+    "FileManager:OwnerIdRequired": "Business ID is required.",
+    "FileManager:PleaseSelectImage": "Please select an image file.",
+    "FileManager:FileTypeNotAllowed": "This file type is not allowed.",
 
     "Tenant:020001": "Unable to create duplicate tenants {Name}!",
     "Tenant:020002": "Tenant: {Tenant} not found!",

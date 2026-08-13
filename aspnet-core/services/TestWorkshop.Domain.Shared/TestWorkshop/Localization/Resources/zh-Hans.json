@@ -1,4 +1,4 @@
-{
+﻿{
   "culture": "zh-Hans",
   "texts": {
     "AppName": "TestWorkshop",
@@ -253,6 +253,9 @@
     "FileManager:OwnerTypeRequired": "请通过业务对象传入业务类型",
     "FileManager:SingleUploadOnlyOneFile": "单文件上传只能选择一个文件",
     "FileManager:BatchUploadRequiresOwnerId": "批量上传必须填写业务ID",
+    "FileManager:OwnerIdRequired": "请填写业务ID",
+    "FileManager:PleaseSelectImage": "请选择图片文件",
+    "FileManager:FileTypeNotAllowed": "当前文件类型不允许上传",
 
     "Tenant:020001": "已经存在名为 {Name} 的租户!",
     "Tenant:020002": "租户: {Tenant} 不存在!",

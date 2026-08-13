@@ -120,10 +120,22 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
             icon: "lucide:copyright")
             .SetProperty("title", "demos.vben.about");
 
+        var profile = new ApplicationMenu(
+            name: "Profile",
+            displayName: "个人中心",
+            url: "/profile",
+            component: "/_core/profile/index",
+            description: "个人中心",
+            icon: "lucide:user",
+            order: 9998)
+            .SetProperty("hideInMenu", "true")
+            .SetProperty("title", "page.auth.profile");
+
         return
         [
             new NavigationDefinition(dashboard),
             new NavigationDefinition(about),
+            new NavigationDefinition(profile),
         ];
     }
 

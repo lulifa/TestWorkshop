@@ -6,7 +6,6 @@ import { h, ref } from 'vue';
 
 import { useVbenModal } from '@vben/common-ui';
 import { $t } from '@vben/locales';
-import { useUserStore } from '@vben/stores';
 
 import { useFileApi } from '@abp/core';
 import {
@@ -22,8 +21,6 @@ import {
   InboxOutlined,
 } from '@ant-design/icons-vue';
 import { Button, Image, message, Tag, UploadDragger } from 'ant-design-vue';
-
-import { getCurrentUserAvatarApi, USER_AVATAR_OWNER_TYPE } from '#/api';
 
 const emits = defineEmits<{
   (event: 'change'): void;
@@ -44,9 +41,9 @@ const fileList = ref<UploadFile[]>([]);
 const multiple = ref(false);
 const ownerId = ref('');
 const ownerType = ref('');
+const accept = ref<string>();
 
 const { batchUploadApi, uploadApi } = useFileApi();
-const userStore = useUserStore();
 
 const [Modal, modalApi] = useVbenModal({
   class: 'max-w-[720px]',
@@ -56,17 +53,22 @@ const [Modal, modalApi] = useVbenModal({
     if (isOpen) {
       clearFileList();
       const data = modalApi.getData<{
+        accept?: string;
         multiple?: boolean;
         ownerId?: string;
         ownerType?: string;
+        title?: string;
       }>();
       multiple.value = data.multiple ?? false;
       ownerType.value = data.ownerType ?? '';
       ownerId.value = data.ownerId ?? '';
+      accept.value = data.accept;
       modalApi.setState({
-        title: multiple.value
-          ? $t('TestWorkshop.FileManager:MultipleUpload')
-          : $t('TestWorkshop.FileManager:SingleUpload'),
+        title:
+          data.title ??
+          (multiple.value
+            ? $t('TestWorkshop.FileManager:MultipleUpload')
+            : $t('TestWorkshop.FileManager:SingleUpload')),
       });
     }
   },
@@ -149,7 +151,21 @@ function clearFileList() {
   fileList.value = [];
 }
 
+function isAcceptedFile(file: FileType) {
+  if (!accept.value) {
+    return true;
+  }
+  if (accept.value === 'image/*') {
+    return isImageFile(file);
+  }
+  return file.type === accept.value;
+}
+
 function onBeforeUpload(file: FileType) {
+  if (!isAcceptedFile(file)) {
+    message.warning($t('TestWorkshop.FileManager:FileTypeNotAllowed'));
+    return false;
+  }
   if (!multiple.value) {
     fileList.value.forEach((file) => revokeThumbUrl(file));
   }
@@ -172,28 +188,6 @@ function onRemove(file: UploadFile) {
   fileList.value = fileList.value.filter((item) => item.uid !== file.uid);
 }
 
-async function refreshAvatarIfNeeded(ownerType: string, ownerId: string) {
-  const current = userStore.userInfo;
-  if (
-    !current?.userId ||
-    ownerType !== USER_AVATAR_OWNER_TYPE ||
-    ownerId !== current.userId
-  ) {
-    return;
-  }
-  const avatar = await getCurrentUserAvatarApi();
-  if (!avatar) {
-    return;
-  }
-  if (current.avatar?.startsWith('blob:')) {
-    URL.revokeObjectURL(current.avatar);
-  }
-  userStore.setUserInfo({
-    ...current,
-    avatar: URL.createObjectURL(avatar),
-  });
-}
-
 async function onSubmit() {
   const files = fileList.value.flatMap((item) => {
     const file = item.originFileObj;
@@ -208,7 +202,7 @@ async function onSubmit() {
     return;
   }
   if (!ownerId.value.trim()) {
-    message.warning('请填写业务ID');
+    message.warning($t('TestWorkshop.FileManager:OwnerIdRequired'));
     return;
   }
   if (!multiple.value && files.length > 1) {
@@ -223,7 +217,6 @@ async function onSubmit() {
       ? batchUploadApi(files, ownerType.value.trim(), ownerId.value.trim())
       : uploadApi(firstFile, ownerType.value.trim(), ownerId.value.trim()));
     message.success($t('AbpUi.SavedSuccessfully'));
-    await refreshAvatarIfNeeded(ownerType.value.trim(), ownerId.value.trim());
     emits('change');
     modalApi.close();
   } finally {
@@ -236,6 +229,7 @@ async function onSubmit() {
   <Modal>
     <div class="flex flex-col gap-4">
       <UploadDragger
+        :accept="accept"
         :before-upload="onBeforeUpload"
         :multiple="multiple"
         :show-upload-list="false"

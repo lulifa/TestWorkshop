@@ -2,48 +2,95 @@
 import { ref } from 'vue';
 
 import { Profile } from '@vben/common-ui';
+import { $t } from '@vben/locales';
 import { useUserStore } from '@vben/stores';
 
+import { VbenAvatar } from '@vben-core/shadcn-ui';
+
+import { CameraOutlined } from '@ant-design/icons-vue';
+
+import { getCurrentUserAvatarApi, USER_AVATAR_OWNER_TYPE } from '#/api';
+import { useFileUpload } from '#/components/file-upload';
+
 import ProfileBase from './base-setting.vue';
-import ProfileNotificationSetting from './notification-setting.vue';
-import ProfilePasswordSetting from './password-setting.vue';
-import ProfileSecuritySetting from './security-setting.vue';
+import ProfilePassword from './password-setting.vue';
 
 const userStore = useUserStore();
+const { UploadModal, openFileUpload } = useFileUpload();
 
 const tabsValue = ref<string>('basic');
 
 const tabs = ref([
   {
-    label: '基本设置',
+    label: $t('abp.account.settings.basic.title'),
     value: 'basic',
   },
   {
-    label: '安全设置',
-    value: 'security',
-  },
-  {
-    label: '修改密码',
+    label: $t('abp.account.settings.security.password'),
     value: 'password',
   },
-  {
-    label: '新消息提醒',
-    value: 'notice',
-  },
 ]);
+
+function openAvatarUpload() {
+  const userId = userStore.userInfo?.userId;
+  if (!userId) {
+    return;
+  }
+  openFileUpload({
+    accept: 'image/*',
+    multiple: false,
+    ownerId: userId,
+    ownerType: USER_AVATAR_OWNER_TYPE,
+    title: $t('abp.account.settings.changeAvatar'),
+  });
+}
+
+async function refreshAvatar() {
+  const current = userStore.userInfo;
+  if (!current?.userId) {
+    return;
+  }
+  const avatar = await getCurrentUserAvatarApi();
+  if (!avatar) {
+    return;
+  }
+  if (current.avatar?.startsWith('blob:')) {
+    URL.revokeObjectURL(current.avatar);
+  }
+  userStore.setUserInfo({
+    ...current,
+    avatar: URL.createObjectURL(avatar),
+  });
+}
 </script>
 <template>
   <Profile
     v-model:model-value="tabsValue"
-    title="个人中心"
+    :title="$t('abp.account.profile')"
     :user-info="userStore.userInfo"
     :tabs="tabs"
   >
+    <template #avatar="{ src }">
+      <div class="flex flex-col items-center gap-2">
+        <button
+          class="group relative cursor-pointer rounded-full outline-none"
+          type="button"
+          :title="$t('abp.account.settings.changeAvatar')"
+          @click="openAvatarUpload"
+        >
+          <VbenAvatar :src="src" class="size-20" />
+          <span
+            class="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity group-hover:opacity-100"
+          >
+            <CameraOutlined class="text-lg text-white" />
+          </span>
+        </button>
+      </div>
+    </template>
     <template #content>
       <ProfileBase v-if="tabsValue === 'basic'" />
-      <ProfileSecuritySetting v-if="tabsValue === 'security'" />
-      <ProfilePasswordSetting v-if="tabsValue === 'password'" />
-      <ProfileNotificationSetting v-if="tabsValue === 'notice'" />
+      <ProfilePassword v-if="tabsValue === 'password'" />
+      <UploadModal @change="refreshAvatar" />
     </template>
   </Profile>
 </template>
