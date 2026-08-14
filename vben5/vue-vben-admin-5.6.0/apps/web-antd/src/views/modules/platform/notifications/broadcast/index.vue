@@ -59,17 +59,6 @@ const levelOptions = [
   },
 ];
 
-const readOptions = [
-  {
-    label: $t('TestWorkshop.Notification:Read'),
-    value: true,
-  },
-  {
-    label: $t('TestWorkshop.Notification:Unread'),
-    value: false,
-  },
-];
-
 const formOptions: VbenFormProps = {
   collapsed: false,
   commonConfig: {
@@ -106,15 +95,6 @@ const formOptions: VbenFormProps = {
       fieldName: 'messageLevel',
       label: $t('TestWorkshop.Notification:Level'),
     },
-    {
-      component: 'Select',
-      componentProps: {
-        allowClear: true,
-        options: readOptions,
-      },
-      fieldName: 'read',
-      label: $t('TestWorkshop.Notification:ReadState'),
-    },
   ],
   showCollapseButton: false,
   submitOnEnter: true,
@@ -127,9 +107,6 @@ function buildParams(values: Record<string, any>, extra?: Record<string, any>) {
     ...extra,
     messageType: NotificationMessageType.BroadCast,
   };
-  if (params.read !== undefined && params.read !== null) {
-    params.read = params.read === 'true' || params.read === true;
-  }
   return params;
 }
 
@@ -158,21 +135,6 @@ const gridOptions: VxeGridProps<NotificationOutput> = {
       slots: { default: 'level' },
       title: $t('TestWorkshop.Notification:Level'),
       width: 90,
-    },
-    {
-      align: 'center',
-      field: 'read',
-      slots: { default: 'read' },
-      title: $t('TestWorkshop.Notification:ReadState'),
-      width: 80,
-    },
-    {
-      field: 'readTime',
-      formatter: ({ cellValue }) => {
-        return cellValue ? formatToDateTime(cellValue) : '';
-      },
-      minWidth: 130,
-      title: $t('TestWorkshop.Notification:ReadTime'),
     },
     {
       field: 'senderUserName',
@@ -317,15 +279,6 @@ async function onDelete(row: NotificationOutput) {
       <template #level="{ row }">
         <Tag :color="levelColor(row.messageLevel)">
           {{ levelLabel(row.messageLevel) }}
-        </Tag>
-      </template>
-      <template #read="{ row }">
-        <Tag :color="row.read ? 'success' : 'warning'">
-          {{
-            row.read
-              ? $t('TestWorkshop.Notification:Read')
-              : $t('TestWorkshop.Notification:Unread')
-          }}
         </Tag>
       </template>
       <template #action="{ row }">

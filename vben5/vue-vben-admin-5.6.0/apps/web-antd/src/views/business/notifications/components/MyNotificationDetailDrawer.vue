@@ -153,7 +153,7 @@ function accentClass(level: NotificationMessageLevel) {
               {{ formatToDateTime(row.creationTime) }}
             </p>
           </div>
-          <div v-if="!isBroadcast">
+          <div>
             <p class="text-xs text-gray-400">
               {{ $t('TestWorkshop.Notification:ReadState') }}
             </p>
@@ -167,14 +167,6 @@ function accentClass(level: NotificationMessageLevel) {
             <p v-if="row.readTime" class="mt-1 text-xs text-gray-400">
               {{ formatToDateTime(row.readTime) }}
             </p>
-          </div>
-          <div v-else>
-            <p class="text-xs text-gray-400">
-              {{ $t('TestWorkshop.Notification:Type') }}
-            </p>
-            <Tag class="mt-1" color="geekblue">
-              {{ $t('TestWorkshop.Notification:Broadcast') }}
-            </Tag>
           </div>
           <div class="col-span-2">
             <p class="text-xs text-gray-400">
