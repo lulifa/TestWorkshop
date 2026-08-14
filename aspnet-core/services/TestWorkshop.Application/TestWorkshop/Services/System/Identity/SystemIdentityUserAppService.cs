@@ -9,16 +9,19 @@ public class SystemIdentityUserAppService : TestWorkshopAppService, ISystemIdent
     protected IdentityUserManager UserManager { get; }
     protected IOpenIddictTokenManager TokenManager { get; }
     protected IOptions<IdentityOptions> IdentityOptions { get; }
+    protected IIdentityUserRepository UserRepository { get; }
 
     public SystemIdentityUserAppService(
         IdentityUserAppService identityUserAppService,
         IdentityUserManager userManager,
         IOptions<IdentityOptions> identityOptions,
+        IIdentityUserRepository userRepository,
         IOpenIddictTokenManager tokenManager)
     {
         IdentityUserAppService = identityUserAppService;
         UserManager = userManager;
         IdentityOptions = identityOptions;
+        UserRepository = userRepository;
         TokenManager = tokenManager;
     }
 
@@ -201,9 +204,14 @@ public class SystemIdentityUserAppService : TestWorkshopAppService, ISystemIdent
 
 
     [Authorize(IdentityPermissions.Users.Create)]
-    public virtual async Task<IdentityUserDto> CreateAsync(IdentityUserCreateDto input)
+    public virtual async Task<SystemIdentityUserDto> CreateAsync(IdentityUserCreateDto input)
     {
-        return await IdentityUserAppService.CreateAsync(input);
+        var dto = ObjectMapper.Map<IdentityUserDto, SystemIdentityUserDto>(
+            await IdentityUserAppService.CreateAsync(input));
+
+        dto.RoleNames = input.RoleNames?.ToList() ?? new List<string>();
+
+        return dto;
     }
 
     [Authorize(IdentityPermissions.Users.Update)]
@@ -212,20 +220,47 @@ public class SystemIdentityUserAppService : TestWorkshopAppService, ISystemIdent
         await IdentityUserAppService.DeleteAsync(id);
     }
 
-    public virtual async Task<IdentityUserDto> GetAsync(Guid id)
+    public virtual async Task<SystemIdentityUserDto> GetAsync(Guid id)
     {
-        return await IdentityUserAppService.GetAsync(id);
+        var dto = ObjectMapper.Map<IdentityUserDto, SystemIdentityUserDto>(
+            await IdentityUserAppService.GetAsync(id));
+
+        dto.RoleNames = (await UserRepository.GetRoleNamesAsync(id)).ToList();
+
+        return dto;
     }
 
     [Authorize(IdentityPermissions.Users.Update)]
-    public virtual async Task<IdentityUserDto> UpdateAsync(Guid id, IdentityUserUpdateDto input)
+    public virtual async Task<SystemIdentityUserDto> UpdateAsync(Guid id, IdentityUserUpdateDto input)
     {
-        return await IdentityUserAppService.UpdateAsync(id, input);
+        var dto = ObjectMapper.Map<IdentityUserDto, SystemIdentityUserDto>(
+            await IdentityUserAppService.UpdateAsync(id, input));
+
+        dto.RoleNames = input.RoleNames?.ToList() ?? new List<string>();
+
+        return dto;
     }
 
-    public virtual async Task<PagedResultDto<IdentityUserDto>> GetListAsync(GetIdentityUsersInput input)
+    public virtual async Task<PagedResultDto<SystemIdentityUserDto>> GetListAsync(GetIdentityUsersInput input)
     {
-        return await IdentityUserAppService.GetListAsync(input);
+        var result = await IdentityUserAppService.GetListAsync(input);
+
+        var userIds = result.Items.Select(user => user.Id).ToList();
+        var userRoleNames = await UserRepository.GetRoleNamesAsync(userIds);
+        var roleNamesMap = userRoleNames.ToDictionary(item => item.Id, item => item.RoleNames);
+
+        var items = result.Items.Select(user =>
+        {
+            var dto = ObjectMapper.Map<IdentityUserDto, SystemIdentityUserDto>(user);
+
+            dto.RoleNames = roleNamesMap.TryGetValue(user.Id, out var roleNames)
+                ? roleNames.ToList()
+                : new List<string>();
+
+            return dto;
+        }).ToList();
+
+        return new PagedResultDto<SystemIdentityUserDto>(result.TotalCount, items);
     }
 
     #endregion

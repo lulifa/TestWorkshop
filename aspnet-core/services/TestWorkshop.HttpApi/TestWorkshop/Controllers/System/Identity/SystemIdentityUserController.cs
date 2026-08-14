@@ -6,7 +6,7 @@
 [Route("api/system/identity/users")]
 public class SystemIdentityUserController : TestWorkshopCrudController<
     ISystemIdentityUserAppService,
-    IdentityUserDto,
+    SystemIdentityUserDto,
     GetIdentityUsersInput,
     IdentityUserCreateDto,
     IdentityUserUpdateDto>

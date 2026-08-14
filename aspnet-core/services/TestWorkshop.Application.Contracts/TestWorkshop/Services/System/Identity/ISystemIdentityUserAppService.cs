@@ -2,7 +2,7 @@
 
 public interface ISystemIdentityUserAppService
     : ICrudAppService<
-        IdentityUserDto,
+        SystemIdentityUserDto,
         Guid,
         GetIdentityUsersInput,
         IdentityUserCreateDto,

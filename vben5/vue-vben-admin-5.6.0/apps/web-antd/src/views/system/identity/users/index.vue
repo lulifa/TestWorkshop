@@ -101,44 +101,57 @@ const gridOptions: VxeGridProps<IdentityUserDto> = {
       width: 50,
     },
     {
+      align: 'center',
       field: 'isActive',
       slots: { default: 'active' },
       sortable: true,
       title: $t('AbpIdentity.DisplayName:IsActive'),
+      width: 70,
     },
     {
       field: 'userName',
-      minWidth: '100px',
+      minWidth: '120px',
       sortable: true,
       title: $t('AbpIdentity.DisplayName:UserName'),
     },
     {
       align: 'left',
       field: 'email',
-      minWidth: '120px',
+      minWidth: '210px',
       slots: { default: 'email' },
       sortable: true,
       title: $t('AbpIdentity.DisplayName:Email'),
     },
     {
+      align: 'left',
+      field: 'roleNames',
+      minWidth: '160px',
+      slots: { default: 'roleNames' },
+      title: $t('AbpIdentity.Roles'),
+    },
+    {
       field: 'surname',
+      minWidth: '90px',
       sortable: true,
       title: $t('AbpIdentity.DisplayName:Surname'),
     },
     {
       field: 'name',
+      minWidth: '90px',
       sortable: true,
       title: $t('AbpIdentity.DisplayName:Name'),
     },
     {
       align: 'left',
       field: 'phoneNumber',
+      minWidth: '170px',
       slots: { default: 'phoneNumber' },
       sortable: true,
       title: $t('AbpIdentity.DisplayName:PhoneNumber'),
     },
     {
       field: 'lockoutEnd',
+      minWidth: '170px',
       formatter: ({ cellValue }) => {
         return cellValue ? formatToDateTime(cellValue) : '';
       },
@@ -150,7 +163,7 @@ const gridOptions: VxeGridProps<IdentityUserDto> = {
       fixed: 'right',
       slots: { default: 'action' },
       title: $t('AbpUi.Actions'),
-      width: 240,
+      width: 230,
     },
   ],
   exportConfig: {},
@@ -304,18 +317,25 @@ const handleMenuClick = async (row: IdentityUserDto, info: MenuInfo) => {
         </div>
       </template>
       <template #email="{ row }">
-        <div class="flex flex-row">
+        <div class="flex flex-row flex-wrap items-center gap-1">
           <Tag v-if="row.emailConfirmed" color="success">
             {{ $t('abp.account.settings.security.verified') }}
           </Tag>
           <Tag v-else color="warning">
             {{ $t('abp.account.settings.security.unVerified') }}
           </Tag>
-          <span>{{ row.email }}</span>
+          <span class="min-w-0 break-words">{{ row.email }}</span>
+        </div>
+      </template>
+      <template #roleNames="{ row }">
+        <div class="flex flex-row flex-wrap gap-1">
+          <Tag v-for="role in row.roleNames ?? []" :key="role" color="blue">
+            {{ role }}
+          </Tag>
         </div>
       </template>
       <template #phoneNumber="{ row }">
-        <div class="flex flex-row">
+        <div class="flex flex-row flex-wrap items-center gap-1">
           <div v-if="row.phoneNumber">
             <Tag v-if="row.phoneNumberConfirmed" color="success">
               {{ $t('abp.account.settings.security.verified') }}
@@ -324,7 +344,7 @@ const handleMenuClick = async (row: IdentityUserDto, info: MenuInfo) => {
               {{ $t('abp.account.settings.security.unVerified') }}
             </Tag>
           </div>
-          <span>{{ row.phoneNumber }}</span>
+          <span class="min-w-0">{{ row.phoneNumber }}</span>
         </div>
       </template>
       <template #action="{ row }">
@@ -332,7 +352,6 @@ const handleMenuClick = async (row: IdentityUserDto, info: MenuInfo) => {
           <Space>
             <Button
               :icon="h(EditOutlined)"
-              block
               type="link"
               v-access:code="[IdentityUserPermissions.Update]"
               @click="handleEdit(row)"
@@ -342,7 +361,6 @@ const handleMenuClick = async (row: IdentityUserDto, info: MenuInfo) => {
 
             <Button
               :icon="h(DeleteOutlined)"
-              block
               danger
               type="link"
               v-access:code="[IdentityUserPermissions.Delete]"
@@ -403,7 +421,7 @@ const handleMenuClick = async (row: IdentityUserDto, info: MenuInfo) => {
                   </MenuItem>
                 </Menu>
               </template>
-              <Button :icon="h(EllipsisOutlined)" type="link" class="ml-2" />
+              <Button :icon="h(EllipsisOutlined)" type="link" />
             </Dropdown>
           </Space>
         </div>
