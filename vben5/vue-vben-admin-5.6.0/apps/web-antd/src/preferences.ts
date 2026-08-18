@@ -22,5 +22,6 @@ export const overridesPreferences = defineOverridesPreferences({
   widget: {
     notification: true,
     timezone: false,
+    fullscreen: false,
   },
 });
