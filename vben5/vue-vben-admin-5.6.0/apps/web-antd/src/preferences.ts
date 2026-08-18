@@ -13,6 +13,7 @@ export const overridesPreferences = defineOverridesPreferences({
     accessMode: 'backend',
     enableRefreshToken: true,
     defaultHomePath: '/workspace',
+    enablePreferences: false,
   },
   theme: {
     mode: 'auto',
