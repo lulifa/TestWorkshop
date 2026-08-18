@@ -24,4 +24,7 @@ export const overridesPreferences = defineOverridesPreferences({
     timezone: false,
     fullscreen: false,
   },
+  tabbar: {
+    showMaximize: false,
+  },
 });
