@@ -19,11 +19,6 @@ public interface IWorkshopTelemetryTaskManager : IDomainService
     Task<(WorkshopTelemetryTask Task, FileObject FileObject)> GetTaskWithFileAsync(long taskId);
 
     /// <summary>
-    /// 处理任务（Worker 调用）
-    /// </summary>
-    Task ProcessTaskAsync(long taskId, Func<Stream, Task<int>> processor);
-
-    /// <summary>
     /// 删除任务（级联删除 FileObject 和物理文件）
     /// </summary>
     Task DeleteTaskAsync(long taskId);

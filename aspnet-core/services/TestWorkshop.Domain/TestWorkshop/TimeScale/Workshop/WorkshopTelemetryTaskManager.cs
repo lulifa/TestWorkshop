@@ -69,54 +69,6 @@ public class WorkshopTelemetryTaskManager : DomainService, IWorkshopTelemetryTas
     }
 
     /// <summary>
-    /// 处理任务
-    /// </summary>
-    [UnitOfWork]
-    public virtual async Task ProcessTaskAsync(long taskId, Func<Stream, Task<int>> processor)
-    {
-        var (task, fileObject) = await GetTaskWithFileAsync(taskId);
-
-        if (task.Status == 2)
-        {
-            _logger.LogWarning("任务已处理完成: {TaskId}", taskId);
-            return;
-        }
-
-        if (task.Status == 1)
-        {
-            throw new BusinessException("任务正在处理中，不能重复处理");
-        }
-
-        // 获取物理文件流
-        var (stream, _, _) = await _fileObjectManager.GetFileAsync(fileObject.Id);
-
-        try
-        {
-            task.MarkAsProcessing();
-            await _taskRepository.UpdateAsync(task);
-
-            // 执行处理器（解析 CSV 并写入数据库）
-            var recordCount = await processor(stream);
-
-            task.MarkAsSuccess(recordCount);
-            await _taskRepository.UpdateAsync(task);
-
-            _logger.LogInformation("任务处理成功: TaskId={TaskId}, 记录数={RecordCount}", taskId, recordCount);
-        }
-        catch (Exception ex)
-        {
-            task.MarkAsFailed(ex.Message);
-            await _taskRepository.UpdateAsync(task);
-            _logger.LogError(ex, "任务处理失败: TaskId={TaskId}", taskId);
-            throw;
-        }
-        finally
-        {
-            await stream.DisposeAsync();
-        }
-    }
-
-    /// <summary>
     /// 删除任务（级联删除 FileObject 和物理文件）- 真删除
     /// </summary>
     [UnitOfWork]
