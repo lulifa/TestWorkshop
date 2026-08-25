@@ -7,6 +7,7 @@ namespace TestWorkshop;
 /// <summary>
 /// 遥测服务应用
 /// </summary>
+[Authorize]
 public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTelemetryAppService
 {
     private readonly IWorkshopTelemetryTaskManager _taskManager;
@@ -29,6 +30,7 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
     /// <summary>
     /// 上传遥测文件
     /// </summary>
+    [AllowAnonymous]
     public async Task<WorkshopTelemetryTaskDto> UploadAsync(IFormFile file)
     {
         if (file == null || file.Length == 0)

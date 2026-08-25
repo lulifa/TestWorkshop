@@ -80,7 +80,7 @@ public class WorkshopTelemetryTaskRepository :
     /// 分页查询任务列表（JOIN FileObject 表获取文件信息）
     /// </summary>
     public async Task<PagedResultDto<WorkshopTelemetryTask>> GetPagedListAsync(
-        string? fileName = null,
+        string fileName = null,
         int? status = null,
         int skipCount = 0,
         int maxResultCount = 10)
