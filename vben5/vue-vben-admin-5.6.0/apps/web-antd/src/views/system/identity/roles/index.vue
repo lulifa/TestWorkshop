@@ -193,8 +193,8 @@ function onPermissionChange(_name: string, key: string) {
     <Grid :table-title="$t('AbpIdentity.Roles')">
       <template #toolbar-tools>
         <Button
+          v-if="hasAccessByCodes([IdentityRolePermissions.Create])"
           type="primary"
-          v-access:code="[IdentityRolePermissions.Create]"
           @click="handleAdd"
         >
           {{ $t('AbpIdentity.NewRole') }}
@@ -216,21 +216,23 @@ function onPermissionChange(_name: string, key: string) {
         <div class="flex flex-row justify-center">
           <Space>
             <Button
+              v-if="hasAccessByCodes([IdentityRolePermissions.Update])"
               :icon="h(EditOutlined)"
               block
               type="link"
-              v-access:code="[IdentityRolePermissions.Update]"
               @click="handleEdit(row)"
             >
               {{ $t('AbpUi.Edit') }}
             </Button>
             <Button
-              v-if="row.isStatic === false"
+              v-if="
+                row.isStatic === false &&
+                hasAccessByCodes([IdentityRolePermissions.Delete])
+              "
               :icon="h(DeleteOutlined)"
               block
               danger
               type="link"
-              v-access:code="[IdentityRolePermissions.Delete]"
               @click="handleDelete(row)"
             >
               {{ $t('AbpUi.Delete') }}

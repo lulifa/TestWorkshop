@@ -300,9 +300,9 @@ const handleMenuClick = async (row: IdentityUserDto, info: MenuInfo) => {
     <Grid :table-title="$t('AbpIdentity.Users')">
       <template #toolbar-tools>
         <Button
+          v-if="hasAccessByCodes([IdentityUserPermissions.Create])"
           :icon="h(PlusOutlined)"
           type="primary"
-          v-access:code="[IdentityUserPermissions.Create]"
           @click="handleAdd"
         >
           {{ $t('AbpIdentity.NewUser') }}
@@ -351,19 +351,19 @@ const handleMenuClick = async (row: IdentityUserDto, info: MenuInfo) => {
         <div class="flex flex-row justify-center">
           <Space>
             <Button
+              v-if="hasAccessByCodes([IdentityUserPermissions.Update])"
               :icon="h(EditOutlined)"
               type="link"
-              v-access:code="[IdentityUserPermissions.Update]"
               @click="handleEdit(row)"
             >
               {{ $t('AbpUi.Edit') }}
             </Button>
 
             <Button
+              v-if="hasAccessByCodes([IdentityUserPermissions.Delete])"
               :icon="h(DeleteOutlined)"
               danger
               type="link"
-              v-access:code="[IdentityUserPermissions.Delete]"
               @click="handleDelete(row)"
             >
               {{ $t('AbpUi.Delete') }}

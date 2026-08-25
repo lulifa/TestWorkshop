@@ -7,6 +7,7 @@ import type { VxeGridListeners, VxeGridProps } from '#/adapter/vxe-table';
 
 import { defineAsyncComponent } from 'vue';
 
+import { useAccess } from '@vben/access';
 import { Page, useVbenDrawer } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 
@@ -26,6 +27,7 @@ defineOptions({
   name: 'AuditLogTable',
 });
 const { getPagedListApi } = useAuditLogsApi();
+const { hasAccessByCodes } = useAccess();
 
 const formOptions: VbenFormProps = {
   // 默认展开
@@ -326,9 +328,9 @@ function onFilter(field: string, value: any) {
         <div class="flex flex-row justify-center">
           <Space>
             <Button
+              v-if="hasAccessByCodes([AuditLogPermissions.Default])"
               block
               type="link"
-              v-access:code="[AuditLogPermissions.Default]"
               @click="onUpdate(row)"
             >
               {{ $t('TestWorkshop.DisplayName:ShowLogDialog') }}

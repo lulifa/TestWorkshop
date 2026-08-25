@@ -177,10 +177,10 @@ watch(() => props.selectedKey, onRefresh);
       </template>
       <template #actions="{ row }">
         <Button
+          v-if="hasAccessByCodes([OrganizationUnitPermissions.ManageRoles])"
           :icon="h(DeleteOutlined)"
           danger
           type="link"
-          v-access:code="[OrganizationUnitPermissions.ManageRoles]"
           @click="onDelete(row)"
         >
           {{ $t('AbpUi.Delete') }}
