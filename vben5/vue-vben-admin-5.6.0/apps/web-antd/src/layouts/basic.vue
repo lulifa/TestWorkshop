@@ -11,7 +11,7 @@ import {
   UserDropdown,
 } from '@vben/layouts';
 import { preferences } from '@vben/preferences';
-import { useAccessStore, useTabbarStore, useUserStore } from '@vben/stores';
+import { useAccessStore, useUserStore } from '@vben/stores';
 
 import { $t } from '#/locales';
 import { useAuthStore, useNotificationStore } from '#/store';
@@ -22,7 +22,6 @@ const userStore = useUserStore();
 const authStore = useAuthStore();
 const accessStore = useAccessStore();
 const notificationStore = useNotificationStore();
-const tabbarStore = useTabbarStore();
 const { destroyWatermark, updateWatermark } = useWatermark();
 
 const menus = computed(() => [
@@ -66,16 +65,6 @@ function handleViewBroadcastAll() {
 onMounted(() => {
   void notificationStore.refresh();
 });
-
-// tab 刷新时同步最新权限，避免操作列继续使用旧的 accessCodes
-watch(
-  () => tabbarStore.renderRouteView,
-  async (visible) => {
-    if (visible) {
-      await authStore.fetchUserInfo().catch(() => {});
-    }
-  },
-);
 
 watch(
   () => ({
