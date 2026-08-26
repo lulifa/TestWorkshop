@@ -253,7 +253,9 @@ function buildTree(
     .map((item) => ({
       children: buildTree(items, item.id),
       key: item.id,
-      title: item.displayName,
+      title: item.extraProperties?.BusinessCode
+        ? `${item.displayName} (${item.extraProperties.BusinessCode})`
+        : item.displayName,
     }));
 }
 
