@@ -33,7 +33,7 @@ public static class TestWorkshopDbContextModelCreatingExtensions
 
             b.ConfigureByConvention();
 
-            b.HasIndex(x => x.Code).IsUnique();
+            b.HasIndex(x => new { x.TenantId, x.Code }).IsUnique();
         });
 
         // ✅ WorkshopTelemetryTask 配置（清爽版）
