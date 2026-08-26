@@ -115,6 +115,13 @@ const formOptions: VbenFormProps = {
       class: 'w-full',
     },
   },
+  fieldMappingTime: [
+    [
+      'createdAtRange',
+      ['startTime', 'endTime'],
+      (value) => formatToDateTime(value),
+    ],
+  ],
   schema: [
     {
       component: 'Input',
@@ -134,6 +141,15 @@ const formOptions: VbenFormProps = {
       fieldName: 'status',
       formItemClass: 'col-span-1 items-baseline',
       label: $t('TestWorkshop.Telemetry:Status'),
+    },
+    {
+      component: 'RangePicker',
+      componentProps: {
+        showTime: true,
+      },
+      fieldName: 'createdAtRange',
+      formItemClass: 'col-span-2 items-baseline',
+      label: $t('TestWorkshop.Telemetry:TimeRange'),
     },
   ],
   showCollapseButton: false,
@@ -223,23 +239,29 @@ const gridOptions: VxeGridProps<WorkshopTelemetryTaskDto> = {
     ajax: {
       query: async ({ page, sort }, formValues) => {
         const sorting = sort.order ? `${sort.field} ${sort.order}` : undefined;
+        const values = formValues as Record<string, any>;
         return await getListApi({
-          fileName: (formValues as Record<string, any>)?.fileName,
+          endTime: values?.endTime,
+          fileName: values?.fileName,
           maxResultCount: page.pageSize,
           skipCount: (page.currentPage - 1) * page.pageSize,
           sorting,
-          status: (formValues as Record<string, any>)?.status,
+          startTime: values?.startTime,
+          status: values?.status,
         });
       },
       queryAll: async (params) => {
         const { sort } = params;
         const formValues = await gridApi.formApi.getValues();
         const sorting = sort.order ? `${sort.field} ${sort.order}` : undefined;
+        const values = formValues as Record<string, any>;
         return await getListApi({
-          fileName: (formValues as Record<string, any>)?.fileName,
+          endTime: values?.endTime,
+          fileName: values?.fileName,
           isPaged: false,
           sorting,
-          status: (formValues as Record<string, any>)?.status,
+          startTime: values?.startTime,
+          status: values?.status,
         });
       },
     },

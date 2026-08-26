@@ -18,7 +18,7 @@ public interface IWorkshopTelemetryTaskRepository : IRepository<WorkshopTelemetr
     /// <summary>
     /// 分页查询任务列表（JOIN FileObject）
     /// </summary>
-    Task<PagedResultDto<WorkshopTelemetryTask>> GetPagedListAsync(string fileName = null, int? status = null, int skipCount = 0, int maxResultCount = 10);
+    Task<PagedResultDto<WorkshopTelemetryTask>> GetPagedListAsync(string fileName = null, int? status = null, DateTime? startTime = null, DateTime? endTime = null, int skipCount = 0, int maxResultCount = 10);
 
     /// <summary>
     /// 获取任务关联的 FileObject

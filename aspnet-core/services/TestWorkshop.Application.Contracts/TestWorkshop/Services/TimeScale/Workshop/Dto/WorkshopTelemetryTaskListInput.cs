@@ -13,6 +13,16 @@ public class WorkshopTelemetryTaskListInput : PagedAndSortedResultRequestDto, IE
     public int? Status { get; set; }
 
     /// <summary>
+    /// 创建时间开始
+    /// </summary>
+    public DateTime? StartTime { get; set; }
+
+    /// <summary>
+    /// 创建时间结束
+    /// </summary>
+    public DateTime? EndTime { get; set; }
+
+    /// <summary>
     /// 是否启用分页；true：分页查询，false：查询全部数据
     /// </summary>
     public bool IsPaged { get; set; } = true;

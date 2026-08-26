@@ -231,6 +231,7 @@
     "Telemetry:FileName": "文件名",
     "Telemetry:FileSize": "文件大小",
     "Telemetry:Status": "状态",
+    "Telemetry:TimeRange": "时间范围",
     "Telemetry:RetryCount": "重试次数",
     "Telemetry:NextRetryTime": "下次重试时间",
     "Telemetry:RecordCount": "解析记录数",

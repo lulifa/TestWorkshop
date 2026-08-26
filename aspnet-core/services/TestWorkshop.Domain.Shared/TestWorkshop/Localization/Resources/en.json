@@ -231,6 +231,7 @@
     "Telemetry:FileName": "File Name",
     "Telemetry:FileSize": "File Size",
     "Telemetry:Status": "Status",
+    "Telemetry:TimeRange": "Time Range",
     "Telemetry:RetryCount": "Retry Count",
     "Telemetry:NextRetryTime": "Next Retry Time",
     "Telemetry:RecordCount": "Record Count",

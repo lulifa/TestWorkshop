@@ -135,6 +135,8 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
         var result = await _taskRepository.GetPagedListAsync(
             input.FileName,
             input.Status,
+            input.StartTime,
+            input.EndTime,
             input.SkipCount,
             input.MaxResultCount);
 

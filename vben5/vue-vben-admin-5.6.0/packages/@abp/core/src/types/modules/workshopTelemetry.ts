@@ -30,8 +30,10 @@ interface WorkshopTelemetryTaskDto extends EntityDto<number> {
 }
 
 interface WorkshopTelemetryTaskListInput extends PagedAndSortedResultRequestDto {
+  endTime?: string;
   fileName?: string;
   isPaged?: boolean;
+  startTime?: string;
   status?: number;
 }
 

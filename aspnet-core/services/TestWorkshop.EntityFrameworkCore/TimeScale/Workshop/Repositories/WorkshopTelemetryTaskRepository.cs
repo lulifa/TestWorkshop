@@ -83,6 +83,8 @@ public class WorkshopTelemetryTaskRepository :
     public async Task<PagedResultDto<WorkshopTelemetryTask>> GetPagedListAsync(
         string fileName = null,
         int? status = null,
+        DateTime? startTime = null,
+        DateTime? endTime = null,
         int skipCount = 0,
         int maxResultCount = 10)
     {
@@ -104,6 +106,16 @@ public class WorkshopTelemetryTaskRepository :
         if (status.HasValue)
         {
             query = query.Where(x => x.Task.Status == status.Value);
+        }
+
+        if (startTime.HasValue)
+        {
+            query = query.Where(x => x.Task.CreatedAt >= startTime.Value);
+        }
+
+        if (endTime.HasValue)
+        {
+            query = query.Where(x => x.Task.CreatedAt <= endTime.Value);
         }
 
         // 统计总数
