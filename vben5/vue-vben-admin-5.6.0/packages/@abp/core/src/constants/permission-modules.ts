@@ -52,3 +52,14 @@ export const NotificationPermissions = {
   /** 更新 */
   Update: 'TestWorkshop.Notification.Update',
 };
+/** 车间设备权限 */
+export const WorkshopDevicePermissions = {
+  /** 新增 */
+  Create: 'TestWorkshop.WorkshopDevice.Create',
+  /** 默认 */
+  Default: 'TestWorkshop.WorkshopDevice',
+  /** 删除 */
+  Delete: 'TestWorkshop.WorkshopDevice.Delete',
+  /** 更新 */
+  Update: 'TestWorkshop.WorkshopDevice.Update',
+};

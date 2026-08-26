@@ -44,11 +44,11 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
         business.AddItem(
           new ApplicationMenu(
               name: "Vben5BusinessWorkDevices",
-              displayName: "车间设备管理",
+              displayName: "车间设备",
               url: "/business/workshopdevices",
               component: "/business/workshopdevices/index",
-              icon: "arcticons:tenantcloud-pro",
-              description: "车间设备管理")
+              icon: "mdi:factory",
+              description: "车间设备")
             .SetProperty("title", "page.business.workshopdevices"));
         business.AddItem(
           new ApplicationMenu(

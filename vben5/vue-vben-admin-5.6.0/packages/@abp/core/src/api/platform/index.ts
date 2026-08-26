@@ -7,3 +7,4 @@ export * from './useMyMenusApi';
 export * from './useNotificationsApi';
 export * from './useRoleMenusApi';
 export * from './useUserMenusApi';
+export * from './useWorkshopDeviceApi';

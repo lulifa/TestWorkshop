@@ -4,4 +4,6 @@ public interface IWorkshopDeviceRepository : IBasicRepository<WorkshopDevice, Gu
 {
     Task<WorkshopDevice> FindByCodeAsync(string code);
 
+    Task<IQueryable<WorkshopDevice>> GetQueryableAsync();
+
 }
