@@ -92,6 +92,7 @@ public class WorkshopDeviceAppService : TestWorkshopAppService, IWorkshopDeviceA
     /// <summary>
     /// 新建设备
     /// </summary>
+    [Authorize(Roles = RoleConstants.admin)]
     public virtual async Task<WorkshopDeviceDto> CreateAsync(WorkshopDeviceCreateDto input)
     {
         await EnsureOrganizationUnitAccessibleAsync(input.OrganizationUnitId);
@@ -121,6 +122,7 @@ public class WorkshopDeviceAppService : TestWorkshopAppService, IWorkshopDeviceA
     /// <summary>
     /// 编辑设备
     /// </summary>
+    [Authorize(Roles = RoleConstants.admin)]
     public virtual async Task<WorkshopDeviceDto> UpdateAsync(Guid id, WorkshopDeviceUpdateDto input)
     {
         var device = await WorkshopDeviceRepository.GetAsync(id);
@@ -152,6 +154,7 @@ public class WorkshopDeviceAppService : TestWorkshopAppService, IWorkshopDeviceA
     /// <summary>
     /// 删除设备
     /// </summary>
+    [Authorize(Roles = RoleConstants.admin)]
     public virtual async Task DeleteAsync(Guid id)
     {
         var device = await WorkshopDeviceRepository.GetAsync(id);

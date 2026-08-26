@@ -20,6 +20,7 @@ import {
   DeviceType,
   formatToDateTime,
   listToTree,
+  useAbpStore,
   useWorkshopDeviceApi,
 } from '@abp/core';
 import {
@@ -37,6 +38,10 @@ defineOptions({
 
 const { deleteApi, getListApi, getOrganizationUnitsApi, getTypesApi } =
   useWorkshopDeviceApi();
+const abpStore = useAbpStore();
+const isAdmin = computed(
+  () => abpStore.application?.currentUser.roles?.includes('admin') ?? false,
+);
 
 const organizationUnits = ref<OrganizationUnitDto[]>([]);
 const deviceTypes = ref<WorkshopDeviceTypeDto[]>([]);
@@ -355,7 +360,12 @@ onMounted(async () => {
       <div class="min-w-0 flex-1">
         <Grid :table-title="$t('page.business.workshopdevices')">
           <template #toolbar-tools>
-            <Button :icon="h(PlusOutlined)" type="primary" @click="onCreate">
+            <Button
+              v-if="isAdmin"
+              :icon="h(PlusOutlined)"
+              type="primary"
+              @click="onCreate"
+            >
               {{ $t('TestWorkshop.WorkshopDevice:AddNew') }}
             </Button>
           </template>
@@ -372,6 +382,7 @@ onMounted(async () => {
             <div class="flex flex-row justify-center">
               <Space>
                 <Button
+                  v-if="isAdmin"
                   :icon="h(EditOutlined)"
                   type="link"
                   @click="onUpdate(row)"
@@ -379,6 +390,7 @@ onMounted(async () => {
                   {{ $t('AbpUi.Edit') }}
                 </Button>
                 <Button
+                  v-if="isAdmin"
                   :icon="h(DeleteOutlined)"
                   danger
                   type="link"
