@@ -68,8 +68,9 @@ public class WorkshopTelemetryTaskRepository :
 
         // ✅ 去掉 where task.IsDeleted == false
         var query = from task in dbContext.TelemetryTasks
-                    join file in dbContext.FileObjects on task.FileObjectId equals file.Id
-                    where file.FileName.Contains(fileName)
+                    join file in dbContext.FileObjects on task.FileObjectId equals file.Id into fileGroup
+                    from file in fileGroup.DefaultIfEmpty()
+                    where file != null && file.FileName.Contains(fileName)
                     orderby task.CreatedAt descending
                     select task;
 
@@ -89,13 +90,14 @@ public class WorkshopTelemetryTaskRepository :
 
         // ✅ 去掉 where task.IsDeleted == false
         var query = from task in dbContext.TelemetryTasks
-                    join file in dbContext.FileObjects on task.FileObjectId equals file.Id
+                    join file in dbContext.FileObjects on task.FileObjectId equals file.Id into fileGroup
+                    from file in fileGroup.DefaultIfEmpty()
                     select new { Task = task, File = file };
 
         // 按文件名过滤
         if (!string.IsNullOrWhiteSpace(fileName))
         {
-            query = query.Where(x => x.File.FileName.Contains(fileName));
+            query = query.Where(x => x.File != null && x.File.FileName.Contains(fileName));
         }
 
         // 按状态过滤
@@ -140,12 +142,13 @@ public class WorkshopTelemetryTaskRepository :
 
         // ✅ 去掉 where task.IsDeleted == false
         var query = from task in dbContext.TelemetryTasks
-                    join file in dbContext.FileObjects on task.FileObjectId equals file.Id
+                    join file in dbContext.FileObjects on task.FileObjectId equals file.Id into fileGroup
+                    from file in fileGroup.DefaultIfEmpty()
                     select new { Task = task, File = file };
 
         // 统计各项数据（一次查询完成）
         var totalFiles = await query.CountAsync();
-        var totalSize = await query.SumAsync(x => x.File.FileSize);
+        var totalSize = (await query.SumAsync(x => x.File != null ? (long?)x.File.FileSize : null)) ?? 0;
         var pendingCount = await query.CountAsync(x => x.Task.Status == 0);
         var processingCount = await query.CountAsync(x => x.Task.Status == 1);
         var successCount = await query.CountAsync(x => x.Task.Status == 2);
@@ -170,7 +173,8 @@ public class WorkshopTelemetryTaskRepository :
 
         // ✅ 没有 IsDeleted 条件
         var query = from task in dbContext.TelemetryTasks
-                    join file in dbContext.FileObjects on task.FileObjectId equals file.Id
+                    join file in dbContext.FileObjects on task.FileObjectId equals file.Id into fileGroup
+                    from file in fileGroup.DefaultIfEmpty()
                     where task.ExpiresAt <= now
                       && (task.Status == 2 || task.Status == 3) // Success 或 Failed
                     orderby task.CreatedAt

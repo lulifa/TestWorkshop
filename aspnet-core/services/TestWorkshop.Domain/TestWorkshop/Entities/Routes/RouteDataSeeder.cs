@@ -71,10 +71,20 @@ public class RouteDataSeeder : IRouteDataSeeder, ITransientDependency
             var childMenu = children.FirstOrDefault(x => x.Name == name);
             if (childMenu != null)
             {
+                if (childMenu.Code != code)
+                {
+                    childMenu.Code = code;
+                    await MenuRepository.UpdateAsync(childMenu);
+                }
                 return childMenu;
             }
         }
         var menu = await MenuRepository.FindByNameAsync(name, cancellationToken: cancellationToken);
+        if (menu != null && menu.Code != code)
+        {
+            menu.Code = code;
+            await MenuRepository.UpdateAsync(menu, cancellationToken: cancellationToken);
+        }
         if (menu == null)
         {
             menu = new Menu(

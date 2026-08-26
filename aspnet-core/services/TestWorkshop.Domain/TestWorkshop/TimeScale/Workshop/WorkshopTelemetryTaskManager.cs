@@ -7,17 +7,20 @@ public class WorkshopTelemetryTaskManager : DomainService, IWorkshopTelemetryTas
     private readonly IFileObjectManager _fileObjectManager;
     private readonly IWorkshopTelemetryTaskRepository _taskRepository;
     private readonly IFileObjectRepository _fileObjectRepository;
+    private readonly IUnitOfWorkManager _unitOfWorkManager;
     private readonly ILogger<WorkshopTelemetryTaskManager> _logger;
 
     public WorkshopTelemetryTaskManager(
         IFileObjectManager fileObjectManager,
         IWorkshopTelemetryTaskRepository taskRepository,
         IFileObjectRepository fileObjectRepository,
+        IUnitOfWorkManager unitOfWorkManager,
         ILogger<WorkshopTelemetryTaskManager> logger)
     {
         _fileObjectManager = fileObjectManager;
         _taskRepository = taskRepository;
         _fileObjectRepository = fileObjectRepository;
+        _unitOfWorkManager = unitOfWorkManager;
         _logger = logger;
     }
 
@@ -30,23 +33,25 @@ public class WorkshopTelemetryTaskManager : DomainService, IWorkshopTelemetryTas
         string fileName,
         string contentType)
     {
-        // 1. 通过 FileObjectManager 上传文件
-        var fileObject = await _fileObjectManager.UploadAsync(
-            stream: stream,
-            fileName: fileName,
-            ownerType: nameof(WorkshopTelemetryTask),
-            ownerId: null,
-            contentType: contentType
-        );
-
-        // 2. 创建任务记录
+        // 1. 先创建任务并保存，拿到 Task.Id
+        var fileObjectId = Guid.NewGuid();
         var task = new WorkshopTelemetryTask(
-            fileObjectId: fileObject.Id,
+            fileObjectId: fileObjectId,
             expiresAt: DateTime.UtcNow.AddDays(7),
             tenantId: CurrentTenant.Id
         );
-
         await _taskRepository.InsertAsync(task);
+        await _unitOfWorkManager.Current.SaveChangesAsync();
+
+        // 2. 通过 FileObjectManager 追加上传文件（不删除历史文件），OwnerId 使用 Task.Id
+        var fileObject = await _fileObjectManager.AppendAsync(
+            stream: stream,
+            fileName: fileName,
+            ownerType: nameof(WorkshopTelemetryTask),
+            ownerId: task.Id.ToString(),
+            contentType: contentType,
+            fileId: fileObjectId
+        );
 
         _logger.LogInformation("创建遥测任务成功: TaskId={TaskId}, FileObjectId={FileObjectId}", task.Id, fileObject.Id);
         return task;
@@ -61,9 +66,7 @@ public class WorkshopTelemetryTaskManager : DomainService, IWorkshopTelemetryTas
         if (task == null)
             throw new UserFriendlyException($"任务不存在: {taskId}");
 
-        var fileObject = await _fileObjectRepository.GetAsync(task.FileObjectId);
-        if (fileObject == null)
-            throw new UserFriendlyException($"关联的文件不存在: {task.FileObjectId}");
+        var fileObject = await _fileObjectRepository.FindAsync(task.FileObjectId);
 
         return (task, fileObject);
     }
@@ -80,8 +83,12 @@ public class WorkshopTelemetryTaskManager : DomainService, IWorkshopTelemetryTas
         if (task.Status == 1)
             throw new BusinessException("不能删除正在处理的任务");
 
-        // 1. 先删除 FileObject（级联删除物理文件）
-        await _fileObjectManager.DeleteFileAsync(task.FileObjectId);
+        // 1. 如果 FileObject 还存在，先删除文件元数据和物理文件
+        var fileObject = await _fileObjectRepository.FindAsync(task.FileObjectId);
+        if (fileObject != null)
+        {
+            await _fileObjectManager.DeleteFileAsync(task.FileObjectId);
+        }
 
         // 2. 真删除任务（物理删除）
         await _taskRepository.DeleteAsync(task);
@@ -128,13 +135,16 @@ public class WorkshopTelemetryTaskManager : DomainService, IWorkshopTelemetryTas
         {
             try
             {
-                // 2. 通过 FileObjectManager 删除物理文件 + FileObject 记录
-                await _fileObjectManager.DeleteFileAsync(fileObject.Id);
+                // 2. 如果 FileObject 还存在，删除物理文件 + FileObject 记录
+                if (fileObject != null)
+                {
+                    await _fileObjectManager.DeleteFileAsync(fileObject.Id);
+                    freedSize += fileObject.FileSize;
+                }
 
                 // 3. 真删除任务
                 await _taskRepository.DeleteAsync(task);
 
-                freedSize += fileObject.FileSize;
                 successCount++;
             }
             catch (Exception ex)

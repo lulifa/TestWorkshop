@@ -7,7 +7,7 @@ namespace TestWorkshop;
 /// <summary>
 /// 遥测服务应用
 /// </summary>
-[Authorize]
+[Authorize(Roles = RoleConstants.admin)]
 public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTelemetryAppService
 {
     private readonly IWorkshopTelemetryTaskManager _taskManager;
@@ -46,14 +46,16 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
             contentType: file.ContentType
         );
 
+        await CurrentUnitOfWork.SaveChangesAsync();
+
         var fileObject = await _fileObjectRepository.GetAsync(task.FileObjectId);
 
         return new WorkshopTelemetryTaskDto
         {
             Id = task.Id,
             FileObjectId = task.FileObjectId,
-            FileName = fileObject.FileName,
-            FileSize = fileObject.FileSize,
+            FileName = fileObject?.FileName,
+            FileSize = fileObject?.FileSize ?? 0,
             Status = task.Status,
             RetryCount = task.RetryCount,
             Error = task.Error,
@@ -75,8 +77,8 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
         {
             Id = task.Id,
             FileObjectId = task.FileObjectId,
-            FileName = fileObject.FileName,
-            FileSize = fileObject.FileSize,
+            FileName = fileObject?.FileName,
+            FileSize = fileObject?.FileSize ?? 0,
             Status = task.Status,
             RetryCount = task.RetryCount,
             Error = task.Error,
@@ -98,13 +100,13 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
 
         foreach (var task in tasks)
         {
-            var fileObject = await _fileObjectRepository.GetAsync(task.FileObjectId);
+            var fileObject = await _fileObjectRepository.FindAsync(task.FileObjectId);
             dtos.Add(new WorkshopTelemetryTaskDto
             {
                 Id = task.Id,
                 FileObjectId = task.FileObjectId,
-                FileName = fileObject.FileName,
-                FileSize = fileObject.FileSize,
+                FileName = fileObject?.FileName,
+                FileSize = fileObject?.FileSize ?? 0,
                 Status = task.Status,
                 RetryCount = task.RetryCount,
                 Error = task.Error,
@@ -123,6 +125,12 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
     /// </summary>
     public async Task<PagedResultDto<WorkshopTelemetryTaskDto>> GetListAsync(WorkshopTelemetryTaskListInput input)
     {
+        if (!input.IsPaged)
+        {
+            input.SkipCount = 0;
+            input.MaxResultCount = int.MaxValue;
+        }
+
         // ✅ 用 Repository 已有的方法
         var result = await _taskRepository.GetPagedListAsync(
             input.FileName,
@@ -133,13 +141,13 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
         var dtos = new List<WorkshopTelemetryTaskDto>();
         foreach (var task in result.Items)
         {
-            var fileObject = await _fileObjectRepository.GetAsync(task.FileObjectId);
+            var fileObject = await _fileObjectRepository.FindAsync(task.FileObjectId);
             dtos.Add(new WorkshopTelemetryTaskDto
             {
                 Id = task.Id,
                 FileObjectId = task.FileObjectId,
-                FileName = fileObject.FileName,
-                FileSize = fileObject.FileSize,
+                FileName = fileObject?.FileName,
+                FileSize = fileObject?.FileSize ?? 0,
                 Status = task.Status,
                 RetryCount = task.RetryCount,
                 Error = task.Error,

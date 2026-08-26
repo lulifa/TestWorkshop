@@ -11,6 +11,8 @@ interface FileUploadOptions {
   ownerType: string;
   /** 自定义弹窗标题 */
   title?: string;
+  /** 自定义上传处理函数，优先于默认文件接口 */
+  upload?: (files: File[]) => Promise<void>;
 }
 
 function useFileUpload() {

@@ -16,6 +16,17 @@ public interface IFileObjectManager
         string contentType = null);
 
     /// <summary>
+    /// 追加上传文件（日志型/只追加，不删除旧文件）
+    /// </summary>
+    Task<FileObject> AppendAsync(
+        Stream stream,
+        string fileName,
+        string ownerType,
+        string ownerId = null,
+        string contentType = null,
+        Guid? fileId = null);
+
+    /// <summary>
     /// 批量上传文件（覆盖模式：上传所有新文件，再统一删除同 ownerType + ownerId 的所有旧文件）
     /// </summary>
     Task<List<FileObject>> BatchUploadAsync(

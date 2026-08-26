@@ -8,6 +8,7 @@ public class WorkshopDeviceTelemetry
 {
     // 基础信息
     public Guid DeviceId { get; set; }
+    public long TaskId { get; set; }
     public DateTime Timestamp { get; set; }
 
     // 采集指标

@@ -90,6 +90,7 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
                 db,
                 stream,
                 deviceMap,
+                telemetryTask.Id,
                 npgsqlTransaction,
                 ct);
 
@@ -99,16 +100,6 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
             await db.SaveChangesAsync(ct);
 
             await transaction.CommitAsync(ct);
-
-            // ✅ 处理成功后，通过 FileObjectManager 删除物理文件
-            try
-            {
-                await fileManager.DeleteFileAsync(fileObject.Id);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "删除物理文件失败: {FileObjectId}", fileObject.Id);
-            }
 
             _logger.LogInformation("✅ 任务 {TaskId} 处理完成，记录数 {Count}", taskId, recordCount);
         }
@@ -120,6 +111,7 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
             // ✅ 使用任务实体的行为方法标记失败（包含指数退避）
             telemetryTask.MarkAsFailed(ex.Message);
             await taskRepo.UpdateAsync(telemetryTask);
+            await db.SaveChangesAsync(ct);
         }
         finally
         {
@@ -131,44 +123,87 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
         TestWorkshopDbContext db,
         Stream csvStream,
         Dictionary<string, Guid> deviceMap,
+        long taskId,
         NpgsqlTransaction transaction,
         CancellationToken ct)
     {
         var entityType = db.Model.FindEntityType(typeof(WorkshopDeviceTelemetry));
         var rawTableName = entityType?.GetTableName() ?? "AppWorkshopDeviceTelemetries";
-        var tableName = $"\"{rawTableName}\"";
+        var schema = entityType?.GetSchema();
+        var fullTableName = string.IsNullOrWhiteSpace(schema)
+            ? $"\"{rawTableName}\""
+            : $"\"{schema}\".\"{rawTableName}\"";
+        const string tempTableName = "tmp_workshop_telemetry";
 
-        using var writer = transaction.Connection.BeginBinaryImport(
-            $"COPY {tableName} (\"DeviceId\",\"MetricType\",\"Value\",\"Timestamp\",\"TestedDeviceCode\",\"TestedDeviceName\") FROM STDIN (FORMAT BINARY)");
+        await using (var createCommand = transaction.Connection.CreateCommand())
+        {
+            createCommand.CommandText =
+                $"""
+                 CREATE TEMP TABLE "{tempTableName}" (
+                     "DeviceId" uuid,
+                     "TaskId" bigint,
+                     "MetricType" integer,
+                     "Value" double precision,
+                     "Timestamp" timestamptz,
+                     "TestedDeviceCode" text,
+                     "TestedDeviceName" text
+                 ) ON COMMIT DROP;
+                 """;
+            createCommand.Transaction = transaction;
+            await createCommand.ExecuteNonQueryAsync(ct);
+        }
 
         int count = 0, skipped = 0;
-        using var reader = new StreamReader(csvStream);
-
-        var firstLine = await reader.ReadLineAsync(ct);
-        if (string.IsNullOrWhiteSpace(firstLine)) return 0;
-
-        bool isHeader = firstLine.Contains("DeviceCode", StringComparison.OrdinalIgnoreCase) ||
-                        firstLine.Contains("MetricType", StringComparison.OrdinalIgnoreCase);
-
-        if (!isHeader)
+        using (var writer = transaction.Connection.BeginBinaryImport(
+                   $"COPY \"{tempTableName}\" (\"DeviceId\",\"TaskId\",\"MetricType\",\"Value\",\"Timestamp\",\"TestedDeviceCode\",\"TestedDeviceName\") FROM STDIN (FORMAT BINARY)"))
         {
-            ParseAndWriteLine(firstLine, writer, deviceMap, ref count, ref skipped);
-        }
+            using var reader = new StreamReader(csvStream);
 
-        while (!reader.EndOfStream)
-        {
-            if (count >= _maxRowsPerFile)
+            var firstLine = await reader.ReadLineAsync(ct);
+            if (string.IsNullOrWhiteSpace(firstLine)) return 0;
+
+            bool isHeader = firstLine.Contains("DeviceCode", StringComparison.OrdinalIgnoreCase) ||
+                            firstLine.Contains("MetricType", StringComparison.OrdinalIgnoreCase);
+
+            if (!isHeader)
             {
-                _logger.LogWarning("达到行数上限 {MaxRows}，中断读取", _maxRowsPerFile);
-                break;
+                ParseAndWriteLine(firstLine, writer, deviceMap, taskId, ref count, ref skipped);
             }
 
-            var line = await reader.ReadLineAsync(ct);
-            if (string.IsNullOrWhiteSpace(line)) continue;
-            ParseAndWriteLine(line, writer, deviceMap, ref count, ref skipped);
+            while (!reader.EndOfStream)
+            {
+                if (count >= _maxRowsPerFile)
+                {
+                    _logger.LogWarning("达到行数上限 {MaxRows}，中断读取", _maxRowsPerFile);
+                    break;
+                }
+
+                var line = await reader.ReadLineAsync(ct);
+                if (string.IsNullOrWhiteSpace(line)) continue;
+                ParseAndWriteLine(line, writer, deviceMap, taskId, ref count, ref skipped);
+            }
+
+            writer.Complete();
         }
 
-        writer.Complete();
+        var insertedCount = 0;
+        await using (var insertCommand = transaction.Connection.CreateCommand())
+        {
+            insertCommand.CommandText =
+                $"""
+                 INSERT INTO {fullTableName} ("DeviceId","TaskId","MetricType","Value","Timestamp","TestedDeviceCode","TestedDeviceName")
+                 SELECT "DeviceId","TaskId","MetricType","Value","Timestamp","TestedDeviceCode","TestedDeviceName"
+                 FROM "{tempTableName}"
+                 ON CONFLICT ("DeviceId","Timestamp","MetricType") DO UPDATE SET
+                     "TaskId" = EXCLUDED."TaskId",
+                     "Value" = EXCLUDED."Value",
+                     "TestedDeviceCode" = EXCLUDED."TestedDeviceCode",
+                     "TestedDeviceName" = EXCLUDED."TestedDeviceName";
+                 """;
+            insertCommand.Transaction = transaction;
+            var inserted = await insertCommand.ExecuteNonQueryAsync(ct);
+            insertedCount = Convert.ToInt32(inserted);
+        }
 
         if (skipped > 0)
             _logger.LogWarning("跳过了 {Skipped} 行无效数据", skipped);
@@ -176,11 +211,11 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
         if (count == 0 && skipped > 0)
             throw new InvalidDataException($"CSV 解析失败：{skipped} 行全部无效，请检查文件格式或分隔符");
 
-        return count;
+        return insertedCount;
     }
 
     private void ParseAndWriteLine(string line, NpgsqlBinaryImporter writer,
-        Dictionary<string, Guid> deviceMap, ref int count, ref int skipped)
+        Dictionary<string, Guid> deviceMap, long taskId, ref int count, ref int skipped)
     {
         var parts = line.Split(',');
         if (parts.Length < 6)
@@ -193,6 +228,12 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
         {
             var deviceCode = parts[0].Trim();
             var metricType = parts[1].Trim();
+
+            if (!TryParseMetricType(metricType, out var metricTypeValue))
+            {
+                skipped++;
+                return;
+            }
 
             if (!double.TryParse(parts[2].Trim(), NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
             {
@@ -218,7 +259,8 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
 
             writer.StartRow();
             writer.Write(deviceId, NpgsqlDbType.Uuid);
-            writer.Write(metricType, NpgsqlDbType.Text);
+            writer.Write(taskId, NpgsqlDbType.Bigint);
+            writer.Write((int)metricTypeValue, NpgsqlDbType.Integer);
             writer.Write(value, NpgsqlDbType.Double);
             writer.Write(timestamp, NpgsqlDbType.TimestampTz);
             writer.Write(testedDeviceCode, NpgsqlDbType.Text);
@@ -230,6 +272,23 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
             _logger.LogWarning(ex, "CSV 行解析失败: {Line}", line);
             skipped++;
         }
+    }
+
+    private static bool TryParseMetricType(string value, out TelemetryMetricType metricType)
+    {
+        if (Enum.TryParse(value, true, out metricType) && Enum.IsDefined(typeof(TelemetryMetricType), metricType))
+        {
+            return true;
+        }
+
+        if (int.TryParse(value, out var intValue) && Enum.IsDefined(typeof(TelemetryMetricType), intValue))
+        {
+            metricType = (TelemetryMetricType)intValue;
+            return true;
+        }
+
+        metricType = default;
+        return false;
     }
 
     private async Task<Dictionary<string, Guid>> GetDeviceMapAsync(TestWorkshopDbContext db, CancellationToken ct)

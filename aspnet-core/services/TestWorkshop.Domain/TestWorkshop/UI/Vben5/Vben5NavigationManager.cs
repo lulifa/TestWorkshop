@@ -152,31 +152,13 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
             .SetProperty("title", "abp.modules.title");
         modules.AddItem(
           new ApplicationMenu(
-              name: "Vben5ModulesPlatformMenus",
-              displayName: "菜单管理",
-              url: "/modules/platform/menus",
-              component: "/modules/platform/menus/index",
-              icon: "material-symbols-light:menu",
-              description: "菜单管理")
-            .SetProperty("title", "abp.modules.platform.menus"));
-        modules.AddItem(
-          new ApplicationMenu(
-              name: "Vben5ModulesPlatformLayouts",
-              displayName: "布局管理",
-              url: "/modules/platform/layouts",
-              component: "/modules/platform/layouts/index",
-              icon: "material-symbols-light:responsive-layout",
-              description: "布局管理")
-            .SetProperty("title", "abp.modules.platform.layouts"));
-        modules.AddItem(
-          new ApplicationMenu(
-              name: "Vben5ModulesPlatformDataDictionaries",
-              displayName: "数据字典",
-              url: "/modules/platform/data-dictionaries",
-              component: "/modules/platform/data-dictionaries/index",
-              icon: "material-symbols:dictionary-outline",
-              description: "数据字典")
-            .SetProperty("title", "abp.modules.platform.dataDictionaries"));
+              name: "Vben5ModulesWorkshopTelemetry",
+              displayName: "遥测任务",
+              url: "/modules/platform/telemetry",
+              component: "/modules/platform/telemetry/index",
+              icon: "mdi:file-cloud",
+              description: "遥测任务")
+            .SetProperty("title", "TestWorkshop.Telemetry:Title"));
         modules.AddItem(
           new ApplicationMenu(
               name: "Vben5ModulesPlatformFiles",
@@ -204,6 +186,33 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
               icon: "lucide:mail-open",
               description: "消息管理")
             .SetProperty("title", "abp.modules.platform.notifications.message"));
+        modules.AddItem(
+          new ApplicationMenu(
+              name: "Vben5ModulesPlatformMenus",
+              displayName: "菜单管理",
+              url: "/modules/platform/menus",
+              component: "/modules/platform/menus/index",
+              icon: "material-symbols-light:menu",
+              description: "菜单管理")
+            .SetProperty("title", "abp.modules.platform.menus"));
+        modules.AddItem(
+          new ApplicationMenu(
+              name: "Vben5ModulesPlatformLayouts",
+              displayName: "布局管理",
+              url: "/modules/platform/layouts",
+              component: "/modules/platform/layouts/index",
+              icon: "material-symbols-light:responsive-layout",
+              description: "布局管理")
+            .SetProperty("title", "abp.modules.platform.layouts"));
+        modules.AddItem(
+          new ApplicationMenu(
+              name: "Vben5ModulesPlatformDataDictionaries",
+              displayName: "数据字典",
+              url: "/modules/platform/data-dictionaries",
+              component: "/modules/platform/data-dictionaries/index",
+              icon: "material-symbols:dictionary-outline",
+              description: "数据字典")
+            .SetProperty("title", "abp.modules.platform.dataDictionaries"));
 
         return
         [

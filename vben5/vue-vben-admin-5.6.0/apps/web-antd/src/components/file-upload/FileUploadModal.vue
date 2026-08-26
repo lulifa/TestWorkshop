@@ -42,12 +42,16 @@ const multiple = ref(false);
 const ownerId = ref('');
 const ownerType = ref('');
 const accept = ref<string>();
+const uploadHandler = ref<((files: File[]) => Promise<void>) | undefined>();
 
 const { batchUploadApi, uploadApi } = useFileApi();
 
 const [Modal, modalApi] = useVbenModal({
   class: 'max-w-[720px]',
-  onClosed: clearFileList,
+  onClosed: () => {
+    clearFileList();
+    uploadHandler.value = undefined;
+  },
   onConfirm: onSubmit,
   onOpenChange: (isOpen) => {
     if (isOpen) {
@@ -63,6 +67,7 @@ const [Modal, modalApi] = useVbenModal({
       ownerType.value = data.ownerType ?? '';
       ownerId.value = data.ownerId ?? '';
       accept.value = data.accept;
+      uploadHandler.value = data.upload;
       modalApi.setState({
         title:
           data.title ??
@@ -158,7 +163,20 @@ function isAcceptedFile(file: FileType) {
   if (accept.value === 'image/*') {
     return isImageFile(file);
   }
-  return file.type === accept.value;
+  const acceptList = accept.value
+    .split(',')
+    .map((item) => item.trim().toLowerCase());
+  const fileName = file.name.toLowerCase();
+  const fileType = file.type.toLowerCase();
+  return acceptList.some((item) => {
+    if (item.startsWith('.')) {
+      return fileName.endsWith(item);
+    }
+    if (item.endsWith('/*')) {
+      return fileType.startsWith(item.slice(0, -1));
+    }
+    return fileType === item || fileType.startsWith(`${item};`);
+  });
 }
 
 function onBeforeUpload(file: FileType) {
@@ -197,11 +215,11 @@ async function onSubmit() {
     message.warning($t('TestWorkshop.FileManager:PleaseSelectFile'));
     return;
   }
-  if (!ownerType.value.trim()) {
+  if (!uploadHandler.value && !ownerType.value.trim()) {
     message.warning($t('TestWorkshop.FileManager:OwnerTypeRequired'));
     return;
   }
-  if (!ownerId.value.trim()) {
+  if (!uploadHandler.value && !ownerId.value.trim()) {
     message.warning($t('TestWorkshop.FileManager:OwnerIdRequired'));
     return;
   }
@@ -213,9 +231,13 @@ async function onSubmit() {
   if (!firstFile) return;
   try {
     modalApi.setState({ submitting: true });
-    await (multiple.value
-      ? batchUploadApi(files, ownerType.value.trim(), ownerId.value.trim())
-      : uploadApi(firstFile, ownerType.value.trim(), ownerId.value.trim()));
+    if (uploadHandler.value) {
+      await uploadHandler.value(files);
+    } else {
+      await (multiple.value
+        ? batchUploadApi(files, ownerType.value.trim(), ownerId.value.trim())
+        : uploadApi(firstFile, ownerType.value.trim(), ownerId.value.trim()));
+    }
     message.success($t('AbpUi.SavedSuccessfully'));
     emits('change');
     modalApi.close();

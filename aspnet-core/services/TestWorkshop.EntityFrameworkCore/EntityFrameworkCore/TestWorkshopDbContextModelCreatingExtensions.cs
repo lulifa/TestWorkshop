@@ -121,6 +121,7 @@ public static class TestWorkshopDbContextModelCreatingExtensions
                 .IsRequired();
 
             b.Property(p => p.DeviceId).IsRequired();
+            b.Property(p => p.TaskId).IsRequired();
             b.Property(p => p.Value).IsRequired();
 
             // 被测试产品（可空，因为不是所有采集都有产品）
@@ -128,6 +129,8 @@ public static class TestWorkshopDbContextModelCreatingExtensions
             b.Property(p => p.TestedDeviceName).HasMaxLength(128);
 
             b.ConfigureByConvention();
+
+            b.HasIndex(x => new { x.TaskId, x.Timestamp });
         });
 
     }

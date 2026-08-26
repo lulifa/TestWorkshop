@@ -31,6 +31,15 @@ public class FileObjectManager : DomainService, IFileObjectManager
     }
 
     /// <summary>
+    /// 追加上传（不删除同 ownerType + ownerId 的历史文件）
+    /// </summary>
+    [UnitOfWork]
+    public virtual async Task<FileObject> AppendAsync(Stream stream, string fileName, string ownerType, string ownerId = null, string contentType = null, Guid? fileId = null)
+    {
+        return await UploadCoreAsync(stream, fileName, ownerType, ownerId, contentType, deleteOld: false, fileId: fileId);
+    }
+
+    /// <summary>
     /// 批量上传文件（覆盖模式：上传所有新文件，再统一删除同 ownerType + ownerId 的所有旧文件）
     /// </summary>
     [UnitOfWork]
@@ -211,24 +220,24 @@ public class FileObjectManager : DomainService, IFileObjectManager
     /// <summary>
     /// 核心上传逻辑
     /// </summary>
-    private async Task<FileObject> UploadCoreAsync(Stream stream, string fileName, string ownerType, string ownerId, string contentType, bool deleteOld)
+    private async Task<FileObject> UploadCoreAsync(Stream stream, string fileName, string ownerType, string ownerId, string contentType, bool deleteOld, Guid? fileId = null)
     {
         Check.NotNull(stream, nameof(stream));
         Check.NotNullOrWhiteSpace(fileName, nameof(fileName));
         Check.NotNullOrWhiteSpace(ownerType, nameof(ownerType));
 
-        var fileId = _guidGenerator.Create();
+        var actualFileId = fileId ?? _guidGenerator.Create();
         var fileSize = stream.Length;
         var ext = Path.GetExtension(fileName).ToLowerInvariant();
         var finalContentType = contentType ?? GetContentTypeByExtension(ext);
 
-        var blobPath = GenerateBlobPath(ownerType, ownerId, fileId, ext);
+        var blobPath = GenerateBlobPath(ownerType, ownerId, actualFileId, ext);
 
         stream.Position = 0;
         await _blobContainer.SaveAsync(blobPath, stream, true);
 
         var fileObject = new FileObject(
-            id: fileId,
+            id: actualFileId,
             blobPath: blobPath,
             fileName: fileName,
             fileSize: fileSize,
@@ -244,7 +253,7 @@ public class FileObjectManager : DomainService, IFileObjectManager
         if (deleteOld)
         {
             var oldFiles = await _fileObjectRepository.GetListAsync(
-                f => f.OwnerType == ownerType && f.OwnerId == ownerId && f.Id != fileId
+                f => f.OwnerType == ownerType && f.OwnerId == ownerId && f.Id != actualFileId
             );
 
             foreach (var oldFile in oldFiles)
