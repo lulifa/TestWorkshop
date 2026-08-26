@@ -132,7 +132,7 @@ function onInit() {
   generatedFileName.value = buildGeneratedFileName();
   formApi.setValues({
     metricType: TelemetryMetricType.Pressure,
-    recordCount: 10,
+    recordCount: 1,
     testedDeviceCode: 'DUT-A1',
     testedDeviceName: '水泵A',
   });
