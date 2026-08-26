@@ -20,9 +20,7 @@ import {
   DeviceType,
   formatToDateTime,
   listToTree,
-  useAuthorization,
   useWorkshopDeviceApi,
-  WorkshopDevicePermissions,
 } from '@abp/core';
 import {
   DeleteOutlined,
@@ -37,7 +35,6 @@ defineOptions({
   name: 'WorkshopDeviceManagement',
 });
 
-const { isGranted } = useAuthorization();
 const { deleteApi, getListApi, getOrganizationUnitsApi, getTypesApi } =
   useWorkshopDeviceApi();
 
@@ -356,12 +353,7 @@ onMounted(async () => {
       <div class="min-w-0 flex-1">
         <Grid :table-title="$t('page.business.workshopdevices')">
           <template #toolbar-tools>
-            <Button
-              v-if="isGranted([WorkshopDevicePermissions.Create])"
-              :icon="h(PlusOutlined)"
-              type="primary"
-              @click="onCreate"
-            >
+            <Button :icon="h(PlusOutlined)" type="primary" @click="onCreate">
               {{ $t('TestWorkshop.WorkshopDevice:AddNew') }}
             </Button>
           </template>
@@ -378,7 +370,6 @@ onMounted(async () => {
             <div class="flex flex-row justify-center">
               <Space>
                 <Button
-                  v-if="isGranted([WorkshopDevicePermissions.Update])"
                   :icon="h(EditOutlined)"
                   type="link"
                   @click="onUpdate(row)"
@@ -386,7 +377,6 @@ onMounted(async () => {
                   {{ $t('AbpUi.Edit') }}
                 </Button>
                 <Button
-                  v-if="isGranted([WorkshopDevicePermissions.Delete])"
                   :icon="h(DeleteOutlined)"
                   danger
                   type="link"

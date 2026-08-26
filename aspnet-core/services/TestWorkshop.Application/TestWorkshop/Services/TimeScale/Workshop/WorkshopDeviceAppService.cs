@@ -6,7 +6,7 @@ namespace TestWorkshop;
 /// <summary>
 /// 车间设备应用服务
 /// </summary>
-[Authorize(TestWorkshopPermissions.WorkshopDevice.Default)]
+[Authorize]
 public class WorkshopDeviceAppService : TestWorkshopAppService, IWorkshopDeviceAppService
 {
     protected IWorkshopDeviceRepository WorkshopDeviceRepository { get; }

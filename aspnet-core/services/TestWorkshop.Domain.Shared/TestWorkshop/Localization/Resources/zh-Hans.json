@@ -213,7 +213,6 @@
     "Permission:CopyFile": "复制文件",
     "Permission:MoveFile": "移动文件",
     "Permission:DownloadFile": "下载文件",
-    "Permission:WorkshopDevice": "车间设备",
     "WorkshopDevice:AddNew": "添加设备",
     "WorkshopDevice:Edit": "编辑设备",
     "WorkshopDevice:DuplicateCode": "设备编码 {0} 已存在",

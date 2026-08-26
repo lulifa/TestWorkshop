@@ -213,7 +213,6 @@
     "Permission:CopyFile": "Copy file",
     "Permission:MoveFile": "Move file",
     "Permission:DownloadFile": "Download file",
-    "Permission:WorkshopDevice": "Workshop Device",
     "WorkshopDevice:AddNew": "Add Device",
     "WorkshopDevice:Edit": "Edit Device",
     "WorkshopDevice:DuplicateCode": "Device code {0} already exists",
