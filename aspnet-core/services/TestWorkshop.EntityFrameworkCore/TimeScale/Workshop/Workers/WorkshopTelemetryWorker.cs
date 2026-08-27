@@ -240,6 +240,7 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
                 skipped++;
                 return;
             }
+            // 如果下位机的timespan时间是本地时间 则改成 DateTimeStyles.AssumeLocal
             if (!DateTime.TryParse(parts[3].Trim(), CultureInfo.InvariantCulture,
                     DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var timestamp))
             {

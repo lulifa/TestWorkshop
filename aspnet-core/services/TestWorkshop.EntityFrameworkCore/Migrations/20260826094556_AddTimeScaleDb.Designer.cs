@@ -13,8 +13,8 @@ using Volo.Abp.EntityFrameworkCore;
 namespace TestWorkshop.Migrations
 {
     [DbContext(typeof(TestWorkshopDbContext))]
-    [Migration("20260826081119_AddTaskIdToWorkshopDeviceTelemetry")]
-    partial class AddTaskIdToWorkshopDeviceTelemetry
+    [Migration("20260826094556_AddTimeScaleDb")]
+    partial class AddTimeScaleDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
