@@ -216,7 +216,9 @@ namespace TestWorkshop.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("BlobPath")
-                        .HasColumnType("text");
+                        .IsRequired()
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -226,7 +228,9 @@ namespace TestWorkshop.Migrations
                         .HasColumnName("ConcurrencyStamp");
 
                     b.Property<string>("ContentType")
-                        .HasColumnType("text");
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
 
                     b.Property<DateTime>("CreationTime")
                         .HasColumnType("timestamp without time zone")
@@ -250,7 +254,9 @@ namespace TestWorkshop.Migrations
                         .HasColumnName("ExtraProperties");
 
                     b.Property<string>("FileName")
-                        .HasColumnType("text");
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
 
                     b.Property<long>("FileSize")
                         .HasColumnType("bigint");
@@ -270,10 +276,13 @@ namespace TestWorkshop.Migrations
                         .HasColumnName("LastModifierId");
 
                     b.Property<string>("OwnerId")
-                        .HasColumnType("text");
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
 
                     b.Property<string>("OwnerType")
-                        .HasColumnType("text");
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
 
                     b.Property<Guid?>("TenantId")
                         .HasColumnType("uuid")
@@ -281,7 +290,11 @@ namespace TestWorkshop.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("FileObjects");
+                    b.HasIndex("CreationTime");
+
+                    b.HasIndex("OwnerType", "OwnerId");
+
+                    b.ToTable("AppFileObjects", (string)null);
                 });
 
             modelBuilder.Entity("TestWorkshop.Layout", b =>

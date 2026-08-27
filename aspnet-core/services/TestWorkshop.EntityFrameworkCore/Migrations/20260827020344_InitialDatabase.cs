@@ -459,6 +459,33 @@ namespace TestWorkshop.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "AppFileObjects",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: true),
+                    BlobPath = table.Column<string>(type: "character varying(1024)", maxLength: 1024, nullable: false),
+                    FileName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
+                    FileSize = table.Column<long>(type: "bigint", nullable: false),
+                    ContentType = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
+                    OwnerId = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: true),
+                    OwnerType = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
+                    ExtraProperties = table.Column<string>(type: "text", nullable: false),
+                    ConcurrencyStamp = table.Column<string>(type: "character varying(40)", maxLength: 40, nullable: false),
+                    CreationTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "uuid", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    LastModifierId = table.Column<Guid>(type: "uuid", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    DeleterId = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletionTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AppFileObjects", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AppLayouts",
                 columns: table => new
                 {
@@ -684,33 +711,6 @@ namespace TestWorkshop.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AppWorkshopTelemetryTasks", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "FileObjects",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    TenantId = table.Column<Guid>(type: "uuid", nullable: true),
-                    BlobPath = table.Column<string>(type: "text", nullable: true),
-                    FileName = table.Column<string>(type: "text", nullable: true),
-                    FileSize = table.Column<long>(type: "bigint", nullable: false),
-                    ContentType = table.Column<string>(type: "text", nullable: true),
-                    OwnerId = table.Column<string>(type: "text", nullable: true),
-                    OwnerType = table.Column<string>(type: "text", nullable: true),
-                    ExtraProperties = table.Column<string>(type: "text", nullable: false),
-                    ConcurrencyStamp = table.Column<string>(type: "character varying(40)", maxLength: 40, nullable: false),
-                    CreationTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    CreatorId = table.Column<Guid>(type: "uuid", nullable: true),
-                    LastModificationTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    LastModifierId = table.Column<Guid>(type: "uuid", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    DeleterId = table.Column<Guid>(type: "uuid", nullable: true),
-                    DeletionTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_FileObjects", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -1356,6 +1356,16 @@ namespace TestWorkshop.Migrations
                 column: "Name");
 
             migrationBuilder.CreateIndex(
+                name: "IX_AppFileObjects_CreationTime",
+                table: "AppFileObjects",
+                column: "CreationTime");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppFileObjects_OwnerType_OwnerId",
+                table: "AppFileObjects",
+                columns: new[] { "OwnerType", "OwnerId" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_AppNotificationSubscriptions_NotificationId",
                 table: "AppNotificationSubscriptions",
                 column: "NotificationId");
@@ -1519,6 +1529,9 @@ namespace TestWorkshop.Migrations
                 name: "AppDataItems");
 
             migrationBuilder.DropTable(
+                name: "AppFileObjects");
+
+            migrationBuilder.DropTable(
                 name: "AppLayouts");
 
             migrationBuilder.DropTable(
@@ -1544,9 +1557,6 @@ namespace TestWorkshop.Migrations
 
             migrationBuilder.DropTable(
                 name: "AppWorkshopTelemetryTasks");
-
-            migrationBuilder.DropTable(
-                name: "FileObjects");
 
             migrationBuilder.DropTable(
                 name: "OpenIddictScopes");

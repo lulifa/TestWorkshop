@@ -137,6 +137,33 @@ public static class TestWorkshopDbContextModelCreatingExtensions
 
     public static void ConfigurePlatform(this ModelBuilder builder)
     {
+        builder.Entity<FileObject>(b =>
+        {
+            b.ToTable(TestWorkshopDbProperties.DbTablePrefix + "FileObjects", TestWorkshopDbProperties.DbSchema);
+
+            b.HasKey(x => x.Id);
+
+            b.Property(p => p.BlobPath)
+                .HasMaxLength(TestWorkshopConsts.MaxLength1024)
+                .IsRequired();
+            b.Property(p => p.FileName)
+                .HasMaxLength(TestWorkshopConsts.MaxLength256)
+                .IsRequired();
+            b.Property(p => p.ContentType)
+                .HasMaxLength(TestWorkshopConsts.MaxLength128)
+                .IsRequired();
+            b.Property(p => p.OwnerType)
+                .HasMaxLength(TestWorkshopConsts.MaxLength128)
+                .IsRequired();
+            b.Property(p => p.OwnerId)
+                .HasMaxLength(TestWorkshopConsts.MaxLength128);
+
+            b.ConfigureByConvention();
+
+            b.HasIndex(x => new { x.OwnerType, x.OwnerId });
+            b.HasIndex(x => x.CreationTime);
+        });
+
         builder.Entity<Layout>(b =>
         {
             b.ToTable(TestWorkshopDbProperties.DbTablePrefix + "Layouts", TestWorkshopDbProperties.DbSchema);

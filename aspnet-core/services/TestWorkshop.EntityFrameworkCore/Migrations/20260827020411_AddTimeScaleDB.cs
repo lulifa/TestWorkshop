@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace TestWorkshop.Migrations
 {
     /// <inheritdoc />
-    public partial class AddTimeScaleDb : Migration
+    public partial class AddTimeScaleDB : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -37,7 +37,7 @@ namespace TestWorkshop.Migrations
             migrationBuilder.Sql(@"CREATE EXTENSION IF NOT EXISTS timescaledb;");
 
             migrationBuilder.Sql(@"
-            SELECT create_hypertable(
+                SELECT create_hypertable(
                     '""AppWorkshopDeviceTelemetries""',
                     'Timestamp',
                     if_not_exists => TRUE

@@ -13,8 +13,8 @@ using Volo.Abp.EntityFrameworkCore;
 namespace TestWorkshop.Migrations
 {
     [DbContext(typeof(TestWorkshopDbContext))]
-    [Migration("20260826094528_InitialDatabase")]
-    partial class InitialDatabase
+    [Migration("20260827020411_AddTimeScaleDB")]
+    partial class AddTimeScaleDB
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -219,7 +219,9 @@ namespace TestWorkshop.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("BlobPath")
-                        .HasColumnType("text");
+                        .IsRequired()
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -229,7 +231,9 @@ namespace TestWorkshop.Migrations
                         .HasColumnName("ConcurrencyStamp");
 
                     b.Property<string>("ContentType")
-                        .HasColumnType("text");
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
 
                     b.Property<DateTime>("CreationTime")
                         .HasColumnType("timestamp without time zone")
@@ -253,7 +257,9 @@ namespace TestWorkshop.Migrations
                         .HasColumnName("ExtraProperties");
 
                     b.Property<string>("FileName")
-                        .HasColumnType("text");
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
 
                     b.Property<long>("FileSize")
                         .HasColumnType("bigint");
@@ -273,10 +279,13 @@ namespace TestWorkshop.Migrations
                         .HasColumnName("LastModifierId");
 
                     b.Property<string>("OwnerId")
-                        .HasColumnType("text");
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
 
                     b.Property<string>("OwnerType")
-                        .HasColumnType("text");
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
 
                     b.Property<Guid?>("TenantId")
                         .HasColumnType("uuid")
@@ -284,7 +293,11 @@ namespace TestWorkshop.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("FileObjects");
+                    b.HasIndex("CreationTime");
+
+                    b.HasIndex("OwnerType", "OwnerId");
+
+                    b.ToTable("AppFileObjects", (string)null);
                 });
 
             modelBuilder.Entity("TestWorkshop.Layout", b =>
@@ -788,6 +801,38 @@ namespace TestWorkshop.Migrations
                         .IsUnique();
 
                     b.ToTable("AppWorkshopDevices", (string)null);
+                });
+
+            modelBuilder.Entity("TestWorkshop.TimeScale.WorkshopDeviceTelemetry", b =>
+                {
+                    b.Property<Guid>("DeviceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("MetricType")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("TaskId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("TestedDeviceCode")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("TestedDeviceName")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<double>("Value")
+                        .HasColumnType("double precision");
+
+                    b.HasKey("DeviceId", "Timestamp", "MetricType");
+
+                    b.HasIndex("TaskId", "Timestamp");
+
+                    b.ToTable("AppWorkshopDeviceTelemetries", (string)null);
                 });
 
             modelBuilder.Entity("TestWorkshop.TimeScale.WorkshopTelemetryTask", b =>
