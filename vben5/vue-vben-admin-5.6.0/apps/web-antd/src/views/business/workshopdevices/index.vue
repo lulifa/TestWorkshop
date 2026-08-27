@@ -277,7 +277,10 @@ async function loadOrganizationUnits() {
   treeData.value = buildTree(items);
   expandedKeys.value = collectKeys(treeData.value);
   const rootItem = items.find((item) => !item.parentId);
-  selectedOrganizationUnitId.value = rootItem?.id ?? items[0]?.id;
+  const defaultOrgId = rootItem?.id ?? items[0]?.id;
+  selectedOrganizationUnitId.value = defaultOrgId;
+  // ✅ 同步设置表单字段，使下拉框默认选中
+  gridApi.formApi.setFieldValue('organizationUnitId', defaultOrgId);
 }
 
 async function loadDeviceTypes() {
