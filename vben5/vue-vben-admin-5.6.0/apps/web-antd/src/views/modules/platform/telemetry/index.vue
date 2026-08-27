@@ -13,6 +13,7 @@ import { computed, defineAsyncComponent, h, onMounted, ref } from 'vue';
 
 import { Page, useVbenModal } from '@vben/common-ui';
 import { $t } from '@vben/locales';
+import { downloadFileFromBlob } from '@vben/utils';
 
 import {
   formatToDateTime,
@@ -323,12 +324,10 @@ function onDownloadTemplate() {
   const blob = new Blob([template], {
     type: 'text/csv;charset=utf-8',
   });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'telemetry-template.csv';
-  link.click();
-  URL.revokeObjectURL(url);
+  downloadFileFromBlob({
+    fileName: 'telemetry-template.csv',
+    source: blob,
+  });
 }
 
 function onUploadCsv() {
