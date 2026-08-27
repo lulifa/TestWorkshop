@@ -16,18 +16,21 @@ import { $t } from '@vben/locales';
 
 import {
   formatToDateTime,
+  useFileApi,
   useWorkshopTelemetryApi,
   WorkshopTelemetryStatus,
 } from '@abp/core';
 import {
   DeleteOutlined,
   DownloadOutlined,
+  EyeOutlined,
   RedoOutlined,
   UploadOutlined,
 } from '@ant-design/icons-vue';
 import { Button, message, Modal, Space, Tag, Tooltip } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { useFilePreview } from '#/components/file-preview';
 import { useFileUpload } from '#/components/file-upload';
 
 defineOptions({
@@ -36,6 +39,7 @@ defineOptions({
 
 const { deleteApi, getListApi, getStatisticsApi, retryApi, uploadApi } =
   useWorkshopTelemetryApi();
+const { getApi: getFileApi } = useFileApi();
 
 const statistics = ref<WorkshopTelemetryStatisticsDto>();
 
@@ -229,7 +233,7 @@ const gridOptions: VxeGridProps<WorkshopTelemetryTaskDto> = {
       fixed: 'right',
       slots: { default: 'action' },
       title: $t('AbpUi.Actions'),
-      width: 180,
+      width: 220,
     },
   ],
   exportConfig: {},
@@ -301,6 +305,7 @@ const [TelemetryUploadModal, telemetryUploadModalApi] = useVbenModal({
 
 const { UploadModal: CsvUploadModal, openFileUpload: openCsvUpload } =
   useFileUpload();
+const { PreviewModal, openFilePreview } = useFilePreview();
 
 async function loadStatistics() {
   statistics.value = await getStatisticsApi();
@@ -338,6 +343,11 @@ function onUploadCsv() {
       }
     },
   });
+}
+
+async function onPreviewCsv(row: WorkshopTelemetryTaskDto) {
+  const file = await getFileApi(row.fileObjectId);
+  openFilePreview(file);
 }
 
 async function onUploadChange() {
@@ -458,6 +468,13 @@ onMounted(async () => {
         <div class="flex flex-row justify-center">
           <Space>
             <Button
+              :icon="h(EyeOutlined)"
+              type="link"
+              @click="onPreviewCsv(row)"
+            >
+              {{ $t('TestWorkshop.FileManager:Preview') }}
+            </Button>
+            <Button
               v-if="row.status === WorkshopTelemetryStatus.Failed"
               :icon="h(RedoOutlined)"
               type="link"
@@ -477,6 +494,7 @@ onMounted(async () => {
         </div>
       </template>
     </Grid>
+    <PreviewModal />
     <CsvUploadModal @change="onUploadChange" />
     <TelemetryUploadModal @change="onUploadChange" />
   </Page>

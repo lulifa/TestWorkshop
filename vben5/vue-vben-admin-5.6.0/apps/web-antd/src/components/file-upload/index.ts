@@ -8,7 +8,7 @@ interface FileUploadOptions {
   /** 是否多选，默认 false（单选） */
   multiple?: boolean;
   ownerId?: string;
-  ownerType: string;
+  ownerType?: string;
   /** 自定义弹窗标题 */
   title?: string;
   /** 自定义上传处理函数，优先于默认文件接口 */
