@@ -1,6 +1,7 @@
-import type { PagedResultDto } from '@abp/core';
+import type { ListResultDto, PagedResultDto } from '@abp/core';
 
 import type {
+  WorkshopTelemetryMetricTypeDto,
   WorkshopTelemetryStatisticsDto,
   WorkshopTelemetryTaskDto,
   WorkshopTelemetryTaskListInput,
@@ -25,6 +26,17 @@ export function useWorkshopTelemetryApi() {
       {
         method: 'GET',
         params: input,
+      },
+    );
+  }
+
+  function getMetricTypesApi(): Promise<
+    ListResultDto<WorkshopTelemetryMetricTypeDto>
+  > {
+    return request<ListResultDto<WorkshopTelemetryMetricTypeDto>>(
+      '/api/workshop/telemetry/metric-types',
+      {
+        method: 'GET',
       },
     );
   }
@@ -55,6 +67,7 @@ export function useWorkshopTelemetryApi() {
     cancel,
     deleteApi,
     getListApi,
+    getMetricTypesApi,
     getStatisticsApi,
     retryApi,
     uploadApi,

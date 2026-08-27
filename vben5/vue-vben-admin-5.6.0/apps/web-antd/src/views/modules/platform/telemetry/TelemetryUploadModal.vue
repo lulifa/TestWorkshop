@@ -1,5 +1,8 @@
 <script lang="ts" setup>
-import type { WorkshopDeviceDto } from '@abp/core';
+import type {
+  WorkshopDeviceDto,
+  WorkshopTelemetryMetricTypeDto,
+} from '@abp/core';
 
 import { ref } from 'vue';
 
@@ -18,35 +21,10 @@ const emits = defineEmits<{
 }>();
 
 const { getListApi: getDeviceListApi } = useWorkshopDeviceApi();
-const { uploadApi } = useWorkshopTelemetryApi();
+const { getMetricTypesApi, uploadApi } = useWorkshopTelemetryApi();
 
 const generatedFileName = ref('');
-
-const metricTypeOptions = [
-  {
-    label: $t('TestWorkshop.Telemetry:MetricPressure'),
-    value: TelemetryMetricType.Pressure,
-  },
-  {
-    label: $t('TestWorkshop.Telemetry:MetricTemp'),
-    value: TelemetryMetricType.Temp,
-  },
-  {
-    label: $t('TestWorkshop.Telemetry:MetricFlow'),
-    value: TelemetryMetricType.Flow,
-  },
-  {
-    label: $t('TestWorkshop.Telemetry:MetricVibration'),
-    value: TelemetryMetricType.Vibration,
-  },
-];
-
-const metricTypeNameMap: Record<TelemetryMetricType, string> = {
-  [TelemetryMetricType.Pressure]: 'Pressure',
-  [TelemetryMetricType.Temp]: 'Temp',
-  [TelemetryMetricType.Flow]: 'Flow',
-  [TelemetryMetricType.Vibration]: 'Vibration',
-};
+const metricTypes = ref<WorkshopTelemetryMetricTypeDto[]>([]);
 
 const [Form, formApi] = useVbenForm({
   commonConfig: {
@@ -81,9 +59,18 @@ const [Form, formApi] = useVbenForm({
       rules: 'selectRequired',
     },
     {
-      component: 'Select',
+      component: 'ApiSelect',
       componentProps: {
-        options: metricTypeOptions,
+        afterFetch: (result: { items: WorkshopTelemetryMetricTypeDto[] }) => {
+          metricTypes.value = result.items;
+          return result.items.map((item) => ({
+            label: item.displayName || item.name,
+            value: item.value,
+          }));
+        },
+        api: getMetricTypesApi,
+        labelField: 'label',
+        valueField: 'value',
       },
       fieldName: 'metricType',
       label: $t('TestWorkshop.Telemetry:MetricType'),
@@ -165,7 +152,9 @@ function buildCsvFile(values: Record<string, any>): File {
     'DeviceCode,MetricType,Value,Timestamp,TestedDeviceCode,TestedDeviceName',
   ];
   const metricType = values.metricType as TelemetryMetricType;
-  const metricTypeName = metricTypeNameMap[metricType];
+  const metricTypeName =
+    metricTypes.value.find((item) => item.value === metricType)?.name ??
+    String(metricType);
   const recordCount = Number(values.recordCount);
   const now = Date.now();
 

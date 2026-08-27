@@ -184,6 +184,24 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
     }
 
     /// <summary>
+    /// 获取遥测指标类型选项
+    /// </summary>
+    public Task<ListResultDto<WorkshopTelemetryMetricTypeDto>> GetMetricTypesAsync()
+    {
+        var types = Enum.GetValues<TelemetryMetricType>()
+            .Where(type => type != TelemetryMetricType.Unknown)
+            .Select(type => new WorkshopTelemetryMetricTypeDto
+            {
+                Value = (int)type,
+                Name = type.ToString(),
+                DisplayName = L[$"Telemetry:Metric{type}"].ToString()
+            })
+            .ToList();
+
+        return Task.FromResult(new ListResultDto<WorkshopTelemetryMetricTypeDto>(types));
+    }
+
+    /// <summary>
     /// 删除任务（级联删除 FileObject 和物理文件）
     /// </summary>
     public async Task DeleteAsync(long id)

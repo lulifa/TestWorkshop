@@ -48,10 +48,17 @@ interface WorkshopTelemetryStatisticsDto {
   totalSizeMB: number;
 }
 
+interface WorkshopTelemetryMetricTypeDto {
+  displayName: string;
+  name: string;
+  value: TelemetryMetricType;
+}
+
 export { WorkshopTelemetryStatus };
 export { TelemetryMetricType };
 
 export type {
+  WorkshopTelemetryMetricTypeDto,
   WorkshopTelemetryStatisticsDto,
   WorkshopTelemetryTaskDto,
   WorkshopTelemetryTaskListInput,

@@ -50,6 +50,15 @@ public class WorkshopTelemetryController : TestWorkshopController
     }
 
     /// <summary>
+    /// 获取遥测指标类型选项
+    /// </summary>
+    [HttpGet("metric-types")]
+    public async Task<ListResultDto<WorkshopTelemetryMetricTypeDto>> GetMetricTypesAsync()
+    {
+        return await Service.GetMetricTypesAsync();
+    }
+
+    /// <summary>
     /// 获取统计信息
     /// </summary>
     [HttpGet("statistics")]

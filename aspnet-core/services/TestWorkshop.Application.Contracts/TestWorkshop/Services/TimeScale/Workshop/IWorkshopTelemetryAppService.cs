@@ -28,6 +28,11 @@ public interface IWorkshopTelemetryAppService : IApplicationService
     Task<WorkshopTelemetryStatisticsDto> GetStatisticsAsync();
 
     /// <summary>
+    /// 获取遥测指标类型选项
+    /// </summary>
+    Task<ListResultDto<WorkshopTelemetryMetricTypeDto>> GetMetricTypesAsync();
+
+    /// <summary>
     /// 删除任务（物理删除）
     /// </summary>
     Task DeleteAsync(long id);
