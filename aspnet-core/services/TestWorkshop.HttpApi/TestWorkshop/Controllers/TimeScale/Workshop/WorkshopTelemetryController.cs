@@ -32,15 +32,6 @@ public class WorkshopTelemetryController : TestWorkshopController
     }
 
     /// <summary>
-    /// 搜索任务（按文件名）
-    /// </summary>
-    [HttpGet("search")]
-    public async Task<List<WorkshopTelemetryTaskDto>> SearchAsync(string fileName)
-    {
-        return await Service.SearchByFileNameAsync(fileName);
-    }
-
-    /// <summary>
     /// 分页查询
     /// </summary>
     [HttpGet]

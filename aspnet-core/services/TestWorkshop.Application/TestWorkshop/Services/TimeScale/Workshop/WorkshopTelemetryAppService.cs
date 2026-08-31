@@ -90,37 +90,6 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
     }
 
     /// <summary>
-    /// 根据文件名搜索
-    /// </summary>
-    public async Task<List<WorkshopTelemetryTaskDto>> SearchByFileNameAsync(string fileName)
-    {
-        // ✅ 用 Repository 已有的方法
-        var tasks = await _taskRepository.SearchByFileNameAsync(fileName);
-        var dtos = new List<WorkshopTelemetryTaskDto>();
-
-        foreach (var task in tasks)
-        {
-            var fileObject = await _fileObjectRepository.FindAsync(task.FileObjectId);
-            dtos.Add(new WorkshopTelemetryTaskDto
-            {
-                Id = task.Id,
-                FileObjectId = task.FileObjectId,
-                FileName = fileObject?.FileName,
-                FileSize = fileObject?.FileSize ?? 0,
-                Status = task.Status,
-                RetryCount = task.RetryCount,
-                Error = task.Error,
-                RecordCount = task.RecordCount,
-                CreatedAt = task.CreatedAt,
-                ProcessedAt = task.ProcessedAt,
-                ExpiresAt = task.ExpiresAt
-            });
-        }
-
-        return dtos;
-    }
-
-    /// <summary>
     /// 分页查询
     /// </summary>
     public async Task<PagedResultDto<WorkshopTelemetryTaskDto>> GetListAsync(WorkshopTelemetryTaskListInput input)

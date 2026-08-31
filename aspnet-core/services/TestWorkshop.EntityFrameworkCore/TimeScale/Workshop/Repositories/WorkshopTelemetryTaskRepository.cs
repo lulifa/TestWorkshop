@@ -57,27 +57,6 @@ public class WorkshopTelemetryTaskRepository :
     // ========== 查询方法（需 JOIN FileObject） ==========
 
     /// <summary>
-    /// 根据文件名搜索（JOIN FileObject 表）
-    /// </summary>
-    public async Task<List<WorkshopTelemetryTask>> SearchByFileNameAsync(string fileName)
-    {
-        if (string.IsNullOrWhiteSpace(fileName))
-            return new List<WorkshopTelemetryTask>();
-
-        var dbContext = await GetDbContextAsync();
-
-        // ✅ 去掉 where task.IsDeleted == false
-        var query = from task in dbContext.TelemetryTasks
-                    join file in dbContext.FileObjects on task.FileObjectId equals file.Id into fileGroup
-                    from file in fileGroup.DefaultIfEmpty()
-                    where file != null && file.FileName.Contains(fileName)
-                    orderby task.CreatedAt descending
-                    select task;
-
-        return await query.ToListAsync();
-    }
-
-    /// <summary>
     /// 分页查询任务列表（JOIN FileObject 表获取文件信息）
     /// </summary>
     public async Task<PagedResultDto<WorkshopTelemetryTask>> GetPagedListAsync(

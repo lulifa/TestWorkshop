@@ -13,11 +13,6 @@ public interface IWorkshopTelemetryAppService : IApplicationService
     Task<WorkshopTelemetryTaskDto> GetAsync(long id);
 
     /// <summary>
-    /// 根据文件名搜索
-    /// </summary>
-    Task<List<WorkshopTelemetryTaskDto>> SearchByFileNameAsync(string fileName);
-
-    /// <summary>
     /// 分页查询任务
     /// </summary>
     Task<PagedResultDto<WorkshopTelemetryTaskDto>> GetListAsync(WorkshopTelemetryTaskListInput input);

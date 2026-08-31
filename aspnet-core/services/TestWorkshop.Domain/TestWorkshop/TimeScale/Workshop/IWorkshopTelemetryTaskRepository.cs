@@ -11,11 +11,6 @@ public interface IWorkshopTelemetryTaskRepository : IRepository<WorkshopTelemetr
     Task<List<WorkshopTelemetryTask>> ClaimPendingTasksAsync(int take = 5);
 
     /// <summary>
-    /// 根据文件名搜索（JOIN FileObject）
-    /// </summary>
-    Task<List<WorkshopTelemetryTask>> SearchByFileNameAsync(string fileName);
-
-    /// <summary>
     /// 分页查询任务列表（JOIN FileObject）
     /// </summary>
     Task<PagedResultDto<WorkshopTelemetryTask>> GetPagedListAsync(string fileName = null, int? status = null, DateTime? startTime = null, DateTime? endTime = null, int skipCount = 0, int maxResultCount = 10);
