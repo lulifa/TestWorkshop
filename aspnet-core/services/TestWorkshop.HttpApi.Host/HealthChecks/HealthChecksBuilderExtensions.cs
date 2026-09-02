@@ -53,7 +53,7 @@ public static class HealthChecksBuilderExtensions
         return services;
     }
 
-    private static IServiceCollection MapHealthChecksUiEndpoints(this IServiceCollection services, Action<global::HealthChecks.UI.Configuration.Options>? setupOption = null)
+    private static IServiceCollection MapHealthChecksUiEndpoints(this IServiceCollection services, Action<global::HealthChecks.UI.Configuration.Options> setupOption = null)
     {
         services.Configure<AbpEndpointRouterOptions>(routerOptions =>
         {
