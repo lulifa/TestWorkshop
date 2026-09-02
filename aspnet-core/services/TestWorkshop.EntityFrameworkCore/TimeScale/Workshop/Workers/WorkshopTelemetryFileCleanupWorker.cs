@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-
-namespace TestWorkshop.EntityFrameworkCore;
+﻿namespace TestWorkshop.EntityFrameworkCore;
 
 /// <summary>
 /// 后台任务：定期清理已过期且已完成/失败的遥测任务

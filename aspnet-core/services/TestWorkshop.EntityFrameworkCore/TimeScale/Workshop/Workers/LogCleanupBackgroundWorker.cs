@@ -1,9 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using Volo.Abp.AuditLogging;
-using Volo.Abp.Domain.Repositories;
-using Volo.Abp.Timing;
-
-namespace TestWorkshop;
+﻿namespace TestWorkshop;
 
 public class LogCleanupBackgroundWorker : AsyncPeriodicBackgroundWorkerBase
 {

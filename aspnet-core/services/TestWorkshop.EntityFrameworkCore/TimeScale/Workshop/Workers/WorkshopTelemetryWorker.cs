@@ -1,10 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
-using NpgsqlTypes;
-using System.Globalization;
-
-namespace TestWorkshop.EntityFrameworkCore;
+﻿namespace TestWorkshop.EntityFrameworkCore;
 
 /// <summary>
 /// 后台任务调度器：定期扫描待处理文件，解析 CSV 并批量写入遥测数据

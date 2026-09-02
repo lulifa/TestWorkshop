@@ -1,6 +1,4 @@
-﻿using TestWorkshop.SignalR;
-
-namespace TestWorkshop.EntityFrameworkCore;
+﻿namespace TestWorkshop.EntityFrameworkCore;
 
 public class EfCoreNotificationRepository : EfCoreRepository<TestWorkshopDbContext, Notification, Guid>, INotificationRepository
 {
