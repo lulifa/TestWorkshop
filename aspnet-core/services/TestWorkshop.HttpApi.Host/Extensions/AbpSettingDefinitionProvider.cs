@@ -1,6 +1,4 @@
-﻿using Volo.Abp.Account.Settings;
-
-namespace TestWorkshop;
+﻿namespace TestWorkshop;
 
 public class AbpSettingDefinitionProvider : Volo.Abp.Settings.SettingDefinitionProvider
 {

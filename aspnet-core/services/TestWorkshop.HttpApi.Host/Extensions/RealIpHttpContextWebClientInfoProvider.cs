@@ -1,9 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using MyCSharp.HttpUserAgentParser.Providers;
-using System.Net;
-using Volo.Abp.AspNetCore.WebClientInfo;
-
-namespace TestWorkshop;
+﻿namespace TestWorkshop;
 
 /// <summary>
 /// 支持代理场景的真实 IP 提供程序

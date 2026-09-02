@@ -1,5 +1,3 @@
-using Swashbuckle.AspNetCore.SwaggerUI;
-
 namespace TestWorkshop;
 
 [DependsOn(
