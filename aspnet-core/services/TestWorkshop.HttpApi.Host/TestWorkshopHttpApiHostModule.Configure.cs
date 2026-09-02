@@ -1,294 +1,287 @@
-﻿using Microsoft.Extensions.DependencyInjection.Extensions;
-using Volo.Abp.AspNetCore.Auditing;
-using Volo.Abp.AspNetCore.WebClientInfo;
-using Volo.Abp.Auditing;
-using Volo.Abp.AuditLogging;
+﻿namespace TestWorkshop;
 
-namespace TestWorkshop
+public partial class TestWorkshopHttpApiHostModule
 {
-    public partial class TestWorkshopHttpApiHostModule
+
+    private void PreConfigureOpenIddict(IConfiguration configuration, IWebHostEnvironment environment)
+    {
+        var authority = configuration["AuthServer:Authority"];
+        var scopes = configuration.GetSection("AuthServer:Scopes").Get<string[]>();
+        var certificatePassPhrase = configuration["AuthServer:CertificatePassPhrase"];
+
+        PreConfigure<OpenIddictBuilder>(builder =>
+        {
+            builder.AddValidation(options =>
+            {
+                options.AddAudiences(scopes);
+                options.UseLocalServer();
+                options.UseAspNetCore();
+            });
+        });
+
+        if (!environment.IsDevelopment())
+        {
+            PreConfigure<AbpOpenIddictAspNetCoreOptions>(options =>
+            {
+                options.AddDevelopmentEncryptionAndSigningCertificate = false;
+            });
+
+            PreConfigure<OpenIddictServerBuilder>(serverBuilder =>
+            {
+                serverBuilder.AddProductionEncryptionAndSigningCertificate("openiddict.pfx", certificatePassPhrase);
+                serverBuilder.SetIssuer(new Uri(authority));
+            });
+        }
+    }
+
+    private void ConfigureSecurity(IConfiguration configuration)
+    {
+        if (!configuration.GetValue<bool>("App:DisablePII"))
+        {
+            Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
+            Microsoft.IdentityModel.Logging.IdentityModelEventSource.LogCompleteSecurityArtifact = true;
+        }
+
+        if (!configuration.GetValue<bool>("AuthServer:RequireHttpsMetadata"))
+        {
+            Configure<OpenIddictServerAspNetCoreOptions>(options =>
+            {
+                options.DisableTransportSecurityRequirement = true;
+            });
+
+            Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor;
+            });
+        }
+    }
+
+    private void ConfigureWrapper()
+    {
+        Configure<AbpWrapperOptions>(options =>
+        {
+            options.IsEnabled = true;
+        });
+    }
+
+    private void ConfigureAuthentication(ServiceConfigurationContext context)
+    {
+        context.Services.ForwardIdentityAuthenticationForBearer(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
+        context.Services.Configure<AbpClaimsPrincipalFactoryOptions>(options =>
+        {
+            options.IsDynamicClaimsEnabled = true;
+        });
+
+        // CSRF/XSRF https://abp.io/docs/latest/framework/infrastructure/csrf-anti-forgery
+        context.Services.Configure<AbpAntiForgeryOptions>(options =>
+        {
+            options.AutoValidate = true;
+        });
+
+        context.Services.AddSameSiteCookiePolicy();
+
+    }
+
+    private void ConfigureUrls(IConfiguration configuration)
+    {
+        Configure<AppUrlOptions>(options =>
+        {
+            options.Applications["MVC"].RootUrl = configuration["App:SelfUrl"];
+            options.Applications["Vue"].RootUrl = configuration["App:VueUrl"];
+            options.Applications["Vue"].Urls[AccountUrlNames.PasswordReset] = "account/reset-password";
+            options.RedirectAllowedUrls.AddRange(configuration["App:RedirectAllowedUrls"]?.Split(',') ?? Array.Empty<string>());
+        });
+    }
+
+    private void ConfigureBundles()
+    {
+        Configure<AbpBundlingOptions>(options =>
+        {
+            options.StyleBundles.Configure(
+                LeptonXLiteThemeBundles.Styles.Global,
+                bundle =>
+                {
+                    bundle.AddFiles("/global-styles.css");
+                }
+            );
+
+            options.ScriptBundles.Configure(
+                LeptonXLiteThemeBundles.Scripts.Global,
+                bundle =>
+                {
+                    bundle.AddFiles("/global-scripts.js");
+                }
+            );
+        });
+    }
+
+    private void ConfigureHealthChecks(ServiceConfigurationContext context)
+    {
+        context.Services.AddTestWorkshopHealthChecks();
+    }
+
+    private void ConfigureCors(IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddCors(options =>
+        {
+            options.AddDefaultPolicy(builder =>
+            {
+                builder
+                    .WithOrigins(
+                        configuration["App:CorsOrigins"]?
+                            .Split(",", StringSplitOptions.RemoveEmptyEntries)
+                            .Select(o => o.Trim().RemovePostFix("/"))
+                            .ToArray() ?? Array.Empty<string>()
+                    )
+                    .WithAbpExposedHeaders()
+                    .WithAbpWrapExposedHeaders()
+                    .SetIsOriginAllowedToAllowWildcardSubdomains()
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials();
+            });
+        });
+    }
+
+
+    private void ConfigureLocalization(IConfiguration configuration)
     {
 
-        private void PreConfigureOpenIddict(IConfiguration configuration, IWebHostEnvironment environment)
+        Configure<AbpLocalizationOptions>(options =>
         {
-            var authority = configuration["AuthServer:Authority"];
-            var scopes = configuration.GetSection("AuthServer:Scopes").Get<string[]>();
-            var certificatePassPhrase = configuration["AuthServer:CertificatePassPhrase"];
+            options.Languages.Add(new LanguageInfo("en", "en", "English"));
+            options.Languages.Add(new LanguageInfo("zh-Hans", "zh-Hans", "简体中文"));
 
-            PreConfigure<OpenIddictBuilder>(builder =>
+        });
+
+    }
+
+    private void ConfigureCache(IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
+    {
+
+        var isRedisEnabled = configuration.GetValue<bool>("Redis:IsEnabled");
+        var redisConfiguration = configuration.GetValue<string>("Redis:Configuration");
+        var redisInstanceName = configuration.GetValue<string>("Redis:InstanceName");
+
+        Configure<AbpDistributedCacheOptions>(options =>
+        {
+            options.KeyPrefix = "TestWorkshop:";
+        });
+
+        var dataProtectionBuilder = services.AddDataProtection().SetApplicationName("TestWorkshop");
+
+        if (isRedisEnabled)
+        {
+            Configure<RedisCacheOptions>(options =>
             {
-                builder.AddValidation(options =>
-                {
-                    options.AddAudiences(scopes);
-                    options.UseLocalServer();
-                    options.UseAspNetCore();
-                });
+                options.Configuration = redisConfiguration;
+                options.InstanceName = redisInstanceName;
+            });
+
+            var redis = ConnectionMultiplexer.Connect(redisConfiguration);
+
+            services.AddSingleton<IDistributedLockProvider>(sp =>
+            {
+                return new RedisDistributedSynchronizationProvider(redis.GetDatabase());
             });
 
             if (!environment.IsDevelopment())
             {
-                PreConfigure<AbpOpenIddictAspNetCoreOptions>(options =>
-                {
-                    options.AddDevelopmentEncryptionAndSigningCertificate = false;
-                });
-
-                PreConfigure<OpenIddictServerBuilder>(serverBuilder =>
-                {
-                    serverBuilder.AddProductionEncryptionAndSigningCertificate("openiddict.pfx", certificatePassPhrase);
-                    serverBuilder.SetIssuer(new Uri(authority));
-                });
+                dataProtectionBuilder.PersistKeysToStackExchangeRedis(redis, $"TestWorkshop-Protection-Keys");
             }
-        }
-
-        private void ConfigureSecurity(IConfiguration configuration)
-        {
-            if (!configuration.GetValue<bool>("App:DisablePII"))
-            {
-                Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
-                Microsoft.IdentityModel.Logging.IdentityModelEventSource.LogCompleteSecurityArtifact = true;
-            }
-
-            if (!configuration.GetValue<bool>("AuthServer:RequireHttpsMetadata"))
-            {
-                Configure<OpenIddictServerAspNetCoreOptions>(options =>
-                {
-                    options.DisableTransportSecurityRequirement = true;
-                });
-
-                Configure<ForwardedHeadersOptions>(options =>
-                {
-                    options.ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor;
-                });
-            }
-        }
-
-        private void ConfigureWrapper()
-        {
-            Configure<AbpWrapperOptions>(options =>
-            {
-                options.IsEnabled = true;
-            });
-        }
-
-        private void ConfigureAuthentication(ServiceConfigurationContext context)
-        {
-            context.Services.ForwardIdentityAuthenticationForBearer(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
-            context.Services.Configure<AbpClaimsPrincipalFactoryOptions>(options =>
-            {
-                options.IsDynamicClaimsEnabled = true;
-            });
-
-            // CSRF/XSRF https://abp.io/docs/latest/framework/infrastructure/csrf-anti-forgery
-            context.Services.Configure<AbpAntiForgeryOptions>(options =>
-            {
-                options.AutoValidate = true;
-            });
-
-            context.Services.AddSameSiteCookiePolicy();
-
-        }
-
-        private void ConfigureUrls(IConfiguration configuration)
-        {
-            Configure<AppUrlOptions>(options =>
-            {
-                options.Applications["MVC"].RootUrl = configuration["App:SelfUrl"];
-                options.Applications["Vue"].RootUrl = configuration["App:VueUrl"];
-                options.Applications["Vue"].Urls[AccountUrlNames.PasswordReset] = "account/reset-password";
-                options.RedirectAllowedUrls.AddRange(configuration["App:RedirectAllowedUrls"]?.Split(',') ?? Array.Empty<string>());
-            });
-        }
-
-        private void ConfigureBundles()
-        {
-            Configure<AbpBundlingOptions>(options =>
-            {
-                options.StyleBundles.Configure(
-                    LeptonXLiteThemeBundles.Styles.Global,
-                    bundle =>
-                    {
-                        bundle.AddFiles("/global-styles.css");
-                    }
-                );
-
-                options.ScriptBundles.Configure(
-                    LeptonXLiteThemeBundles.Scripts.Global,
-                    bundle =>
-                    {
-                        bundle.AddFiles("/global-scripts.js");
-                    }
-                );
-            });
-        }
-
-        private void ConfigureHealthChecks(ServiceConfigurationContext context)
-        {
-            context.Services.AddTestWorkshopHealthChecks();
-        }
-
-        private void ConfigureCors(IServiceCollection services, IConfiguration configuration)
-        {
-            services.AddCors(options =>
-            {
-                options.AddDefaultPolicy(builder =>
-                {
-                    builder
-                        .WithOrigins(
-                            configuration["App:CorsOrigins"]?
-                                .Split(",", StringSplitOptions.RemoveEmptyEntries)
-                                .Select(o => o.Trim().RemovePostFix("/"))
-                                .ToArray() ?? Array.Empty<string>()
-                        )
-                        .WithAbpExposedHeaders()
-                        .WithAbpWrapExposedHeaders()
-                        .SetIsOriginAllowedToAllowWildcardSubdomains()
-                        .AllowAnyHeader()
-                        .AllowAnyMethod()
-                        .AllowCredentials();
-                });
-            });
-        }
-
-
-        private void ConfigureLocalization(IConfiguration configuration)
-        {
-
-            Configure<AbpLocalizationOptions>(options =>
-            {
-                options.Languages.Add(new LanguageInfo("en", "en", "English"));
-                options.Languages.Add(new LanguageInfo("zh-Hans", "zh-Hans", "简体中文"));
-
-            });
-
-        }
-
-        private void ConfigureCache(IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
-        {
-
-            var isRedisEnabled = configuration.GetValue<bool>("Redis:IsEnabled");
-            var redisConfiguration = configuration.GetValue<string>("Redis:Configuration");
-            var redisInstanceName = configuration.GetValue<string>("Redis:InstanceName");
-
-            Configure<AbpDistributedCacheOptions>(options =>
-            {
-                options.KeyPrefix = "TestWorkshop:";
-            });
-
-            var dataProtectionBuilder = services.AddDataProtection().SetApplicationName("TestWorkshop");
-
-            if (isRedisEnabled)
-            {
-                Configure<RedisCacheOptions>(options =>
-                {
-                    options.Configuration = redisConfiguration;
-                    options.InstanceName = redisInstanceName;
-                });
-
-                var redis = ConnectionMultiplexer.Connect(redisConfiguration);
-
-                services.AddSingleton<IDistributedLockProvider>(sp =>
-                {
-                    return new RedisDistributedSynchronizationProvider(redis.GetDatabase());
-                });
-
-                if (!environment.IsDevelopment())
-                {
-                    dataProtectionBuilder.PersistKeysToStackExchangeRedis(redis, $"TestWorkshop-Protection-Keys");
-                }
-            }
-
-        }
-
-        private void ConfigureSwagger(IServiceCollection services, IConfiguration configuration)
-        {
-            var authority = configuration["AuthServer:Authority"];
-            var scopes = configuration.GetSection("AuthServer:Scopes").Get<string[]>();
-
-            services.AddAbpSwaggerGenWithOidc(
-                authority,
-                scopes,
-                [AbpSwaggerOidcFlows.AuthorizationCode],
-                null,
-                options =>
-                {
-                    options.SwaggerDoc("v1", new OpenApiInfo
-                    {
-                        Title = "TestWorkshop API",
-                        Version = "v1"
-                    });
-                    options.DocInclusionPredicate((docName, description) => true);
-                    options.CustomSchemaIds(type => type.FullName);
-
-                    options.DocumentFilter<AbpHideDefaultApiFilter>();
-                    options.OperationFilter<AbpOperationFilter>();
-
-                    // 自动扫描所有 XML 注释
-                    var xmlFiles = Directory.GetFiles(AppContext.BaseDirectory, "*.xml");
-                    foreach (var xmlPath in xmlFiles)
-                    {
-                        options.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
-                    }
-
-                });
-        }
-
-        private void ConfigureBlob(IConfiguration configuration)
-        {
-            Configure<AbpBlobStoringOptions>(options =>
-            {
-                var basePath = configuration["Blob:Path"];
-
-                if (string.IsNullOrEmpty(basePath))
-                {
-                    throw new InvalidOperationException("Blob:Path must be configured in appsettings.json");
-                }
-
-                Directory.CreateDirectory(basePath);
-
-                options.Containers.ConfigureDefault(container =>
-                {
-                    container.UseFileSystem(fileSystem =>
-                    {
-                        fileSystem.BasePath = basePath;
-                    });
-                });
-            });
-        }
-
-        private void ConfigureIPLocation(ServiceConfigurationContext context)
-        {
-            // 1. 替换 WebClientInfoProvider，以支持代理环境获取真实 IP
-            context.Services.Replace(
-                new ServiceDescriptor(
-                    typeof(IWebClientInfoProvider),
-                    typeof(RealIpHttpContextWebClientInfoProvider),
-                    ServiceLifetime.Transient
-                )
-            );
-
-            // 2. 替换 AuditLogInfoToAuditLogConverter，以添加 IP 归属地解析
-            context.Services.Replace(
-                new ServiceDescriptor(
-                    typeof(IAuditLogInfoToAuditLogConverter),
-                    typeof(CustomAuditLogInfoToAuditLogConverter),
-                    ServiceLifetime.Transient
-                )
-            );
-        }
-
-        private void ConfigureAuditLog(ServiceConfigurationContext context)
-        {
-            Configure<AbpAuditingOptions>(options =>
-            {
-                options.EntityHistorySelectors.AddAllEntities();
-            });
-
-            Configure<AbpAspNetCoreAuditingOptions>(options =>
-            {
-                options.IgnoredUrls.Add("/api/system/auditlog");
-            });
-
         }
 
     }
+
+    private void ConfigureSwagger(IServiceCollection services, IConfiguration configuration)
+    {
+        var authority = configuration["AuthServer:Authority"];
+        var scopes = configuration.GetSection("AuthServer:Scopes").Get<string[]>();
+
+        services.AddAbpSwaggerGenWithOidc(
+            authority,
+            scopes,
+            [AbpSwaggerOidcFlows.AuthorizationCode],
+            null,
+            options =>
+            {
+                options.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "TestWorkshop API",
+                    Version = "v1"
+                });
+                options.DocInclusionPredicate((docName, description) => true);
+                options.CustomSchemaIds(type => type.FullName);
+
+                options.DocumentFilter<AbpHideDefaultApiFilter>();
+                options.OperationFilter<AbpOperationFilter>();
+
+                // 自动扫描所有 XML 注释
+                var xmlFiles = Directory.GetFiles(AppContext.BaseDirectory, "*.xml");
+                foreach (var xmlPath in xmlFiles)
+                {
+                    options.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
+                }
+
+            });
+    }
+
+    private void ConfigureBlob(IConfiguration configuration)
+    {
+        Configure<AbpBlobStoringOptions>(options =>
+        {
+            var basePath = configuration["Blob:Path"];
+
+            if (string.IsNullOrEmpty(basePath))
+            {
+                throw new InvalidOperationException("Blob:Path must be configured in appsettings.json");
+            }
+
+            Directory.CreateDirectory(basePath);
+
+            options.Containers.ConfigureDefault(container =>
+            {
+                container.UseFileSystem(fileSystem =>
+                {
+                    fileSystem.BasePath = basePath;
+                });
+            });
+        });
+    }
+
+    private void ConfigureIPLocation(ServiceConfigurationContext context)
+    {
+        // 1. 替换 WebClientInfoProvider，以支持代理环境获取真实 IP
+        context.Services.Replace(
+            new ServiceDescriptor(
+                typeof(IWebClientInfoProvider),
+                typeof(RealIpHttpContextWebClientInfoProvider),
+                ServiceLifetime.Transient
+            )
+        );
+
+        // 2. 替换 AuditLogInfoToAuditLogConverter，以添加 IP 归属地解析
+        context.Services.Replace(
+            new ServiceDescriptor(
+                typeof(IAuditLogInfoToAuditLogConverter),
+                typeof(CustomAuditLogInfoToAuditLogConverter),
+                ServiceLifetime.Transient
+            )
+        );
+    }
+
+    private void ConfigureAuditLog(ServiceConfigurationContext context)
+    {
+        Configure<AbpAuditingOptions>(options =>
+        {
+            options.EntityHistorySelectors.AddAllEntities();
+        });
+
+        Configure<AbpAspNetCoreAuditingOptions>(options =>
+        {
+            options.IgnoredUrls.Add("/api/system/auditlog");
+        });
+
+    }
+
 }
