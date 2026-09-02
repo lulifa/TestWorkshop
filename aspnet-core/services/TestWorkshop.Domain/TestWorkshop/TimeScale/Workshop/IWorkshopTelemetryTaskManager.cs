@@ -1,6 +1,4 @@
-﻿using TestWorkshop.TimeScale;
-
-namespace TestWorkshop;
+﻿namespace TestWorkshop.TimeScale;
 
 public interface IWorkshopTelemetryTaskManager : IDomainService
 {

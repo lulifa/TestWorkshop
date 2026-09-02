@@ -1,8 +1,4 @@
-﻿using TestWorkshop.SignalR;
-using Volo.Abp.Authorization;
-using Volo.Abp.Users;
-
-namespace TestWorkshop;
+﻿namespace TestWorkshop;
 
 public class NotificationManager : DomainService, INotificationManager
 {

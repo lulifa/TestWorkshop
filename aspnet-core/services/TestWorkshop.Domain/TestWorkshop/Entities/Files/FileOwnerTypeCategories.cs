@@ -1,6 +1,4 @@
-﻿using TestWorkshop.TimeScale;
-
-namespace TestWorkshop;
+﻿namespace TestWorkshop;
 
 /// <summary>
 /// 业务归属类型分类

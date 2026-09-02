@@ -1,6 +1,4 @@
-﻿using Volo.Abp.BlobStoring;
-
-namespace TestWorkshop;
+﻿namespace TestWorkshop;
 
 public class FileObjectManager : DomainService, IFileObjectManager
 {

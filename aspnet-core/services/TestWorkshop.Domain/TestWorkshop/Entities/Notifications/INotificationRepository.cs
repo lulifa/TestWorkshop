@@ -1,6 +1,4 @@
-﻿using TestWorkshop.SignalR;
-
-namespace TestWorkshop;
+﻿namespace TestWorkshop;
 
 public interface INotificationRepository : IBasicRepository<Notification, Guid>
 {

@@ -1,6 +1,4 @@
-﻿using TestWorkshop.SignalR;
-
-namespace TestWorkshop;
+﻿namespace TestWorkshop;
 
 /// <summary>
 /// 消息通知

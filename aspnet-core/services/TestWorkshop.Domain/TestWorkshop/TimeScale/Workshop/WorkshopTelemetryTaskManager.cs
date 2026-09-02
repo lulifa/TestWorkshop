@@ -1,6 +1,4 @@
-﻿using TestWorkshop.TimeScale;
-
-namespace TestWorkshop;
+﻿namespace TestWorkshop.TimeScale;
 
 public class WorkshopTelemetryTaskManager : DomainService, IWorkshopTelemetryTaskManager
 {
