@@ -1,6 +1,4 @@
-﻿using OpenIddict.Abstractions;
-
-namespace TestWorkshop;
+﻿namespace TestWorkshop;
 
 [Authorize]
 public class SystemIdentityUserAppService : TestWorkshopAppService, ISystemIdentityUserAppService

@@ -1,6 +1,4 @@
-﻿using Volo.Abp.DependencyInjection;
-
-namespace TestWorkshop;
+﻿namespace TestWorkshop;
 
 [Dependency(ReplaceServices = true)]
 [ExposeServices(typeof(IAbpApplicationConfigurationAppService))]

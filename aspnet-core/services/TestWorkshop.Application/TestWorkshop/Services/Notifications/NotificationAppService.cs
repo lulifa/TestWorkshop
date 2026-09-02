@@ -1,7 +1,4 @@
-﻿using TestWorkshop.SignalR;
-using Volo.Abp.ObjectMapping;
-
-namespace TestWorkshop;
+﻿namespace TestWorkshop;
 
 [Authorize]
 public class NotificationAppService : TestWorkshopAppService, INotificationAppService

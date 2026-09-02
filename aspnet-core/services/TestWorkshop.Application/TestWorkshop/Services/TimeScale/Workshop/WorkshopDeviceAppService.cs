@@ -1,6 +1,3 @@
-using TestWorkshop.TimeScale;
-using Volo.Abp.Linq;
-
 namespace TestWorkshop;
 
 /// <summary>

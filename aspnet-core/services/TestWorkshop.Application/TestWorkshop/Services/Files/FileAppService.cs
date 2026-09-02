@@ -1,7 +1,4 @@
-﻿using System.IO;
-using Volo.Abp.Content;
-
-namespace TestWorkshop;
+﻿namespace TestWorkshop;
 
 [Authorize]
 public class FileAppService : ApplicationService, IFileAppService

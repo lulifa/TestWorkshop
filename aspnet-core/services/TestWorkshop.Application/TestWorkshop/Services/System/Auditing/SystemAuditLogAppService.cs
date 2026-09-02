@@ -1,7 +1,4 @@
-﻿using System.Threading;
-using Volo.Abp.AuditLogging;
-
-namespace TestWorkshop;
+﻿namespace TestWorkshop;
 
 [Authorize(Policy = TestWorkshopPermissions.AuditLog.Default)]
 public class SystemAuditLogAppService : TestWorkshopAppService, ISystemAuditLogAppService

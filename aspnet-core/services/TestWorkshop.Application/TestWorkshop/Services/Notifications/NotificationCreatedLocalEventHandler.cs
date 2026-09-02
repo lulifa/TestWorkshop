@@ -1,8 +1,4 @@
-﻿using TestWorkshop.SignalR;
-using Volo.Abp.DependencyInjection;
-using Volo.Abp.EventBus;
-
-namespace TestWorkshop;
+﻿namespace TestWorkshop;
 
 public class NotificationCreatedLocalEventHandler : ILocalEventHandler<CreatedNotificationLocalEvent>, ITransientDependency
 {

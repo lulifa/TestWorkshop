@@ -1,8 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using System.IO;
-using TestWorkshop.TimeScale;
-
-namespace TestWorkshop;
+﻿namespace TestWorkshop;
 
 /// <summary>
 /// 遥测服务应用
