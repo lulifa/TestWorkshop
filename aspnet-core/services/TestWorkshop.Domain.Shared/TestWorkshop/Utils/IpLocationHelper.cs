@@ -1,7 +1,4 @@
-﻿using IPTools.Core;
-using UAParser;
-
-namespace TestWorkshop;
+﻿namespace TestWorkshop;
 
 /// <summary>
 /// IP归属地解析工具类

@@ -1,8 +1,14 @@
 ﻿// Global using directives
 
+global using IPTools.Core;
 global using System;
 global using System.Collections.Generic;
+global using System.ComponentModel;
+global using System.ComponentModel.DataAnnotations;
 global using System.Linq;
+global using System.Reflection;
+global using System.Text.Json.Serialization;
+global using UAParser;
 global using Volo.Abp.AuditLogging;
 global using Volo.Abp.BackgroundJobs;
 global using Volo.Abp.EventBus;
@@ -13,10 +19,12 @@ global using Volo.Abp.Localization;
 global using Volo.Abp.Localization.ExceptionHandling;
 global using Volo.Abp.Modularity;
 global using Volo.Abp.MultiTenancy;
+global using Volo.Abp.ObjectExtending;
 global using Volo.Abp.OpenIddict;
 global using Volo.Abp.OpenIddict.Localization;
 global using Volo.Abp.PermissionManagement;
 global using Volo.Abp.SettingManagement;
 global using Volo.Abp.TenantManagement;
+global using Volo.Abp.Threading;
 global using Volo.Abp.Validation.Localization;
 global using Volo.Abp.VirtualFileSystem;

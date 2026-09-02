@@ -1,4 +1,4 @@
-﻿namespace TestWorkshop;
+﻿namespace TestWorkshop.TimeScale;
 
 /// <summary>
 /// 遥测指标类型（固定不变）

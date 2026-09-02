@@ -1,9 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Volo.Abp.Identity;
-using Volo.Abp.ObjectExtending;
-using Volo.Abp.Threading;
-
-namespace TestWorkshop;
+﻿namespace TestWorkshop;
 
 public static class TestWorkshopModuleExtensionConfigurator
 {

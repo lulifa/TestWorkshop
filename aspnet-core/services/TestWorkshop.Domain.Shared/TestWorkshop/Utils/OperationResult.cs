@@ -1,6 +1,4 @@
-﻿using System.Text.Json.Serialization;
-
-namespace TestWorkshop;
+﻿namespace TestWorkshop;
 
 public class OperationResult<T>
 {
