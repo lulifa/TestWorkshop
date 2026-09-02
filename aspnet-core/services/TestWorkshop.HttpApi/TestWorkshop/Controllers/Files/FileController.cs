@@ -1,6 +1,4 @@
-﻿using Volo.Abp.Content;
-
-namespace TestWorkshop.Controllers;
+﻿namespace TestWorkshop.Controllers;
 
 /// <summary>
 /// 文件管理

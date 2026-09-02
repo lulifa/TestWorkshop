@@ -1,6 +1,4 @@
-﻿using Volo.Abp;
-
-namespace TestWorkshop;
+﻿namespace TestWorkshop;
 
 /// <summary>
 /// 所有控制器的基类（只做本地化资源设置）
