@@ -5,7 +5,13 @@ public class Program
     public async static Task<int> Main(string[] args)
     {
         Log.Logger = new LoggerConfiguration()
-            .WriteTo.Async(c => c.File("Logs/logs.txt"))
+            .WriteTo.Async(c => c.File(
+                "Logs/log-.txt", 
+                rollingInterval: RollingInterval.Day, 
+                retainedFileCountLimit: 300, 
+                fileSizeLimitBytes: 100 * 1024 * 1024, 
+                rollOnFileSizeLimit: true
+                ))
             .WriteTo.Async(c => c.Console())
             .CreateBootstrapLogger();
 
@@ -27,7 +33,13 @@ public class Program
                         .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                         .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
                         .Enrich.FromLogContext()
-                        .WriteTo.Async(c => c.File("Logs/logs.txt"))
+                        .WriteTo.Async(c => c.File(
+                            "Logs/log-.txt", 
+                            rollingInterval: RollingInterval.Day, 
+                            retainedFileCountLimit: 300, 
+                            fileSizeLimitBytes: 100 * 1024 * 1024, 
+                            rollOnFileSizeLimit: true
+                            ))
                         .WriteTo.Async(c => c.Console());
                 });
             await builder.AddApplicationAsync<TestWorkshopHttpApiHostModule>();
