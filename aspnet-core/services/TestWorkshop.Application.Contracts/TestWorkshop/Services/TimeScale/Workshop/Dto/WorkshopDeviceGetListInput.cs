@@ -1,5 +1,3 @@
-using TestWorkshop.TimeScale;
-
 namespace TestWorkshop;
 
 /// <summary>

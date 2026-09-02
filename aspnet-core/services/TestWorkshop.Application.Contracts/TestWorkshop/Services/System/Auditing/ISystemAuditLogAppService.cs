@@ -1,6 +1,4 @@
-﻿using System.Threading;
-
-namespace TestWorkshop;
+﻿namespace TestWorkshop;
 
 public interface ISystemAuditLogAppService : IApplicationService
 {

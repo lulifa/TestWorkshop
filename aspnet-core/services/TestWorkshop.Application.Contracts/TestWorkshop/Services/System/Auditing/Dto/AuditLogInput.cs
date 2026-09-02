@@ -1,6 +1,4 @@
-﻿using System.Net;
-
-namespace TestWorkshop;
+﻿namespace TestWorkshop;
 
 public class AuditLogInput : PagedAndSortedResultRequestDto, IEnablePaging
 {

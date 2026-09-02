@@ -1,7 +1,4 @@
-﻿using System.IO;
-using Volo.Abp.Content;
-
-namespace TestWorkshop;
+﻿namespace TestWorkshop;
 
 /// <summary>
 /// 文件管理应用服务接口

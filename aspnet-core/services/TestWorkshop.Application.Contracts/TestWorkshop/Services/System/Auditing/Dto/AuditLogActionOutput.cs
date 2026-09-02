@@ -1,6 +1,4 @@
-﻿using Volo.Abp.Data;
-
-namespace TestWorkshop;
+﻿namespace TestWorkshop;
 
 public class AuditLogActionOutput
 {
