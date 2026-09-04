@@ -11,8 +11,8 @@ import VxeGrid from './use-vxe-grid.vue';
 
 // 使用轻量插槽参数，避免展开 vxe 内部递归的 GridConstructor 类型
 type GridSlotParams<T> = {
-  row: T;
   [key: string]: any;
+  row: T;
 };
 
 type GridSlots<T> = {

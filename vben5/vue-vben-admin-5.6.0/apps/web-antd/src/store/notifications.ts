@@ -237,6 +237,13 @@ export const useNotificationStore = defineStore('notification', () => {
     );
   }
 
+  function $reset() {
+    notifications.value = [];
+    unreadNotifications.value = [];
+    broadcasts.value = [];
+    unreadCount.value = 0;
+  }
+
   subscribe('signalR:ReceiveTextMessage', (message: any) => {
     const item = toSignalRItem(message);
     const existed = notifications.value.find((entry) => entry.id === item.id);
@@ -256,13 +263,11 @@ export const useNotificationStore = defineStore('notification', () => {
   });
 
   subscribe(Events.UserLogout, () => {
-    notifications.value = [];
-    unreadNotifications.value = [];
-    broadcasts.value = [];
-    unreadCount.value = 0;
+    $reset();
   });
 
   return {
+    $reset,
     broadcasts,
     broadcastTrends,
     clearBroadcasts,
