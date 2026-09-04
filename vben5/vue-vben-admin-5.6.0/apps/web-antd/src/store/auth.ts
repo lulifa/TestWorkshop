@@ -42,6 +42,12 @@ export const useAuthStore = defineStore('auth', () => {
       if (user?.refresh_token) {
         accessStore.setRefreshToken(user.refresh_token);
       }
+      try {
+        const userInfo = await fetchUserInfo();
+        userStore.setUserInfo(userInfo);
+      } catch (error) {
+        console.warn('refresh user iinfo error', error);
+      }
       return newToken;
     }
   }
