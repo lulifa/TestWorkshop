@@ -131,14 +131,20 @@ export const useAuthStore = defineStore('auth', () => {
     if (user) {
       userInfoRes = user.profile;
     }
+
+    const abpConfig = await getConfigApi();
+
     // 后端返回当前用户头像，前端只兜底静态图。
-    const [abpConfig, avatarBlob] = await Promise.all([
-      getConfigApi(),
-      getCurrentUserAvatarApi().catch(() => undefined),
-    ]);
-    const avatar = avatarBlob
-      ? URL.createObjectURL(avatarBlob)
-      : preferences.app.defaultAvatar;
+    let avatar = preferences.app.defaultAvatar;
+    try {
+      const avatarBlob = await getCurrentUserAvatarApi();
+      if (avatarBlob) {
+        avatar = URL.createObjectURL(avatarBlob);
+      }
+    } catch (error) {
+      console.warn('Failed to load avatar:', error);
+    }
+
     userInfo = {
       userId: userInfoRes.sub ?? abpConfig.currentUser.id,
       username: userInfoRes.uniqueName ?? abpConfig.currentUser.userName,
