@@ -43,10 +43,9 @@ export const useAuthStore = defineStore('auth', () => {
         accessStore.setRefreshToken(user.refresh_token);
       }
       try {
-        const userInfo = await fetchUserInfo();
-        userStore.setUserInfo(userInfo);
+        await refreshUserConfig();
       } catch (error) {
-        console.warn('refresh user iinfo error', error);
+        console.warn('refresh user config error', error);
       }
       return newToken;
     }
@@ -167,6 +166,21 @@ export const useAuthStore = defineStore('auth', () => {
     return userInfo;
   }
 
+  /**
+   * 仅同步应用配置、角色与权限码，不重新请求头像。
+   */
+  async function refreshUserConfig() {
+    const abpConfig = await getConfigApi();
+    if (userStore.userInfo) {
+      userStore.setUserInfo({
+        ...userStore.userInfo,
+        roles: abpConfig.currentUser.roles,
+      });
+    }
+    abpStore.setApplication(abpConfig);
+    accessStore.setAccessCodes(Object.keys(abpConfig.auth.grantedPolicies));
+  }
+
   async function _loginSuccess(
     loginResult: TokenResult,
     onSuccess?: () => Promise<void> | void,
@@ -225,6 +239,7 @@ export const useAuthStore = defineStore('auth', () => {
     fetchUserInfo,
     loginLoading,
     logout,
+    refreshUserConfig,
     refreshSession,
   };
 });
