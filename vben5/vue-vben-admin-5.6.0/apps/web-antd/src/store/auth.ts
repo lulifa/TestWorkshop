@@ -43,9 +43,9 @@ export const useAuthStore = defineStore('auth', () => {
         accessStore.setRefreshToken(user.refresh_token);
       }
       try {
-        await refreshUserConfig();
+        await fetchUserInfo(false);
       } catch (error) {
-        console.warn('refresh user config error', error);
+        console.warn('refresh user info error', error);
       }
       return newToken;
     }
@@ -124,7 +124,7 @@ export const useAuthStore = defineStore('auth', () => {
     });
   }
 
-  async function fetchUserInfo() {
+  async function fetchUserInfo(includeAvatar = true) {
     let userInfo: null | (UserInfo & { [key: string]: any }) = null;
     let userInfoRes: { [key: string]: any } = {};
     const user = await oAuthService.getUser();
@@ -134,15 +134,17 @@ export const useAuthStore = defineStore('auth', () => {
 
     const abpConfig = await getConfigApi();
 
-    // 后端返回当前用户头像，前端只兜底静态图。
     let avatar = preferences.app.defaultAvatar;
-    try {
-      const avatarBlob = await getCurrentUserAvatarApi();
-      if (avatarBlob) {
-        avatar = URL.createObjectURL(avatarBlob);
+    if (includeAvatar) {
+      // 后端返回当前用户头像，前端只兜底静态图。
+      try {
+        const avatarBlob = await getCurrentUserAvatarApi();
+        if (avatarBlob) {
+          avatar = URL.createObjectURL(avatarBlob);
+        }
+      } catch (error) {
+        console.warn('Failed to load avatar:', error);
       }
-    } catch (error) {
-      console.warn('Failed to load avatar:', error);
     }
 
     userInfo = {
@@ -170,21 +172,6 @@ export const useAuthStore = defineStore('auth', () => {
     abpStore.setApplication(abpConfig);
     accessStore.setAccessCodes(Object.keys(abpConfig.auth.grantedPolicies));
     return userInfo;
-  }
-
-  /**
-   * 仅同步应用配置、角色与权限码，不重新请求头像。
-   */
-  async function refreshUserConfig() {
-    const abpConfig = await getConfigApi();
-    if (userStore.userInfo) {
-      userStore.setUserInfo({
-        ...userStore.userInfo,
-        roles: abpConfig.currentUser.roles,
-      });
-    }
-    abpStore.setApplication(abpConfig);
-    accessStore.setAccessCodes(Object.keys(abpConfig.auth.grantedPolicies));
   }
 
   async function _loginSuccess(
@@ -245,7 +232,6 @@ export const useAuthStore = defineStore('auth', () => {
     fetchUserInfo,
     loginLoading,
     logout,
-    refreshUserConfig,
     refreshSession,
   };
 });
