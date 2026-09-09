@@ -87,6 +87,14 @@ function setupAccessGuard(router: Router) {
 
     // 是否已经生成过动态路由
     if (accessStore.isAccessChecked) {
+      if (!userStore.userInfo) {
+        await authStore.fetchUserInfo();
+      } else if (
+        userStore.userRoles.length === 0 ||
+        accessStore.accessCodes.length === 0
+      ) {
+        await authStore.fetchUserInfo(false);
+      }
       return true;
     }
 
