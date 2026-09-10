@@ -134,15 +134,17 @@ export const useAuthStore = defineStore('auth', () => {
 
     const abpConfig = await getConfigApi();
 
-    let avatar = preferences.app.defaultAvatar;
+    let avatar =
+      userStore.userInfo?.avatar ?? preferences.app.defaultAvatar;
     if (includeAvatar) {
       // 后端返回当前用户头像，前端只兜底静态图。
       try {
         const avatarBlob = await getCurrentUserAvatarApi();
-        if (avatarBlob) {
-          avatar = URL.createObjectURL(avatarBlob);
-        }
+        avatar = avatarBlob
+          ? URL.createObjectURL(avatarBlob)
+          : preferences.app.defaultAvatar;
       } catch (error) {
+        // 获取头像失败时保留当前头像，避免被默认图覆盖。
         console.warn('Failed to load avatar:', error);
       }
     }
