@@ -134,8 +134,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     const abpConfig = await getConfigApi();
 
-    let avatar =
-      userStore.userInfo?.avatar ?? preferences.app.defaultAvatar;
+    let avatar = userStore.userInfo?.avatar ?? preferences.app.defaultAvatar;
     if (includeAvatar) {
       // 后端返回当前用户头像，前端只兜底静态图。
       try {
