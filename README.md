@@ -89,7 +89,9 @@ TestWorkshop/
 ├─ vben5/vue-vben-admin-5.6.0/
 │  ├─ apps/web-antd/              # 前端应用
 │  └─ packages/                   # Vben 前端包源码
-├─ docs/                          # 架构/部署/版本等图片文档
+├─ docs/
+│  ├─ current/                    # 基于当前代码生成的架构、数据流和部署图
+│  └─ *.jpg                       # 早期架构/部署等历史图片
 └─ README.md
 ```
 
@@ -231,12 +233,16 @@ pnpm test:unit
 - 开发配置中的连接字符串、客户端密钥、证书口令等仅用于本地环境，部署前必须替换。
 - 遥测文件默认保存在后端配置的 `Blob:Path` 下，数据库只保存文件对象元数据；迁移或扩容时需要同步处理文件存储。
 
-## 设计文档
+## 当前设计图
 
-- [架构概览](docs/01架构概览.jpg)
-- [部署方式](docs/02部署方式.jpg)
-- [版本清单](docs/03版本清单.jpg)
-- [系统要求](docs/04系统要求.jpg)
+以下图片基于当前 `master` 代码生成，生成日期为 2026-09-11：
+
+- [系统架构](docs/current/01-architecture.png)
+- [遥测数据流](docs/current/02-telemetry-flow.png)
+- [部署拓扑](docs/current/03-deployment.png)
+- [版本与运行要求](docs/current/04-versions-and-requirements.png)
+
+图片源文件和本地渲染脚本分别位于 `docs/current-project.html` 与 `docs/render-diagrams.mjs`。历史图片保留在 `docs` 根目录，不再作为当前实现依据。
 
 ## 许可证
 

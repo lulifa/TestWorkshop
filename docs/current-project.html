@@ -1,0 +1,923 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TestWorkshop 当前项目图</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: #e8edf3;
+        color: #0f172a;
+        font-family:
+          "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif;
+      }
+
+      .diagram {
+        position: relative;
+        width: 1600px;
+        height: 1000px;
+        padding: 48px 56px 42px;
+        overflow: hidden;
+        background: #f8fafc;
+      }
+
+      .diagram + .diagram {
+        margin-top: 24px;
+      }
+
+      .topline {
+        position: absolute;
+        top: 0;
+        right: 0;
+        left: 0;
+        height: 8px;
+        background: #2563eb;
+      }
+
+      .header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        padding-bottom: 18px;
+        border-bottom: 1px solid #cbd5e1;
+      }
+
+      .kicker {
+        margin: 0 0 8px;
+        color: #2563eb;
+        font-size: 16px;
+        font-weight: 700;
+        letter-spacing: 0;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 34px;
+        line-height: 1.2;
+      }
+
+      .subtitle {
+        margin: 8px 0 0;
+        color: #475569;
+        font-size: 17px;
+      }
+
+      .version {
+        padding: 9px 14px;
+        border: 1px solid #bfdbfe;
+        border-radius: 6px;
+        background: #eff6ff;
+        color: #1d4ed8;
+        font-size: 15px;
+        font-weight: 700;
+      }
+
+      .panel {
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        background: #fff;
+        box-shadow: 0 8px 20px rgb(15 23 42 / 5%);
+      }
+
+      .panel-title {
+        margin: 0;
+        padding: 13px 16px;
+        border-bottom: 1px solid #e2e8f0;
+        color: #334155;
+        font-size: 16px;
+        font-weight: 800;
+      }
+
+      .panel-body {
+        padding: 16px;
+      }
+
+      .node {
+        padding: 14px 16px;
+        border: 1px solid #cbd5e1;
+        border-left: 5px solid #2563eb;
+        border-radius: 7px;
+        background: #fff;
+      }
+
+      .node.green {
+        border-left-color: #0f766e;
+      }
+
+      .node.amber {
+        border-left-color: #b45309;
+      }
+
+      .node.red {
+        border-left-color: #b91c1c;
+      }
+
+      .node h4 {
+        margin: 0;
+        font-size: 17px;
+      }
+
+      .node p {
+        margin: 7px 0 0;
+        color: #475569;
+        font-size: 14px;
+        line-height: 1.55;
+      }
+
+      .stack {
+        display: grid;
+        gap: 12px;
+      }
+
+      .arrow-column {
+        display: grid;
+        place-items: center;
+        color: #64748b;
+        font-size: 14px;
+        text-align: center;
+      }
+
+      .arrow-column .line {
+        width: 54px;
+        height: 2px;
+        margin: 8px 0;
+        background: #94a3b8;
+      }
+
+      .arrow-column .line::after {
+        display: block;
+        width: 9px;
+        height: 9px;
+        margin-top: -5px;
+        margin-left: 49px;
+        border-top: 2px solid #94a3b8;
+        border-right: 2px solid #94a3b8;
+        content: "";
+        transform: rotate(45deg);
+      }
+
+      .arch-grid {
+        display: grid;
+        grid-template-columns: 320px 70px 720px 70px 300px;
+        gap: 0;
+        align-items: center;
+        height: 760px;
+        margin-top: 28px;
+      }
+
+      .arch-grid .panel {
+        height: 650px;
+      }
+
+      .arch-grid .panel-body {
+        height: calc(100% - 51px);
+      }
+
+      .client-stack {
+        display: grid;
+        gap: 16px;
+      }
+
+      .module-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-top: 14px;
+      }
+
+      .module {
+        min-height: 164px;
+        padding: 14px;
+        border: 1px solid #dbe3ee;
+        border-top: 5px solid #2563eb;
+        border-radius: 7px;
+        background: #f8fafc;
+      }
+
+      .module:nth-child(2) {
+        border-top-color: #0f766e;
+      }
+
+      .module:nth-child(3) {
+        border-top-color: #b45309;
+      }
+
+      .module strong {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 16px;
+      }
+
+      .module span {
+        display: block;
+        color: #475569;
+        font-size: 13px;
+        line-height: 1.65;
+      }
+
+      .layer-bar {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .layer {
+        padding: 12px 8px;
+        border-radius: 6px;
+        background: #eaf1ff;
+        color: #1e40af;
+        font-size: 13px;
+        font-weight: 700;
+        text-align: center;
+      }
+
+      .framework-bar {
+        margin-top: 14px;
+        padding: 13px 16px;
+        border-radius: 7px;
+        background: #0f172a;
+        color: #f8fafc;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .storage-stack {
+        display: grid;
+        gap: 12px;
+      }
+
+      .data-node {
+        padding: 14px;
+        border: 1px solid #dbe3ee;
+        border-radius: 7px;
+        background: #f8fafc;
+      }
+
+      .data-node strong {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 15px;
+      }
+
+      .data-node span {
+        color: #475569;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .flow {
+        display: flex;
+        align-items: stretch;
+        gap: 0;
+        margin-top: 42px;
+      }
+
+      .flow-step {
+        position: relative;
+        width: 225px;
+        min-height: 310px;
+        padding: 18px 17px;
+        border: 1px solid #cbd5e1;
+        border-top: 6px solid #2563eb;
+        border-radius: 8px;
+        background: #fff;
+        box-shadow: 0 8px 20px rgb(15 23 42 / 5%);
+      }
+
+      .flow-step:nth-child(3) {
+        border-top-color: #0f766e;
+      }
+
+      .flow-step:nth-child(5) {
+        border-top-color: #b45309;
+      }
+
+      .flow-step:nth-child(7) {
+        border-top-color: #7c3aed;
+      }
+
+      .flow-step:nth-child(9) {
+        border-top-color: #0e7490;
+      }
+
+      .flow-step:nth-child(11) {
+        border-top-color: #b91c1c;
+      }
+
+      .flow-arrow {
+        display: grid;
+        width: 26px;
+        place-items: center;
+        color: #64748b;
+        font-size: 25px;
+        font-weight: 700;
+      }
+
+      .step-no {
+        display: inline-grid;
+        width: 30px;
+        height: 30px;
+        margin-bottom: 14px;
+        place-items: center;
+        border-radius: 50%;
+        background: #0f172a;
+        color: #fff;
+        font-size: 14px;
+        font-weight: 800;
+      }
+
+      .flow-step h3 {
+        margin: 0 0 10px;
+        font-size: 17px;
+        line-height: 1.35;
+      }
+
+      .flow-step p {
+        margin: 0;
+        color: #475569;
+        font-size: 13px;
+        line-height: 1.65;
+      }
+
+      .flow-step code {
+        display: block;
+        margin-top: 11px;
+        padding: 9px 10px;
+        border-radius: 6px;
+        background: #f1f5f9;
+        color: #334155;
+        font-family: Consolas, "Courier New", monospace;
+        font-size: 12px;
+        line-height: 1.5;
+        word-break: break-all;
+      }
+
+      .reliability {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+        margin-top: 30px;
+      }
+
+      .reliability .node {
+        min-height: 120px;
+      }
+
+      .deploy-grid {
+        display: grid;
+        grid-template-columns: 270px 54px 390px 54px 470px 54px 188px;
+        align-items: center;
+        height: 720px;
+        margin-top: 34px;
+      }
+
+      .deploy-grid .panel {
+        min-height: 620px;
+      }
+
+      .deploy-grid .panel-body {
+        min-height: 568px;
+      }
+
+      .deploy-arrow {
+        color: #64748b;
+        font-size: 28px;
+        text-align: center;
+      }
+
+      .deploy-stack {
+        display: grid;
+        gap: 14px;
+      }
+
+      .deploy-node {
+        padding: 14px;
+        border: 1px solid #dbe3ee;
+        border-radius: 7px;
+        background: #f8fafc;
+      }
+
+      .deploy-node strong {
+        display: block;
+        margin-bottom: 7px;
+        font-size: 15px;
+      }
+
+      .deploy-node span,
+      .deploy-node li {
+        color: #475569;
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
+      .deploy-node ul {
+        margin: 0;
+        padding-left: 18px;
+      }
+
+      .deploy-badge {
+        display: inline-block;
+        margin-top: 8px;
+        padding: 4px 8px;
+        border-radius: 5px;
+        background: #eaf1ff;
+        color: #1d4ed8;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .version-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 18px;
+        margin-top: 28px;
+      }
+
+      .version-card {
+        min-height: 310px;
+        padding: 22px;
+        border: 1px solid #cbd5e1;
+        border-top: 7px solid #2563eb;
+        border-radius: 8px;
+        background: #fff;
+        box-shadow: 0 8px 20px rgb(15 23 42 / 5%);
+      }
+
+      .version-card:nth-child(2) {
+        border-top-color: #0f766e;
+      }
+
+      .version-card:nth-child(3) {
+        border-top-color: #b45309;
+      }
+
+      .version-card:nth-child(4) {
+        border-top-color: #7c3aed;
+      }
+
+      .version-card h2 {
+        margin: 0 0 18px;
+        font-size: 21px;
+      }
+
+      .version-list {
+        display: grid;
+        grid-template-columns: 150px 1fr;
+        gap: 10px 16px;
+        font-size: 15px;
+      }
+
+      .version-list dt {
+        color: #64748b;
+        font-weight: 700;
+      }
+
+      .version-list dd {
+        margin: 0;
+        color: #1e293b;
+      }
+
+      .footer-note {
+        position: absolute;
+        right: 56px;
+        bottom: 22px;
+        color: #64748b;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <section id="architecture" class="diagram">
+      <div class="topline"></div>
+      <header class="header">
+        <div>
+          <p class="kicker">CURRENT PROJECT · SYSTEM ARCHITECTURE</p>
+          <h1>TestWorkshop 系统架构</h1>
+          <p class="subtitle">
+            ABP 模块化单体后端 + Vue Vben Admin 5.6.0 单应用前端
+          </p>
+        </div>
+        <div class="version">基于当前 master 代码生成</div>
+      </header>
+
+      <div class="arch-grid">
+        <section class="panel">
+          <h2 class="panel-title">客户端与前端</h2>
+          <div class="panel-body client-stack">
+            <div class="node">
+              <h4>现代浏览器</h4>
+              <p>Chrome / Edge / Firefox / Safari</p>
+            </div>
+            <div class="node green">
+              <h4>Vue 3 + Vite SPA</h4>
+              <p>
+                apps/web-antd<br />
+                Ant Design Vue + Vxe Table<br />
+                Pinia + Vue Router + Tailwind CSS
+              </p>
+            </div>
+            <div class="node amber">
+              <h4>@abp/core</h4>
+              <p>OIDC 客户端、请求封装、ABP API、本地化、SignalR</p>
+            </div>
+          </div>
+        </section>
+
+        <div class="arrow-column">
+          <span>OIDC</span>
+          <div class="line"></div>
+          <span>HTTP / WS</span>
+        </div>
+
+        <section class="panel">
+          <h2 class="panel-title">TestWorkshop.HttpApi.Host</h2>
+          <div class="panel-body">
+            <div class="node">
+              <h4>宿主与认证边界</h4>
+              <p>
+                OpenIddict OAuth2 / OIDC · Identity · Dynamic Claims · CSRF ·
+                CORS · Swagger · Health Checks
+              </p>
+            </div>
+            <div class="module-grid">
+              <div class="module">
+                <strong>平台管理</strong>
+                <span>
+                  菜单 / 布局<br />
+                  数据字典 / 文件<br />
+                  消息 / 通告
+                </span>
+              </div>
+              <div class="module">
+                <strong>系统管理</strong>
+                <span>
+                  用户 / 角色 / 组织机构<br />
+                  租户 / 权限<br />
+                  审计 / 安全日志
+                </span>
+              </div>
+              <div class="module">
+                <strong>车间业务</strong>
+                <span>
+                  设备管理<br />
+                  遥测任务<br />
+                  TimescaleDB 数据
+                </span>
+              </div>
+            </div>
+            <div class="layer-bar">
+              <div class="layer">HttpApi</div>
+              <div class="layer">Application</div>
+              <div class="layer">Domain</div>
+              <div class="layer">EF Core</div>
+            </div>
+            <div class="framework-bar">
+              自定义框架：Wrapper / OrganizationUnits Authorization / SignalR
+              Notification Hub
+            </div>
+          </div>
+        </section>
+
+        <div class="arrow-column">
+          <span>EF Core</span>
+          <div class="line"></div>
+          <span>Cache / Blob</span>
+        </div>
+
+        <section class="panel">
+          <h2 class="panel-title">基础设施</h2>
+          <div class="panel-body storage-stack">
+            <div class="data-node">
+              <strong>PostgreSQL</strong>
+              <span>ABP / Identity / OpenIddict / 业务数据</span>
+            </div>
+            <div class="data-node">
+              <strong>TimescaleDB</strong>
+              <span>WorkshopDeviceTelemetries 超级表与时间索引</span>
+            </div>
+            <div class="data-node">
+              <strong>Redis</strong>
+              <span>分布式缓存 / 分布式锁 / Data Protection，可选</span>
+            </div>
+            <div class="data-node">
+              <strong>文件系统</strong>
+              <span>Blob:Path 保存遥测 CSV 与业务附件</span>
+            </div>
+            <div class="data-node">
+              <strong>Serilog 日志</strong>
+              <span>滚动文件日志 + 审计/安全日志清理</span>
+            </div>
+          </div>
+        </section>
+      </div>
+      <div class="footer-note">
+        Source of truth: aspnet-core + vben5/web-antd
+      </div>
+    </section>
+
+    <section id="telemetry" class="diagram">
+      <div class="topline"></div>
+      <header class="header">
+        <div>
+          <p class="kicker">CURRENT PROJECT · TELEMETRY PIPELINE</p>
+          <h1>车间遥测数据流</h1>
+          <p class="subtitle">
+            CSV 上传、异步任务处理、TimescaleDB 落库与前端任务管理
+          </p>
+        </div>
+        <div class="version">Worker 周期 5 秒 · 单文件上限 1,000,000 行</div>
+      </header>
+
+      <div class="flow">
+        <article class="flow-step">
+          <span class="step-no">1</span>
+          <h3>下位机上传</h3>
+          <p>仅接受 .csv 文件，创建文件对象并生成遥测任务。</p>
+          <code>POST /api/workshop/telemetry/upload</code>
+        </article>
+        <div class="flow-arrow">›</div>
+        <article class="flow-step">
+          <span class="step-no">2</span>
+          <h3>文件与任务持久化</h3>
+          <p>文件写入 Blob:Path，任务状态初始化为 Pending。</p>
+          <code>FileObject + WorkshopTelemetryTask</code>
+        </article>
+        <div class="flow-arrow">›</div>
+        <article class="flow-step">
+          <span class="step-no">3</span>
+          <h3>Worker 认领</h3>
+          <p>每 5 秒扫描待处理任务，每批最多认领 5 个。</p>
+          <code>Pending → Processing</code>
+        </article>
+        <div class="flow-arrow">›</div>
+        <article class="flow-step">
+          <span class="step-no">4</span>
+          <h3>CSV 校验与批量导入</h3>
+          <p>校验设备编码、指标、数值和时间，无效行跳过。</p>
+          <code
+            >DeviceCode, MetricType, Value, Timestamp, TestedDeviceCode,
+            TestedDeviceName</code
+          >
+        </article>
+        <div class="flow-arrow">›</div>
+        <article class="flow-step">
+          <span class="step-no">5</span>
+          <h3>TimescaleDB 落库</h3>
+          <p>通过 PostgreSQL COPY 写入临时表，再执行冲突更新。</p>
+          <code
+            >AppWorkshopDeviceTelemetries · DeviceId + Timestamp +
+            MetricType</code
+          >
+        </article>
+        <div class="flow-arrow">›</div>
+        <article class="flow-step">
+          <span class="step-no">6</span>
+          <h3>任务结果与界面</h3>
+          <p>记录成功/失败、记录数、错误信息；支持重试和预览。</p>
+          <code>GET /api/workshop/telemetry/statistics · retry · delete</code>
+        </article>
+      </div>
+
+      <div class="reliability">
+        <div class="node amber">
+          <h4>卡死恢复</h4>
+          <p>Processing 超过 10 分钟的任务会恢复为 Pending，并增加重试次数。</p>
+        </div>
+        <div class="node green">
+          <h4>失败退避</h4>
+          <p>
+            失败后按 2^RetryCount 分钟延迟，最长 60
+            分钟；仅失败任务允许手动重试。
+          </p>
+        </div>
+        <div class="node red">
+          <h4>过期清理</h4>
+          <p>
+            每小时清理过期任务、文件对象和物理文件；审计/安全日志保留 365 天。
+          </p>
+        </div>
+      </div>
+      <div class="footer-note">
+        指标类型：Pressure / Temp / Flow / Vibration
+      </div>
+    </section>
+
+    <section id="deployment" class="diagram">
+      <div class="topline"></div>
+      <header class="header">
+        <div>
+          <p class="kicker">CURRENT PROJECT · DEPLOYMENT TOPOLOGY</p>
+          <h1>推荐部署拓扑</h1>
+          <p class="subtitle">
+            当前代码已经具备独立部署前端、API Host、DbMigrator 和数据服务的基础
+          </p>
+        </div>
+        <div class="version">HTTPS · OIDC · WebSocket</div>
+      </header>
+
+      <div class="deploy-grid">
+        <section class="panel">
+          <h2 class="panel-title">访问端</h2>
+          <div class="panel-body deploy-stack">
+            <div class="deploy-node">
+              <strong>管理员 / 业务用户</strong>
+              <span>浏览器访问 TestWorkshop 管理后台</span>
+            </div>
+            <div class="deploy-node">
+              <strong>车间下位机</strong>
+              <span>通过 HTTP 上传 CSV 遥测文件</span>
+            </div>
+            <div class="deploy-node">
+              <strong>监控与运维</strong>
+              <span>调用健康检查并查看结构化日志</span>
+            </div>
+          </div>
+        </section>
+
+        <div class="deploy-arrow">→</div>
+
+        <section class="panel">
+          <h2 class="panel-title">入口与静态资源</h2>
+          <div class="panel-body deploy-stack">
+            <div class="deploy-node">
+              <strong>Nginx / Ingress / 网关</strong>
+              <span>统一 HTTPS、静态文件、反向代理和 WebSocket 转发。</span>
+            </div>
+            <div class="deploy-node">
+              <strong>Web Antd 静态包</strong>
+              <span>
+                Vite 构建产物部署到 Nginx 静态目录；SPA 路由回退到 index.html。
+              </span>
+              <span class="deploy-badge">/ → SPA</span>
+            </div>
+            <div class="deploy-node">
+              <strong>反向代理路径</strong>
+              <span>
+                /api、/connect、/.well-known 转发 API；/signalr 同时开启
+                WebSocket Upgrade。
+              </span>
+              <span class="deploy-badge">/api · /connect · /signalr</span>
+            </div>
+          </div>
+        </section>
+
+        <div class="deploy-arrow">→</div>
+
+        <section class="panel">
+          <h2 class="panel-title">应用服务</h2>
+          <div class="panel-body deploy-stack">
+            <div class="deploy-node">
+              <strong>TestWorkshop.DbMigrator（一次性任务）</strong>
+              <span>
+                发布后先执行：创建/升级 PostgreSQL 结构、TimescaleDB
+                超级表、种子数据、OpenIddict 客户端。
+              </span>
+              <span class="deploy-badge">必须在 API Host 前执行</span>
+            </div>
+            <div class="deploy-node">
+              <strong>TestWorkshop.HttpApi.Host</strong>
+              <ul>
+                <li>ASP.NET Core / .NET 9 单体宿主</li>
+                <li>OIDC 认证、ABP API、Swagger、Health</li>
+                <li>SignalR Notification Hub</li>
+                <li>遥测 Worker、清理 Worker</li>
+              </ul>
+              <span class="deploy-badge">有状态文件与后台任务所在服务</span>
+            </div>
+            <div class="deploy-node">
+              <strong>关键挂载与配置</strong>
+              <span>
+                openiddict.pfx、Blob:Path 持久卷、日志目录、数据库和 Redis
+                连接。
+              </span>
+            </div>
+          </div>
+        </section>
+
+        <div class="deploy-arrow">→</div>
+
+        <section class="panel">
+          <h2 class="panel-title">数据服务</h2>
+          <div class="panel-body deploy-stack">
+            <div class="deploy-node">
+              <strong>PostgreSQL</strong>
+              <span>主业务数据库</span>
+            </div>
+            <div class="deploy-node">
+              <strong>TimescaleDB 扩展</strong>
+              <span>设备遥测超级表</span>
+            </div>
+            <div class="deploy-node">
+              <strong>Redis</strong>
+              <span>缓存 / 锁 / 密钥持久化</span>
+            </div>
+            <div class="deploy-node">
+              <strong>持久卷</strong>
+              <span>遥测 CSV、附件、日志</span>
+            </div>
+          </div>
+        </section>
+      </div>
+      <div class="footer-note">
+        当前仓库未提供完整 Compose/Kubernetes 编排文件，本图是部署关系建议
+      </div>
+    </section>
+
+    <section id="versions" class="diagram">
+      <div class="topline"></div>
+      <header class="header">
+        <div>
+          <p class="kicker">CURRENT PROJECT · VERSIONS &amp; REQUIREMENTS</p>
+          <h1>版本与运行要求</h1>
+          <p class="subtitle">
+            从当前 csproj、package.json、catalog 和运行配置读取
+          </p>
+        </div>
+        <div class="version">核对日期：2026-09-11</div>
+      </header>
+
+      <div class="version-grid">
+        <section class="version-card">
+          <h2>后端平台</h2>
+          <dl class="version-list">
+            <dt>.NET</dt>
+            <dd>9.0（全部项目统一 net9.0）</dd>
+            <dt>ABP Framework</dt>
+            <dd>9.3.5</dd>
+            <dt>EF Core / Microsoft</dt>
+            <dd>9.0.10</dd>
+            <dt>Npgsql</dt>
+            <dd>9.0.2</dd>
+            <dt>认证</dt>
+            <dd>OpenIddict（随 ABP 9.3.5）</dd>
+            <dt>实时通知</dt>
+            <dd>ABP SignalR + Notification Hub</dd>
+          </dl>
+        </section>
+
+        <section class="version-card">
+          <h2>前端平台</h2>
+          <dl class="version-list">
+            <dt>Vben Admin</dt>
+            <dd>5.6.0，仅保留 apps/web-antd</dd>
+            <dt>Vue</dt>
+            <dd>3.5.27</dd>
+            <dt>Vite</dt>
+            <dd>7.3.1</dd>
+            <dt>TypeScript</dt>
+            <dd>5.9.3</dd>
+            <dt>Ant Design Vue</dt>
+            <dd>4.2.6</dd>
+            <dt>表格 / 状态</dt>
+            <dd>Vxe Table 4.17.46 + Pinia 3.0.4</dd>
+          </dl>
+        </section>
+
+        <section class="version-card">
+          <h2>运行环境</h2>
+          <dl class="version-list">
+            <dt>Node.js</dt>
+            <dd>要求 20.19+，仓库推荐 22.22.0</dd>
+            <dt>pnpm</dt>
+            <dd>10.28.2</dd>
+            <dt>浏览器</dt>
+            <dd>现代浏览器，推荐 Chrome</dd>
+            <dt>后端端口</dt>
+            <dd>开发环境 44349</dd>
+            <dt>前端端口</dt>
+            <dd>开发环境 4200</dd>
+            <dt>路由模式</dt>
+            <dd>生产配置为 Hash 模式</dd>
+          </dl>
+        </section>
+
+        <section class="version-card">
+          <h2>数据与存储</h2>
+          <dl class="version-list">
+            <dt>主数据库</dt>
+            <dd>PostgreSQL</dd>
+            <dt>时序能力</dt>
+            <dd>TimescaleDB 扩展与 HyperTable</dd>
+            <dt>缓存</dt>
+            <dd>Redis，可在配置中关闭</dd>
+            <dt>文件存储</dt>
+            <dd>ABP BlobStoring FileSystem</dd>
+            <dt>日志</dt>
+            <dd>Serilog 滚动文件日志</dd>
+            <dt>数据库迁移</dt>
+            <dd>EF Core Migrations + DbMigrator</dd>
+          </dl>
+        </section>
+      </div>
+      <div class="footer-note">
+        版本以仓库当前锁定配置为准，不以外部模板或历史图片为准
+      </div>
+    </section>
+  </body>
+</html>
