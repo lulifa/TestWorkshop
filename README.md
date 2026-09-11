@@ -11,11 +11,11 @@
 
 ## 技术栈
 
-| 端 | 主要技术 |
-| --- | --- |
+| 端   | 主要技术                                                                                         |
+| ---- | ------------------------------------------------------------------------------------------------ |
 | 后端 | .NET 9、ABP 9.3.5、EF Core、PostgreSQL、TimescaleDB、Redis、OpenIddict、SignalR、ABP BlobStoring |
-| 前端 | Vue 3、Vite、TypeScript、Ant Design Vue、Vxe Table、Pinia、Tailwind CSS |
-| 其他 | Swagger API 文档、ABP 权限体系、多租户能力、健康检查 |
+| 前端 | Vue 3、Vite、TypeScript、Ant Design Vue、Vxe Table、Pinia、Tailwind CSS                          |
+| 其他 | Swagger API 文档、ABP 权限体系、多租户能力、健康检查                                             |
 
 ## 已实现功能
 
@@ -63,9 +63,12 @@
 
 ### 车间设备与遥测
 
-- 已建立 `WorkshopDevice` 设备实体，支持设备编码、类型、关联组织机构
-- 已建立 `WorkshopTelemetryTask` 遥测任务状态机：待处理、处理中、成功、失败、重试、过期
-- 车间设备管理页面当前为组件演示占位，业务 CRUD 和遥测任务接口待接入
+- 车间设备管理：分页查询、筛选、新增、编辑、删除，维护设备编码、名称、类型和所属组织机构
+- 遥测任务管理：CSV 上传、模拟数据上传、任务列表和统计、失败重试、删除、文件预览与下载
+- 后台处理链路：上传文件后创建遥测任务，后台 Worker 定时认领任务，解析 CSV 并批量写入 TimescaleDB
+- 数据存储：设备遥测写入 `WorkshopDeviceTelemetries` 超级表，按设备、时间和指标建立主键/索引
+- 可靠性处理：任务处理中卡死自动恢复，失败任务指数退避重试，过期任务和物理文件定时清理
+- 日志清理：审计日志和安全日志默认保留 365 天
 
 ## 目录结构
 
@@ -81,6 +84,7 @@ TestWorkshop/
 │     ├─ TestWorkshop.HttpApi/                # API 层
 │     ├─ TestWorkshop.HttpApi.Host/           # 宿主项目
 │     ├─ TestWorkshop.EntityFrameworkCore/    # EF Core 数据层
+│     │  └─ TimeScale/Workshop/               # 遥测数据、仓储和后台 Worker
 │     └─ TestWorkshop.DbMigrator/             # 数据库迁移与种子数据
 ├─ vben5/vue-vben-admin-5.6.0/
 │  ├─ apps/web-antd/              # 前端应用
@@ -92,8 +96,8 @@ TestWorkshop/
 ## 环境要求
 
 - .NET 9 SDK
-- Node.js 20+
-- pnpm 10+
+- Node.js 20.19+，当前仓库推荐 Node.js 22.22.0
+- pnpm 10.28.2
 - PostgreSQL，并启用 TimescaleDB 扩展
 - Redis
 - 现代浏览器，推荐 Chrome
@@ -102,7 +106,7 @@ TestWorkshop/
 
 ### 1. 初始化数据库
 
-先修改连接字符串：
+先确保 PostgreSQL 已安装 TimescaleDB 扩展，并允许当前数据库用户创建扩展。然后修改下面两个项目中的连接字符串：
 
 ```json
 {
@@ -117,18 +121,20 @@ TestWorkshop/
 - `aspnet-core/services/TestWorkshop.HttpApi.Host/appsettings.json`
 - `aspnet-core/services/TestWorkshop.DbMigrator/appsettings.json`
 
+开发环境默认连接本机 `PostgreSQL:5432`，数据库名为 `TestWorkshop`。
+
 执行数据库迁移和种子数据：
 
 ```bash
-cd aspnet-core/services/TestWorkshop.DbMigrator
-dotnet run
+dotnet run --project aspnet-core/services/TestWorkshop.DbMigrator
 ```
+
+迁移程序会创建业务表、ABP/Identity/OpenIddict 表，并写入默认管理员、角色、菜单等种子数据。
 
 ### 2. 启动后端
 
 ```bash
-cd aspnet-core/services/TestWorkshop.HttpApi.Host
-dotnet run
+dotnet run --project aspnet-core/services/TestWorkshop.HttpApi.Host
 ```
 
 启动后可访问：
@@ -155,6 +161,8 @@ pnpm dev:antd
 
 内置角色：`admin`、`supervisor`、`tester`、`auditor`、`guest`。
 
+首次启动时，`TestWorkshop.DbMigrator` 会根据 `appsettings.json` 创建 OpenIddict 客户端。如果修改了客户端 ID、回调地址或端口，需要重新执行迁移程序。
+
 ## 主要配置
 
 ### 后端
@@ -164,9 +172,10 @@ pnpm dev:antd
 - `ConnectionStrings:Default`：PostgreSQL 连接字符串
 - `Redis:IsEnabled`：是否启用 Redis，未安装时可设为 `false`
 - `Redis:Configuration`：Redis 连接配置
-- `Blob:Path`：文件物理存储目录，例如 `/data/telemetry`
+- `Blob:Path`：文件物理存储目录，例如 Linux 下的 `/data/telemetry`，Windows 本地可改为 `D:\\data\\telemetry`，并确保目录可写
 - `AuthServer:Authority`：认证中心地址
 - `App:CorsOrigins`：前端跨域地址
+- `App:VueUrl`：OIDC 登录完成后回跳的前端地址
 
 `aspnet-core/services/TestWorkshop.DbMigrator/appsettings.json`：
 
@@ -182,21 +191,53 @@ pnpm dev:antd
 - `VITE_GLOB_CLIENT_SECRET`：客户端密钥
 - `VITE_UAPI_API_KEY`：工作台天气接口密钥，可选
 
+生产环境还需要配置 `apps/web-antd/.env.production`，重点检查 API 地址、认证中心地址、OIDC 客户端 ID 和回调地址。不要把生产客户端密钥写入仓库。
+
+### 开发检查
+
+后端：
+
+```bash
+dotnet build aspnet-core/TestWorkshop.sln
+```
+
+前端：
+
+```bash
+cd vben5/vue-vben-admin-5.6.0
+pnpm lint
+pnpm check:type
+pnpm test:unit
+```
+
 ## 当前状态
 
-| 模块 | 状态 |
-| --- | --- |
-| 认证、权限、用户、角色、组织机构 | 已实现 |
-| 菜单、布局、数据字典、文件管理 | 已实现 |
-| 消息、通告、SignalR 实时通知 | 已实现 |
-| 工作台、天气、收藏菜单 | 已实现 |
-| 审计日志、安全日志、租户管理 | 已实现 |
-| 车间设备管理、遥测任务 | 实体和任务模型已建立，页面/接口待接入 |
-| 三方登录 | 预留，未启用 |
-| 待办事项 | 占位 |
+| 模块                             | 状态                                                     |
+| -------------------------------- | -------------------------------------------------------- |
+| 认证、权限、用户、角色、组织机构 | 已实现                                                   |
+| 菜单、布局、数据字典、文件管理   | 已实现                                                   |
+| 消息、通告、SignalR 实时通知     | 已实现                                                   |
+| 工作台、天气、收藏菜单           | 已实现                                                   |
+| 审计日志、安全日志、租户管理     | 已实现                                                   |
+| 车间设备管理、遥测任务           | 已实现，包含 CSV 上传、后台解析、重试和 TimescaleDB 写入 |
+| 三方登录                         | 预留，未启用                                             |
+| 待办事项                         | 占位                                                     |
 
 ## 其他说明
 
 - 框架层已集成 ABP 多租户能力，当前登录端未启用租户选择，业务主要按主机/全局方式使用。
 - 天气接口使用第三方 UAPI，未配置密钥时前端会降级展示默认天气。
 - 消息、通告通过 SignalR 实时推送，同时持久化到数据库，右上角下拉和工作台会同步刷新。
+- 开发配置中的连接字符串、客户端密钥、证书口令等仅用于本地环境，部署前必须替换。
+- 遥测文件默认保存在后端配置的 `Blob:Path` 下，数据库只保存文件对象元数据；迁移或扩容时需要同步处理文件存储。
+
+## 设计文档
+
+- [架构概览](docs/01架构概览.jpg)
+- [部署方式](docs/02部署方式.jpg)
+- [版本清单](docs/03版本清单.jpg)
+- [系统要求](docs/04系统要求.jpg)
+
+## 许可证
+
+[MIT](LICENSE)
