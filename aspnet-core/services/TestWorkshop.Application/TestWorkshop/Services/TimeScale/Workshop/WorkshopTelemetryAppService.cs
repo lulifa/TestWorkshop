@@ -1,4 +1,6 @@
-﻿namespace TestWorkshop;
+﻿using Microsoft.AspNetCore.Mvc;
+
+namespace TestWorkshop;
 
 /// <summary>
 /// 遥测服务应用
@@ -27,7 +29,7 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
     /// 上传遥测文件
     /// </summary>
     [AllowAnonymous]
-    public async Task<WorkshopTelemetryTaskDto> UploadAsync(IFormFile file)
+    public async Task<WorkshopTelemetryTaskDto> UploadAsync(IFormFile file, WorkshopTelemetryFileInput input)
     {
         if (file == null || file.Length == 0)
             throw new UserFriendlyException("请选择有效的文件");

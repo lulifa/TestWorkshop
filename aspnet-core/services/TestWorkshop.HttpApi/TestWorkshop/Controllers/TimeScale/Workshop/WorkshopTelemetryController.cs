@@ -17,9 +17,9 @@ public class WorkshopTelemetryController : TestWorkshopController
     /// 上传遥测文件
     /// </summary>
     [HttpPost("upload")]
-    public async Task<WorkshopTelemetryTaskDto> UploadAsync([Required] IFormFile file)
+    public async Task<WorkshopTelemetryTaskDto> UploadAsync([Required] IFormFile file, [FromForm] WorkshopTelemetryFileInput input)
     {
-        return await Service.UploadAsync(file);
+        return await Service.UploadAsync(file, input);
     }
 
     /// <summary>

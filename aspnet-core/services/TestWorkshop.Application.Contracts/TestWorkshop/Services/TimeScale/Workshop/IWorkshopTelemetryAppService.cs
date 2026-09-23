@@ -5,7 +5,7 @@ public interface IWorkshopTelemetryAppService : IApplicationService
     /// <summary>
     /// 上传遥测文件
     /// </summary>
-    Task<WorkshopTelemetryTaskDto> UploadAsync(IFormFile file);
+    Task<WorkshopTelemetryTaskDto> UploadAsync(IFormFile file, WorkshopTelemetryFileInput input);
 
     /// <summary>
     /// 获取任务详情
