@@ -30,6 +30,8 @@ public static class TestWorkshopDbContextModelCreatingExtensions
             b.Property(p => p.Name)
                 .HasMaxLength(TestWorkshopConsts.MaxLength128)
                 .IsRequired();
+            b.Property(p => p.Model)
+                .HasMaxLength(TestWorkshopConsts.MaxLength64);
 
             b.ConfigureByConvention();
 
@@ -111,28 +113,24 @@ public static class TestWorkshopDbContextModelCreatingExtensions
         {
             b.ToTable(TestWorkshopDbProperties.DbTablePrefix + "WorkshopDeviceTelemetries", TestWorkshopDbProperties.DbSchema);
 
-            b.HasKey(x => new { x.DeviceId, x.Timestamp, x.MetricType });
+            b.HasKey(x => new { x.DeviceId, x.Timestamp, x.ChannelType });
 
-            b.Property(p => p.MetricType)
-                .IsRequired();
-
-            b.Property(p => p.Timestamp)
-                .HasColumnType("timestamp with time zone")
-                .IsRequired();
-
+            b.Property(p => p.ChannelType).IsRequired();
+            b.Property(p => p.Timestamp).HasColumnType("timestamp with time zone").IsRequired();
             b.Property(p => p.DeviceId).IsRequired();
             b.Property(p => p.TaskId).IsRequired();
             b.Property(p => p.Value).IsRequired();
 
-            // 被测试产品（可空，因为不是所有采集都有产品）
-            b.Property(p => p.TestedDeviceCode).HasMaxLength(64);
-            b.Property(p => p.TestedDeviceName).HasMaxLength(128);
+            b.Property(p => p.TestedDeviceCode).HasMaxLength(TestWorkshopConsts.MaxLength64);
+            b.Property(p => p.TestedDeviceName).HasMaxLength(TestWorkshopConsts.MaxLength128);
+            b.Property(p => p.PilotSN).HasMaxLength(TestWorkshopConsts.MaxLength64);
+            b.Property(p => p.ShipName).HasMaxLength(TestWorkshopConsts.MaxLength128);
+            b.Property(p => p.TestBy).HasMaxLength(TestWorkshopConsts.MaxLength64);
 
             b.ConfigureByConvention();
 
             b.HasIndex(x => new { x.TaskId, x.Timestamp });
         });
-
     }
 
     public static void ConfigurePlatform(this ModelBuilder builder)

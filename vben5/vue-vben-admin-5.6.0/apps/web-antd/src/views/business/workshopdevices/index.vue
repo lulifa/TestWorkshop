@@ -161,6 +161,12 @@ const gridOptions: VxeGridProps<WorkshopDeviceDto> = {
       title: $t('TestWorkshop.DisplayName:Type'),
     },
     {
+      align: 'center',
+      field: 'model',
+      minWidth: 180,
+      title: $t('TestWorkshop.DisplayName:Model'),
+    },
+    {
       field: 'organizationUnitId',
       minWidth: 140,
       slots: { default: 'organizationUnit' },

@@ -81,6 +81,7 @@
     "DisplayName:Status": "状态",
     "DisplayName:CreationTime": "创建时间",
     "DisplayName:Type": "设备类型",
+    "DisplayName:Model": "设备型号",
     "DisplayName:OrganizationUnit": "所属车间",
     "DisplayName:SendTime": "发送时间",
     "DisplayName:SendCount": "发送次数",

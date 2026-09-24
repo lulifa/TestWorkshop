@@ -21,6 +21,11 @@ public class WorkshopDeviceDto : EntityDto<Guid>
     public DeviceTypeEnum Type { get; set; }
 
     /// <summary>
+    /// 测试台型号（如 NAB-II-60，系统初始化固定死，人工维护）
+    /// </summary>
+    public string Model { get; set; }
+
+    /// <summary>
     /// 设备类型名称
     /// </summary>
     public string TypeName => Type.ToString();

@@ -52,11 +52,6 @@ public class WorkshopTelemetryFileInput
 public class TestInfoInput
 {
     /// <summary>
-    /// 设备类型（如 NAB-II-60）
-    /// </summary>
-    public string DevType { get; set; }
-
-    /// <summary>
     /// 引航员序列号
     /// </summary>
     public string PilotSN { get; set; }

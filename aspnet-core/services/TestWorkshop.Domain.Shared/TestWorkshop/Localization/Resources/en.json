@@ -81,6 +81,7 @@
     "DisplayName:Status": "Status",
     "DisplayName:CreationTime": "Creation Time",
     "DisplayName:Type": "Device Type",
+    "DisplayName:Model": "Device Model",
     "DisplayName:OrganizationUnit": "Organization Unit",
     "DisplayName:SendTime": "Send Time",
     "DisplayName:SendCount": "Send Count",

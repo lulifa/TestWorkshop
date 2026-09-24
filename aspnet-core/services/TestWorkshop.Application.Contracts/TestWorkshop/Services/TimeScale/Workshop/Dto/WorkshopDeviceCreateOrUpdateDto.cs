@@ -25,6 +25,13 @@ public class WorkshopDeviceCreateOrUpdateDto
     public DeviceTypeEnum Type { get; set; }
 
     /// <summary>
+    /// 测试台型号（如 NAB-II-60，系统初始化固定死，人工维护）
+    /// </summary>
+    [Required]
+    [StringLength(64)]
+    public string Model { get; set; }
+
+    /// <summary>
     /// 所属车间组织单元
     /// </summary>
     [Required]
