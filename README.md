@@ -64,9 +64,10 @@
 ### 车间设备与遥测
 
 - 车间设备管理：分页查询、筛选、新增、编辑、删除，维护设备编码、名称、类型和所属组织机构
-- 遥测任务管理：CSV 上传、模拟数据上传、任务列表和统计、失败重试、删除、文件预览与下载
-- 后台处理链路：上传文件后创建遥测任务，后台 Worker 定时认领任务，解析 CSV 并批量写入 TimescaleDB
-- 数据存储：设备遥测写入 `WorkshopDeviceTelemetries` 超级表，按设备、时间和指标建立主键/索引
+- 遥测任务管理：CSV 上传、模拟数据上传、任务列表和统计、失败重试、单个/批量删除、文件预览与下载
+- 后台处理链路：上传文件后创建遥测任务，后台 Worker 定时认领并解析 `index,value` 文件，汇总为波形数组写入 TimescaleDB
+- 参数管理：接口参数写入 `FileObject.ExtraProperties`，任务页面可查看参数详情并复制为 JSON
+- 数据存储：设备遥测写入 `WorkshopDeviceTelemetries` 超级表，按 `DeviceId + Timestamp + ChannelType` 建立主键
 - 可靠性处理：任务处理中卡死自动恢复，失败任务指数退避重试，过期任务和物理文件定时清理
 - 日志清理：审计日志和安全日志默认保留 365 天
 
@@ -175,6 +176,8 @@ pnpm dev:antd
 - `Redis:IsEnabled`：是否启用 Redis，未安装时可设为 `false`
 - `Redis:Configuration`：Redis 连接配置
 - `Blob:Path`：文件物理存储目录，例如 Linux 下的 `/data/telemetry`，Windows 本地可改为 `D:\\data\\telemetry`，并确保目录可写
+- `WorkshopTelemetry:RetentionDays`：遥测任务、FileObject 和原始 CSV 的统一保留天数，默认 180 天
+- `WorkshopTelemetry:FileCleanupIntervalMinutes`：过期遥测文件清理频率，默认 60 分钟
 - `AuthServer:Authority`：认证中心地址
 - `App:CorsOrigins`：前端跨域地址
 - `App:VueUrl`：OIDC 登录完成后回跳的前端地址
@@ -232,6 +235,7 @@ pnpm test:unit
 - 消息、通告通过 SignalR 实时推送，同时持久化到数据库，右上角下拉和工作台会同步刷新。
 - 开发配置中的连接字符串、客户端密钥、证书口令等仅用于本地环境，部署前必须替换。
 - 遥测文件默认保存在后端配置的 `Blob:Path` 下，数据库只保存文件对象元数据；迁移或扩容时需要同步处理文件存储。
+- 遥测任务和原始 CSV 使用同一保留周期；当前默认保留 180 天。`WorkshopDeviceTelemetries` 超级表不会被任务清理自动删除，长期归档和 `drop_chunks` 需要单独执行。
 
 ## 当前设计图
 
