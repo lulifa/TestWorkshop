@@ -274,6 +274,8 @@
     "Telemetry:ReceivedParameters": "接收参数",
     "Telemetry:TaskId": "任务ID",
     "Telemetry:ExtraProperties": "接口接收参数",
+    "Telemetry:CopyJson": "复制 JSON",
+    "Telemetry:CopyJsonSuccess": "JSON 已复制",
     "Telemetry:NoExtraProperties": "没有扩展参数",
     "DeviceType:FIVA": "FIVA",
     "DeviceType:PUMP": "水泵",

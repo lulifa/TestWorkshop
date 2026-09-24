@@ -1,13 +1,14 @@
 <script lang="ts" setup>
 import type { WorkshopTelemetryTaskDto } from '@abp/core';
 
-import { computed, ref } from 'vue';
+import { computed, h, ref } from 'vue';
 
 import { useVbenDrawer } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 
 import { formatToDateTime, WorkshopTelemetryStatus } from '@abp/core';
-import { Tag } from 'ant-design-vue';
+import { CopyOutlined } from '@ant-design/icons-vue';
+import { Button, message, Tag } from 'ant-design-vue';
 
 const row = ref<WorkshopTelemetryTaskDto>();
 
@@ -43,6 +44,10 @@ const extraPropertyEntries = computed(() =>
   ),
 );
 
+const extraPropertiesJson = computed(() =>
+  JSON.stringify(buildExtraPropertiesObject(), null, 2),
+);
+
 const propertyLabelMap: Record<string, string> = {
   'TelemetryInput.ChannelType': $t('TestWorkshop.Telemetry:ChannelType'),
   'TelemetryInput.CurrentFile': $t('TestWorkshop.Telemetry:FileName'),
@@ -70,6 +75,35 @@ const propertyLabelMap: Record<string, string> = {
 
 function getPropertyLabel(key: string) {
   return propertyLabelMap[key] ?? key;
+}
+
+function buildExtraPropertiesObject() {
+  const result: Record<string, any> = {};
+
+  extraPropertyEntries.value.forEach(([key, value]) => {
+    const path = key.startsWith('TelemetryInput.')
+      ? key.slice('TelemetryInput.'.length)
+      : key;
+    const segments = path.split('.');
+    let current = result;
+
+    segments.forEach((segment, index) => {
+      if (index === segments.length - 1) {
+        current[segment] = value;
+        return;
+      }
+
+      current[segment] ??= {};
+      current = current[segment];
+    });
+  });
+
+  return result;
+}
+
+async function copyExtraPropertiesJson() {
+  await navigator.clipboard.writeText(extraPropertiesJson.value);
+  message.success($t('TestWorkshop.Telemetry:CopyJsonSuccess'));
 }
 
 function formatPropertyValue(value: unknown) {
@@ -174,9 +208,19 @@ function formatFileSize(size?: number) {
           <span class="text-sm font-medium">
             {{ $t('TestWorkshop.Telemetry:ExtraProperties') }}
           </span>
-          <span class="text-xs text-gray-400">
-            {{ extraPropertyEntries.length }}
-          </span>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-gray-400">
+              {{ extraPropertyEntries.length }}
+            </span>
+            <Button
+              :disabled="extraPropertyEntries.length === 0"
+              :icon="h(CopyOutlined)"
+              size="small"
+              @click="copyExtraPropertiesJson"
+            >
+              {{ $t('TestWorkshop.Telemetry:CopyJson') }}
+            </Button>
+          </div>
         </div>
 
         <div

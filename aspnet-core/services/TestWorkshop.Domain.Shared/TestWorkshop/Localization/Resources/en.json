@@ -274,6 +274,8 @@
     "Telemetry:ReceivedParameters": "Received Parameters",
     "Telemetry:TaskId": "Task ID",
     "Telemetry:ExtraProperties": "API Parameters",
+    "Telemetry:CopyJson": "Copy JSON",
+    "Telemetry:CopyJsonSuccess": "JSON copied",
     "Telemetry:NoExtraProperties": "No extra properties",
     "DeviceType:FIVA": "FIVA",
     "DeviceType:PUMP": "Pump",
