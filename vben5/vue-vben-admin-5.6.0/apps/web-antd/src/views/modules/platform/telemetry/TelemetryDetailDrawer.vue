@@ -13,7 +13,7 @@ import { Button, message, Tag } from 'ant-design-vue';
 const row = ref<WorkshopTelemetryTaskDto>();
 
 const [Drawer, drawerApi] = useVbenDrawer({
-  class: 'w-[720px]',
+  class: 'w-[900px] max-w-[96vw]',
   contentClass: 'p-0',
   onOpenChange: (isOpen: boolean) => {
     if (isOpen) {
@@ -118,6 +118,10 @@ function formatPropertyValue(value: unknown) {
     return JSON.stringify(value, null, 2);
   }
   return String(value);
+}
+
+function isComplexPropertyValue(value: unknown) {
+  return value !== null && typeof value === 'object';
 }
 
 function formatFileSize(size?: number) {
@@ -229,22 +233,38 @@ function formatFileSize(size?: number) {
 
         <div
           v-if="extraPropertyEntries.length > 0"
-          class="divide-y rounded-md border border-border"
+          class="grid grid-cols-1 gap-3 sm:grid-cols-2"
         >
           <div
             v-for="[key, value] in extraPropertyEntries"
             :key="key"
-            class="grid grid-cols-[220px_minmax(0,1fr)] gap-4 px-4 py-3"
+            class="min-w-0 rounded-md border border-border px-4 py-3"
           >
-            <div class="break-all text-xs text-gray-500">
+            <div
+              class="truncate text-xs font-medium text-gray-600"
+              :title="getPropertyLabel(key)"
+            >
               {{ getPropertyLabel(key) }}
-              <div class="mt-0.5 font-mono text-[11px] text-gray-400">
-                {{ key }}
-              </div>
             </div>
-            <pre class="m-0 whitespace-pre-wrap break-all text-sm leading-5">{{
-              formatPropertyValue(value)
-            }}</pre>
+            <div
+              class="mt-1 truncate font-mono text-[11px] text-gray-400"
+              :title="key"
+            >
+              {{ key }}
+            </div>
+            <pre
+              v-if="isComplexPropertyValue(value)"
+              class="mb-0 mt-2 whitespace-pre-wrap break-words text-sm leading-5"
+            >
+              {{ formatPropertyValue(value) }}
+            </pre>
+            <div
+              v-else
+              class="mt-2 truncate text-sm"
+              :title="formatPropertyValue(value)"
+            >
+              {{ formatPropertyValue(value) }}
+            </div>
           </div>
         </div>
         <div
