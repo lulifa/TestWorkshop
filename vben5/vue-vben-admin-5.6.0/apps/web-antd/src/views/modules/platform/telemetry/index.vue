@@ -178,7 +178,7 @@ const gridOptions: VxeGridProps<WorkshopTelemetryTaskDto> = {
     {
       align: 'left',
       field: 'fileName',
-      minWidth: 360,
+      minWidth: 320,
       slots: { default: 'fileName' },
       title: $t('TestWorkshop.Telemetry:FileName'),
     },
@@ -194,6 +194,13 @@ const gridOptions: VxeGridProps<WorkshopTelemetryTaskDto> = {
       minWidth: 140,
       slots: { default: 'channelType' },
       title: $t('TestWorkshop.Telemetry:ChannelType'),
+    },
+    {
+      align: 'right',
+      field: 'fileSize',
+      formatter: ({ cellValue }) => formatFileSize(cellValue),
+      minWidth: 100,
+      title: $t('TestWorkshop.Telemetry:FileSize'),
     },
     {
       field: 'fileTime',
@@ -477,7 +484,7 @@ onMounted(async () => {
         </Space>
       </template>
       <template #fileName="{ row }">
-        <span class="block max-w-[520px] truncate" :title="row.fileName">
+        <span class="block max-w-[440px] truncate" :title="row.fileName">
           {{ row.fileName }}
         </span>
       </template>
