@@ -4,6 +4,7 @@ namespace TestWorkshop;
     typeof(TestWorkshopHttpApiModule),
     typeof(AbpAspNetCoreMvcUiLeptonXLiteThemeModule),
     typeof(AbpAutofacModule),
+    typeof(AbpCachingStackExchangeRedisModule),
     typeof(AbpAspNetCoreMultiTenancyModule),
     typeof(TestWorkshopApplicationModule),
     typeof(TestWorkshopEntityFrameworkCoreModule),

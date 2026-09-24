@@ -66,6 +66,7 @@ global using Volo.Abp.Autofac;
 global using Volo.Abp.BlobStoring;
 global using Volo.Abp.BlobStoring.FileSystem;
 global using Volo.Abp.Caching;
+global using Volo.Abp.Caching.StackExchangeRedis;
 global using Volo.Abp.DependencyInjection;
 global using Volo.Abp.Guids;
 global using Volo.Abp.Identity;
