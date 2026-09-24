@@ -8,6 +8,8 @@ public class WorkshopTelemetryFileInput
     /// <summary>
     /// 通道类型（如 PilotDriveFb）
     /// </summary>
+    [Required]
+    [DynamicStringLength(typeof(TestWorkshopConsts), nameof(TestWorkshopConsts.MaxLength128))]
     public string ChannelType { get; set; }
 
     /// <summary>
@@ -18,6 +20,8 @@ public class WorkshopTelemetryFileInput
     /// <summary>
     /// 设备编码
     /// </summary>
+    [Required]
+    [DynamicStringLength(typeof(TestWorkshopConsts), nameof(TestWorkshopConsts.MaxLength64))]
     public string DeviceCode { get; set; }
 
     /// <summary>
@@ -43,6 +47,7 @@ public class WorkshopTelemetryFileInput
     /// <summary>
     /// 测试信息
     /// </summary>
+    [Required]
     public TestInfoInput TestInfo { get; set; }
 }
 
@@ -54,21 +59,25 @@ public class TestInfoInput
     /// <summary>
     /// 引航员序列号
     /// </summary>
+    [DynamicStringLength(typeof(TestWorkshopConsts), nameof(TestWorkshopConsts.MaxLength64))]
     public string PilotSN { get; set; }
 
     /// <summary>
     /// 船名
     /// </summary>
+    [DynamicStringLength(typeof(TestWorkshopConsts), nameof(TestWorkshopConsts.MaxLength128))]
     public string ShipName { get; set; }
 
     /// <summary>
     /// 测试开始时间（格式：yyyy-MM-dd HH:mm:ss）
     /// </summary>
+    [Required]
     public string StartTime { get; set; }
 
     /// <summary>
     /// 测试人
     /// </summary>
+    [DynamicStringLength(typeof(TestWorkshopConsts), nameof(TestWorkshopConsts.MaxLength64))]
     public string TestBy { get; set; }
 
     /// <summary>
@@ -79,10 +88,12 @@ public class TestInfoInput
     /// <summary>
     /// 被测设备编码
     /// </summary>
+    [DynamicStringLength(typeof(TestWorkshopConsts), nameof(TestWorkshopConsts.MaxLength64))]
     public string TestedDeviceCode { get; set; }
 
     /// <summary>
     /// 被测设备名称
     /// </summary>
+    [DynamicStringLength(typeof(TestWorkshopConsts), nameof(TestWorkshopConsts.MaxLength128))]
     public string TestedDeviceName { get; set; }
 }

@@ -7,11 +7,11 @@ public static void ConfigureTimeScale(this ModelBuilder builder)
     {
         b.ToTable(TestWorkshopDbProperties.DbTablePrefix + "WorkshopDeviceTelemetries", TestWorkshopDbProperties.DbSchema);
 
-        b.HasKey(x => new { x.DeviceId, x.Timestamp, x.Metric });
+        b.HasKey(x => new { x.DeviceId, x.Timestamp, x.ChannelType });
 
-        b.Property(p => p.Metric)
+        b.Property(p => p.ChannelType)
             .HasMaxLength(TestWorkshopConsts.MaxLength128)
-            .HasColumnName(nameof(WorkshopDeviceTelemetry.Metric))
+            .HasColumnName(nameof(WorkshopDeviceTelemetry.ChannelType))
             .IsRequired();
         b.Property(p => p.Timestamp)
             .HasColumnName(nameof(WorkshopDeviceTelemetry.Timestamp))
@@ -38,12 +38,12 @@ public partial class AddTimeScaleEntities : Migration
             {
                 DeviceId = table.Column<Guid>(type: "uuid", nullable: false),
                 Timestamp = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                Metric = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
-                Value = table.Column<double>(type: "double precision", nullable: false)
+                ChannelType = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
+                Value = table.Column<double[]>(type: "double precision[]", nullable: false)
             },
             constraints: table =>
             {
-                table.PrimaryKey("PK_AppWorkshopDeviceTelemetries", x => new { x.DeviceId, x.Timestamp, x.Metric });
+                table.PrimaryKey("PK_AppWorkshopDeviceTelemetries", x => new { x.DeviceId, x.Timestamp, x.ChannelType });
             });
 
         // TimescaleDB 扩展核心配置（手动添加）

@@ -13,8 +13,8 @@ using Volo.Abp.EntityFrameworkCore;
 namespace TestWorkshop.Migrations
 {
     [DbContext(typeof(TestWorkshopDbContext))]
-    [Migration("20260827020344_InitialDatabase")]
-    partial class InitialDatabase
+    [Migration("20260924013728_InitialDb")]
+    partial class InitialDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -779,6 +779,10 @@ namespace TestWorkshop.Migrations
                     b.Property<Guid?>("LastModifierId")
                         .HasColumnType("uuid")
                         .HasColumnName("LastModifierId");
+
+                    b.Property<string>("Model")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
 
                     b.Property<string>("Name")
                         .IsRequired()

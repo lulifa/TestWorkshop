@@ -38,4 +38,9 @@ public class WorkshopDevice : FullAuditedAggregateRoot<Guid>, IMultiTenant
     public WorkshopDevice()
     {
     }
+
+    public WorkshopDevice(Guid id)
+        : base(id)
+    {
+    }
 }

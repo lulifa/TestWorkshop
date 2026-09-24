@@ -21,6 +21,11 @@ public static class TestWorkshopConsts
 
     public const int MaxCodeLength = MaxDepth * (CodeUnitLength + 1) - 1;
 
+    /// <summary>
+    /// 遥测文件上传参数在 FileObject.ExtraProperties 中的统一前缀
+    /// </summary>
+    public const string TelemetryInputExtraPropertiesPrefix = "TelemetryInput.";
+
 
     public static int MaxLength64 { get; set; } = 64;
 

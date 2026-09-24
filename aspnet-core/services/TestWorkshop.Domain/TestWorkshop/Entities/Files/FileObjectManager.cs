@@ -32,9 +32,24 @@ public class FileObjectManager : DomainService, IFileObjectManager
     /// 追加上传（不删除同 ownerType + ownerId 的历史文件）
     /// </summary>
     [UnitOfWork]
-    public virtual async Task<FileObject> AppendAsync(Stream stream, string fileName, string ownerType, string ownerId = null, string contentType = null, Guid? fileId = null)
+    public virtual async Task<FileObject> AppendAsync(
+        Stream stream,
+        string fileName,
+        string ownerType,
+        string ownerId = null,
+        string contentType = null,
+        Guid? fileId = null,
+        ExtraPropertyDictionary extraProperties = null)
     {
-        return await UploadCoreAsync(stream, fileName, ownerType, ownerId, contentType, deleteOld: false, fileId: fileId);
+        return await UploadCoreAsync(
+            stream,
+            fileName,
+            ownerType,
+            ownerId,
+            contentType,
+            deleteOld: false,
+            fileId: fileId,
+            extraProperties: extraProperties);
     }
 
     /// <summary>
@@ -218,7 +233,15 @@ public class FileObjectManager : DomainService, IFileObjectManager
     /// <summary>
     /// 核心上传逻辑
     /// </summary>
-    private async Task<FileObject> UploadCoreAsync(Stream stream, string fileName, string ownerType, string ownerId, string contentType, bool deleteOld, Guid? fileId = null)
+    private async Task<FileObject> UploadCoreAsync(
+        Stream stream,
+        string fileName,
+        string ownerType,
+        string ownerId,
+        string contentType,
+        bool deleteOld,
+        Guid? fileId = null,
+        ExtraPropertyDictionary extraProperties = null)
     {
         Check.NotNull(stream, nameof(stream));
         Check.NotNullOrWhiteSpace(fileName, nameof(fileName));
@@ -244,6 +267,7 @@ public class FileObjectManager : DomainService, IFileObjectManager
             ownerType: ownerType,
             tenantId: CurrentTenant.Id
         );
+        fileObject.SetExtraProperties(extraProperties);
 
         await _fileObjectRepository.InsertAsync(fileObject);
 

@@ -26,7 +26,7 @@ public class WorkshopDeviceTelemetry
     // ===== 遥测数据本身 =====
 
     /// <summary>
-    /// 采集指标类型（通道类型）
+    /// 通道类型
     /// 可选值：
     /// "PilotDriveFb" = "先导驱动反馈"
     /// "FivaFbCurrent" = "FIVA 阀反馈电流"

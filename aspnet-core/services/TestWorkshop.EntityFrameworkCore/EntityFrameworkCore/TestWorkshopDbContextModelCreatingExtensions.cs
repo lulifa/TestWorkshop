@@ -115,11 +115,14 @@ public static class TestWorkshopDbContextModelCreatingExtensions
 
             b.HasKey(x => new { x.DeviceId, x.Timestamp, x.ChannelType });
 
-            b.Property(p => p.ChannelType).IsRequired();
+            b.Property(p => p.ChannelType)
+                .HasMaxLength(TestWorkshopConsts.MaxLength128)
+                .IsRequired();
             b.Property(p => p.Timestamp).HasColumnType("timestamp with time zone").IsRequired();
             b.Property(p => p.DeviceId).IsRequired();
             b.Property(p => p.TaskId).IsRequired();
             b.Property(p => p.Value).IsRequired();
+            b.Property(p => p.Value).HasColumnType("double precision[]");
 
             b.Property(p => p.TestedDeviceCode).HasMaxLength(TestWorkshopConsts.MaxLength64);
             b.Property(p => p.TestedDeviceName).HasMaxLength(TestWorkshopConsts.MaxLength128);
@@ -155,6 +158,10 @@ public static class TestWorkshopDbContextModelCreatingExtensions
                 .IsRequired();
             b.Property(p => p.OwnerId)
                 .HasMaxLength(TestWorkshopConsts.MaxLength128);
+
+            b.Property(p => p.ExtraProperties)
+                .HasColumnType("text")
+                .IsRequired();
 
             b.ConfigureByConvention();
 

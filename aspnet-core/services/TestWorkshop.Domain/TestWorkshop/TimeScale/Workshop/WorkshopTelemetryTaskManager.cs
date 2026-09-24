@@ -29,7 +29,8 @@ public class WorkshopTelemetryTaskManager : DomainService, IWorkshopTelemetryTas
     public virtual async Task<WorkshopTelemetryTask> CreateTaskFromFileAsync(
         Stream stream,
         string fileName,
-        string contentType)
+        string contentType,
+        ExtraPropertyDictionary extraProperties = null)
     {
         // 1. 先创建任务并保存，拿到 Task.Id
         var fileObjectId = Guid.NewGuid();
@@ -48,7 +49,8 @@ public class WorkshopTelemetryTaskManager : DomainService, IWorkshopTelemetryTas
             ownerType: nameof(WorkshopTelemetryTask),
             ownerId: task.Id.ToString(),
             contentType: contentType,
-            fileId: fileObjectId
+            fileId: fileObjectId,
+            extraProperties: extraProperties
         );
 
         _logger.LogInformation("创建遥测任务成功: TaskId={TaskId}, FileObjectId={FileObjectId}", task.Id, fileObject.Id);

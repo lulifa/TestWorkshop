@@ -9,7 +9,8 @@ public interface IWorkshopTelemetryTaskManager : IDomainService
     Task<WorkshopTelemetryTask> CreateTaskFromFileAsync(
         Stream stream,
         string fileName,
-        string contentType);
+        string contentType,
+        ExtraPropertyDictionary extraProperties = null);
 
     /// <summary>
     /// 获取任务及其关联的 FileObject

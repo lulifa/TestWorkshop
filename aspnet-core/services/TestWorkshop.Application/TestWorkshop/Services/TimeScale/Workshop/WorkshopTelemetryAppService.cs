@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
+using System.Reflection;
+
 namespace TestWorkshop;
 
 /// <summary>
@@ -33,15 +35,25 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
     {
         if (file == null || file.Length == 0)
             throw new UserFriendlyException("请选择有效的文件");
+        if (input == null)
+            throw new UserFriendlyException("请提供遥测文件参数");
+        if (input.DeviceCode.IsNullOrWhiteSpace())
+            throw new UserFriendlyException("设备编码不能为空");
+        if (input.ChannelType.IsNullOrWhiteSpace())
+            throw new UserFriendlyException("通道类型不能为空");
+        if (input.TestInfo == null || input.TestInfo.StartTime.IsNullOrWhiteSpace())
+            throw new UserFriendlyException("测试开始时间不能为空");
 
         var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
         if (extension != ".csv")
             throw new UserFriendlyException("仅支持 .csv 文件");
 
+        var extraProperties = BuildTelemetryExtraProperties(input);
         var task = await _taskManager.CreateTaskFromFileAsync(
             stream: file.OpenReadStream(),
             fileName: file.FileName,
-            contentType: file.ContentType
+            contentType: file.ContentType,
+            extraProperties: extraProperties
         );
 
         await CurrentUnitOfWork.SaveChangesAsync();
@@ -151,24 +163,6 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
     }
 
     /// <summary>
-    /// 获取遥测指标类型选项
-    /// </summary>
-    public Task<ListResultDto<WorkshopTelemetryMetricTypeDto>> GetMetricTypesAsync()
-    {
-        var types = Enum.GetValues<TelemetryMetricType>()
-            .Where(type => type != TelemetryMetricType.Unknown)
-            .Select(type => new WorkshopTelemetryMetricTypeDto
-            {
-                Value = (int)type,
-                Name = type.ToString(),
-                DisplayName = L[$"Telemetry:Metric{type}"].ToString()
-            })
-            .ToList();
-
-        return Task.FromResult(new ListResultDto<WorkshopTelemetryMetricTypeDto>(types));
-    }
-
-    /// <summary>
     /// 删除任务（级联删除 FileObject 和物理文件）
     /// </summary>
     public async Task DeleteAsync(long id)
@@ -182,5 +176,63 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
     public async Task RetryAsync(long id)
     {
         await _taskManager.RetryTaskAsync(id);
+    }
+
+    /// <summary>
+    /// 把上传参数扁平化写入 FileObject.ExtraProperties，后续新增简单字段无需调整持久化代码。
+    /// </summary>
+    private static ExtraPropertyDictionary BuildTelemetryExtraProperties(object input)
+    {
+        var result = new ExtraPropertyDictionary();
+        AddTelemetryExtraProperties(result, input, TestWorkshopConsts.TelemetryInputExtraPropertiesPrefix);
+        return result;
+    }
+
+    private static void AddTelemetryExtraProperties(
+        ExtraPropertyDictionary target,
+        object source,
+        string prefix)
+    {
+        if (source == null)
+        {
+            return;
+        }
+
+        foreach (var property in source.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public))
+        {
+            if (property.GetIndexParameters().Length > 0)
+            {
+                continue;
+            }
+
+            var value = property.GetValue(source);
+            if (value == null)
+            {
+                continue;
+            }
+
+            var key = prefix + property.Name;
+            var propertyType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
+            if (IsSimpleValue(propertyType))
+            {
+                target[key] = value;
+            }
+            else
+            {
+                AddTelemetryExtraProperties(target, value, key + ".");
+            }
+        }
+    }
+
+    private static bool IsSimpleValue(Type type)
+    {
+        return type == typeof(string)
+               || type == typeof(decimal)
+               || type == typeof(DateTime)
+               || type == typeof(DateTimeOffset)
+               || type == typeof(TimeSpan)
+               || type == typeof(Guid)
+               || type.IsEnum
+               || type.IsPrimitive;
     }
 }

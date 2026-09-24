@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace TestWorkshop.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialDatabase : Migration
+    public partial class InitialDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -673,6 +673,7 @@ namespace TestWorkshop.Migrations
                     Code = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
                     Name = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
                     Type = table.Column<int>(type: "integer", nullable: false),
+                    Model = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
                     OrganizationUnitId = table.Column<Guid>(type: "uuid", nullable: false),
                     TenantId = table.Column<Guid>(type: "uuid", nullable: true),
                     ExtraProperties = table.Column<string>(type: "text", nullable: false),

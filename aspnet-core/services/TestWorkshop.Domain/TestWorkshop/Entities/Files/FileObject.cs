@@ -84,4 +84,20 @@ public class FileObject : FullAuditedAggregateRoot<Guid>, IMultiTenant
         BlobPath = newPath;
     }
 
+    /// <summary>
+    /// 批量写入文件级扩展参数
+    /// </summary>
+    public void SetExtraProperties(ExtraPropertyDictionary extraProperties)
+    {
+        if (extraProperties == null)
+        {
+            return;
+        }
+
+        foreach (var item in extraProperties)
+        {
+            ExtraProperties[item.Key] = item.Value;
+        }
+    }
+
 }

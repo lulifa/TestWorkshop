@@ -777,6 +777,10 @@ namespace TestWorkshop.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("LastModifierId");
 
+                    b.Property<string>("Model")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(128)
@@ -808,11 +812,24 @@ namespace TestWorkshop.Migrations
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("MetricType")
-                        .HasColumnType("integer");
+                    b.Property<string>("ChannelType")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("PilotSN")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("ShipName")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
 
                     b.Property<long>("TaskId")
                         .HasColumnType("bigint");
+
+                    b.Property<string>("TestBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
 
                     b.Property<string>("TestedDeviceCode")
                         .HasMaxLength(64)
@@ -822,10 +839,11 @@ namespace TestWorkshop.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)");
 
-                    b.Property<double>("Value")
-                        .HasColumnType("double precision");
+                    b.PrimitiveCollection<double[]>("Value")
+                        .IsRequired()
+                        .HasColumnType("double precision[]");
 
-                    b.HasKey("DeviceId", "Timestamp", "MetricType");
+                    b.HasKey("DeviceId", "Timestamp", "ChannelType");
 
                     b.HasIndex("TaskId", "Timestamp");
 

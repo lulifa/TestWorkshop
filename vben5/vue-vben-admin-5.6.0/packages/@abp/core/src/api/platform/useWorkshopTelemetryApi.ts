@@ -1,13 +1,13 @@
-import type { ListResultDto, PagedResultDto } from '@abp/core';
+import type { PagedResultDto } from '@abp/core';
 
 import type {
-  WorkshopTelemetryMetricTypeDto,
+  WorkshopTelemetryFileInput,
   WorkshopTelemetryStatisticsDto,
   WorkshopTelemetryTaskDto,
   WorkshopTelemetryTaskListInput,
 } from '../../types';
 
-import { requestClient, useRequest } from '../../hooks';
+import { useRequest } from '../../hooks';
 
 export function useWorkshopTelemetryApi() {
   const { cancel, request } = useRequest();
@@ -30,17 +30,6 @@ export function useWorkshopTelemetryApi() {
     );
   }
 
-  function getMetricTypesApi(): Promise<
-    ListResultDto<WorkshopTelemetryMetricTypeDto>
-  > {
-    return request<ListResultDto<WorkshopTelemetryMetricTypeDto>>(
-      '/api/workshop/telemetry/metric-types',
-      {
-        method: 'GET',
-      },
-    );
-  }
-
   function getStatisticsApi(): Promise<WorkshopTelemetryStatisticsDto> {
     return request<WorkshopTelemetryStatisticsDto>(
       '/api/workshop/telemetry/statistics',
@@ -56,20 +45,54 @@ export function useWorkshopTelemetryApi() {
     });
   }
 
-  function uploadApi(file: File): Promise<WorkshopTelemetryTaskDto> {
-    return requestClient.upload<WorkshopTelemetryTaskDto>(
-      '/api/workshop/telemetry/upload',
-      { file },
-    );
+  function uploadApi(
+    file: File,
+    input: WorkshopTelemetryFileInput,
+  ): Promise<WorkshopTelemetryTaskDto> {
+    const formData = new FormData();
+    formData.append('file', file);
+    appendFormData(formData, input);
+
+    return request<WorkshopTelemetryTaskDto>('/api/workshop/telemetry/upload', {
+      data: formData,
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      method: 'POST',
+    });
   }
 
   return {
     cancel,
     deleteApi,
     getListApi,
-    getMetricTypesApi,
     getStatisticsApi,
     retryApi,
     uploadApi,
   };
+}
+
+function appendFormData(
+  formData: FormData,
+  value: Record<string, any>,
+  prefix = '',
+) {
+  Object.entries(value).forEach(([key, item]) => {
+    if (item === null || item === undefined) {
+      return;
+    }
+
+    const fieldName = prefix ? `${prefix}.${key}` : key;
+    if (item instanceof Blob) {
+      formData.append(fieldName, item);
+      return;
+    }
+
+    if (typeof item === 'object' && !(item instanceof Date)) {
+      appendFormData(formData, item, fieldName);
+      return;
+    }
+
+    formData.append(fieldName, String(item));
+  });
 }

@@ -658,21 +658,18 @@
         <div class="flow-arrow">›</div>
         <article class="flow-step">
           <span class="step-no">4</span>
-          <h3>CSV 校验与批量导入</h3>
-          <p>校验设备编码、指标、数值和时间，无效行跳过。</p>
-          <code
-            >DeviceCode, MetricType, Value, Timestamp, TestedDeviceCode,
-            TestedDeviceName</code
-          >
+          <h3>CSV 校验与波形汇总</h3>
+          <p>校验连续的 index/value，结合上传参数生成波形数组。</p>
+          <code>index, value</code>
         </article>
         <div class="flow-arrow">›</div>
         <article class="flow-step">
           <span class="step-no">5</span>
           <h3>TimescaleDB 落库</h3>
-          <p>通过 PostgreSQL COPY 写入临时表，再执行冲突更新。</p>
+          <p>每个文件按设备、开始时间和通道执行冲突更新。</p>
           <code
             >AppWorkshopDeviceTelemetries · DeviceId + Timestamp +
-            MetricType</code
+            ChannelType</code
           >
         </article>
         <div class="flow-arrow">›</div>
@@ -704,7 +701,8 @@
         </div>
       </div>
       <div class="footer-note">
-        指标类型：Pressure / Temp / Flow / Vibration
+        通道类型：PilotDriveFb / FivaFbCurrent / PlungerFb / FopPressure /
+        BackPressure / Flow / Cmd / PilotPosFb
       </div>
     </section>
 

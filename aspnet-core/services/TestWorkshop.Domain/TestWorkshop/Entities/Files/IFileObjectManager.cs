@@ -24,7 +24,8 @@ public interface IFileObjectManager
         string ownerType,
         string ownerId = null,
         string contentType = null,
-        Guid? fileId = null);
+        Guid? fileId = null,
+        ExtraPropertyDictionary extraProperties = null);
 
     /// <summary>
     /// 批量上传文件（覆盖模式：上传所有新文件，再统一删除同 ownerType + ownerId 的所有旧文件）

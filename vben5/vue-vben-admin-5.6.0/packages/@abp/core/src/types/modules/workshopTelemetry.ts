@@ -7,13 +7,6 @@ enum WorkshopTelemetryStatus {
   Success = 2,
 }
 
-enum TelemetryMetricType {
-  Flow = 3,
-  Pressure = 1,
-  Temp = 2,
-  Vibration = 4,
-}
-
 interface WorkshopTelemetryTaskDto extends EntityDto<number> {
   createdAt: string;
   error?: string;
@@ -48,18 +41,33 @@ interface WorkshopTelemetryStatisticsDto {
   totalSizeMB: number;
 }
 
-interface WorkshopTelemetryMetricTypeDto {
-  displayName: string;
-  name: string;
-  value: TelemetryMetricType;
+interface WorkshopTelemetryFileInput {
+  channelType: string;
+  currentFile?: string;
+  deviceCode: string;
+  fileCount?: number;
+  group?: string;
+  ifSource?: string;
+  source?: string;
+  testInfo: WorkshopTelemetryTestInfoInput;
+}
+
+interface WorkshopTelemetryTestInfoInput {
+  pilotSN?: string;
+  shipName?: string;
+  startTime: string;
+  testBy?: string;
+  testDate?: string;
+  testedDeviceCode?: string;
+  testedDeviceName?: string;
 }
 
 export { WorkshopTelemetryStatus };
-export { TelemetryMetricType };
 
 export type {
-  WorkshopTelemetryMetricTypeDto,
+  WorkshopTelemetryFileInput,
   WorkshopTelemetryStatisticsDto,
   WorkshopTelemetryTaskDto,
   WorkshopTelemetryTaskListInput,
+  WorkshopTelemetryTestInfoInput,
 };

@@ -32,13 +32,12 @@ import { Button, message, Modal, Space, Tag, Tooltip } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useFilePreview } from '#/components/file-preview';
-import { useFileUpload } from '#/components/file-upload';
 
 defineOptions({
   name: 'WorkshopTelemetryManagement',
 });
 
-const { deleteApi, getListApi, getStatisticsApi, retryApi, uploadApi } =
+const { deleteApi, getListApi, getStatisticsApi, retryApi } =
   useWorkshopTelemetryApi();
 const { getApi: getFileApi } = useFileApi();
 
@@ -304,8 +303,6 @@ const [TelemetryUploadModal, telemetryUploadModalApi] = useVbenModal({
   ),
 });
 
-const { UploadModal: CsvUploadModal, openFileUpload: openCsvUpload } =
-  useFileUpload();
 const { PreviewModal, openFilePreview } = useFilePreview();
 
 async function loadStatistics() {
@@ -317,10 +314,7 @@ function onSimulateUpload() {
 }
 
 function onDownloadTemplate() {
-  const template = [
-    'DeviceCode,MetricType,Value,Timestamp,TestedDeviceCode,TestedDeviceName',
-    'FIVA-001,2,65.50,2026-08-26T10:00:00Z,DUT-A1,水泵A',
-  ].join('\n');
+  const template = ['0,20', '1,20', '2,20', '3,20'].join('\n');
   const blob = new Blob([template], {
     type: 'text/csv;charset=utf-8',
   });
@@ -331,17 +325,7 @@ function onDownloadTemplate() {
 }
 
 function onUploadCsv() {
-  openCsvUpload({
-    accept: '.csv',
-    multiple: false,
-    title: $t('TestWorkshop.Telemetry:UploadCsv'),
-    upload: async (files) => {
-      const [file] = files;
-      if (file) {
-        await uploadApi(file);
-      }
-    },
-  });
+  telemetryUploadModalApi.open();
 }
 
 async function onPreviewCsv(row: WorkshopTelemetryTaskDto) {
@@ -494,7 +478,6 @@ onMounted(async () => {
       </template>
     </Grid>
     <PreviewModal />
-    <CsvUploadModal @change="onUploadChange" />
     <TelemetryUploadModal @change="onUploadChange" />
   </Page>
 </template>
