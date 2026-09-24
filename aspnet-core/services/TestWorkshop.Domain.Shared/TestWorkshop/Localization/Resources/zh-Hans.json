@@ -239,6 +239,8 @@
     "Telemetry:ExpiresAt": "过期时间",
     "Telemetry:Error": "错误信息",
     "Telemetry:Retry": "重试",
+    "Telemetry:BatchDelete": "批量删除",
+    "Telemetry:BatchDeleteConfirm": "确定删除已选择的 {0} 个遥测任务吗？",
     "Telemetry:SimulateUpload": "模拟上传",
     "Telemetry:SelectCsv": "选择 CSV 文件",
     "Telemetry:GenerateMode": "或使用下方参数生成模拟数据",

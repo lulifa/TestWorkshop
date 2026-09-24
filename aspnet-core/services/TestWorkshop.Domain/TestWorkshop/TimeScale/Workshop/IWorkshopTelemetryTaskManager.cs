@@ -23,6 +23,11 @@ public interface IWorkshopTelemetryTaskManager : IDomainService
     Task DeleteTaskAsync(long taskId);
 
     /// <summary>
+    /// 批量删除任务（级联删除 FileObject 和物理文件）
+    /// </summary>
+    Task DeleteTasksAsync(IReadOnlyCollection<long> taskIds);
+
+    /// <summary>
     /// 重试失败的任务
     /// </summary>
     Task RetryTaskAsync(long taskId);

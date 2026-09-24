@@ -37,11 +37,12 @@ defineOptions({
   name: 'WorkshopTelemetryManagement',
 });
 
-const { deleteApi, getListApi, getStatisticsApi, retryApi } =
+const { deleteApi, deleteManyApi, getListApi, getStatisticsApi, retryApi } =
   useWorkshopTelemetryApi();
 const { getApi: getFileApi } = useFileApi();
 
 const statistics = ref<WorkshopTelemetryStatisticsDto>();
+const selectedRows = ref<WorkshopTelemetryTaskDto[]>([]);
 
 const statisticItems = computed(() => [
   {
@@ -165,6 +166,11 @@ const gridOptions: VxeGridProps<WorkshopTelemetryTaskDto> = {
   columns: [
     {
       align: 'center',
+      type: 'checkbox',
+      width: 50,
+    },
+    {
+      align: 'center',
       type: 'seq',
       width: 50,
     },
@@ -268,6 +274,9 @@ const gridOptions: VxeGridProps<WorkshopTelemetryTaskDto> = {
           status: values?.status,
         });
       },
+      querySuccess: () => {
+        selectedRows.value = [];
+      },
     },
     response: {
       total: 'totalCount',
@@ -286,6 +295,8 @@ const gridOptions: VxeGridProps<WorkshopTelemetryTaskDto> = {
 };
 
 const gridEvents: VxeGridListeners<WorkshopTelemetryTaskDto> = {
+  checkboxAll: syncSelectedRows,
+  checkboxChange: syncSelectedRows,
   sortChange: () => {
     gridApi.query();
   },
@@ -296,6 +307,11 @@ const [Grid, gridApi] = useVbenVxeGrid({
   gridEvents,
   gridOptions,
 });
+
+function syncSelectedRows() {
+  selectedRows.value = (gridApi.grid.getCheckboxRecords() ??
+    []) as WorkshopTelemetryTaskDto[];
+}
 
 const [TelemetryUploadModal, telemetryUploadModalApi] = useVbenModal({
   connectedComponent: defineAsyncComponent(
@@ -387,6 +403,30 @@ function onDelete(row: WorkshopTelemetryTaskDto) {
   });
 }
 
+function onBatchDelete() {
+  if (selectedRows.value.length === 0) {
+    return;
+  }
+
+  Modal.confirm({
+    centered: true,
+    content: $t('TestWorkshop.Telemetry:BatchDeleteConfirm', [
+      selectedRows.value.length,
+    ]),
+    onOk: async () => {
+      try {
+        gridApi.setLoading(true);
+        await deleteManyApi(selectedRows.value.map((item) => item.id));
+        message.success($t('AbpUi.DeletedSuccessfully'));
+        await Promise.all([gridApi.query(), loadStatistics()]);
+      } finally {
+        gridApi.setLoading(false);
+      }
+    },
+    title: $t('AbpUi.AreYouSure'),
+  });
+}
+
 onMounted(async () => {
   await loadStatistics();
   await gridApi.query();
@@ -414,6 +454,14 @@ onMounted(async () => {
       </template>
       <template #toolbar-tools>
         <Space :size="8">
+          <Button
+            v-if="selectedRows.length > 0"
+            :icon="h(DeleteOutlined)"
+            danger
+            @click="onBatchDelete"
+          >
+            {{ $t('TestWorkshop.Telemetry:BatchDelete') }}
+          </Button>
           <Button :icon="h(UploadOutlined)" type="primary" @click="onUploadCsv">
             {{ $t('TestWorkshop.Telemetry:UploadCsv') }}
           </Button>

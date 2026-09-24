@@ -239,6 +239,8 @@
     "Telemetry:ExpiresAt": "Expires At",
     "Telemetry:Error": "Error Message",
     "Telemetry:Retry": "Retry",
+    "Telemetry:BatchDelete": "Batch Delete",
+    "Telemetry:BatchDeleteConfirm": "Delete the {0} selected telemetry tasks?",
     "Telemetry:SimulateUpload": "Simulate Upload",
     "Telemetry:SelectCsv": "Select CSV File",
     "Telemetry:GenerateMode": "Or generate simulated data with the fields below",

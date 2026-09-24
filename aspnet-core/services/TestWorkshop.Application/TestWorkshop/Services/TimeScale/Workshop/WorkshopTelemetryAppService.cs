@@ -171,6 +171,19 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
     }
 
     /// <summary>
+    /// 批量删除任务（级联删除 FileObject 和物理文件）
+    /// </summary>
+    public async Task DeleteManyAsync(WorkshopTelemetryBatchDeleteInput input)
+    {
+        if (input?.Ids == null || input.Ids.Count == 0)
+        {
+            return;
+        }
+
+        await _taskManager.DeleteTasksAsync(input.Ids);
+    }
+
+    /// <summary>
     /// 重新处理失败的任务
     /// </summary>
     public async Task RetryAsync(long id)

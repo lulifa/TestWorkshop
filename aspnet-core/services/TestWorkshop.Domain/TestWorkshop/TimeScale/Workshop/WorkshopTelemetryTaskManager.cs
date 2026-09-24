@@ -7,19 +7,23 @@ public class WorkshopTelemetryTaskManager : DomainService, IWorkshopTelemetryTas
     private readonly IFileObjectRepository _fileObjectRepository;
     private readonly IUnitOfWorkManager _unitOfWorkManager;
     private readonly ILogger<WorkshopTelemetryTaskManager> _logger;
+    private readonly WorkshopTelemetryOptions _options;
 
     public WorkshopTelemetryTaskManager(
         IFileObjectManager fileObjectManager,
         IWorkshopTelemetryTaskRepository taskRepository,
         IFileObjectRepository fileObjectRepository,
         IUnitOfWorkManager unitOfWorkManager,
-        ILogger<WorkshopTelemetryTaskManager> logger)
+        ILogger<WorkshopTelemetryTaskManager> logger,
+        IOptions<WorkshopTelemetryOptions> options)
     {
         _fileObjectManager = fileObjectManager;
         _taskRepository = taskRepository;
         _fileObjectRepository = fileObjectRepository;
         _unitOfWorkManager = unitOfWorkManager;
         _logger = logger;
+        _options = options.Value;
+        _options.Validate();
     }
 
     /// <summary>
@@ -34,9 +38,10 @@ public class WorkshopTelemetryTaskManager : DomainService, IWorkshopTelemetryTas
     {
         // 1. 先创建任务并保存，拿到 Task.Id
         var fileObjectId = Guid.NewGuid();
+        // Task 和 FileObject 同生命周期：RetentionDays 到期后由清理 Worker 一起删除。
         var task = new WorkshopTelemetryTask(
             fileObjectId: fileObjectId,
-            expiresAt: DateTime.UtcNow.AddDays(7),
+            expiresAt: DateTime.UtcNow.AddDays(_options.RetentionDays),
             tenantId: CurrentTenant.Id
         );
         await _taskRepository.InsertAsync(task);
@@ -83,17 +88,51 @@ public class WorkshopTelemetryTaskManager : DomainService, IWorkshopTelemetryTas
         if (task.Status == 1)
             throw new BusinessException("不能删除正在处理的任务");
 
-        // 1. 如果 FileObject 还存在，先删除文件元数据和物理文件
+        await DeleteTaskInternalAsync(task);
+
+        _logger.LogInformation("删除任务成功: TaskId={TaskId}", taskId);
+    }
+
+    /// <summary>
+    /// 批量删除任务：先整体校验，再逐项删除文件、FileObject 和任务。
+    /// </summary>
+    [UnitOfWork]
+    public virtual async Task DeleteTasksAsync(IReadOnlyCollection<long> taskIds)
+    {
+        var ids = taskIds?
+            .Where(id => id > 0)
+            .Distinct()
+            .ToArray() ?? [];
+
+        if (ids.Length == 0)
+        {
+            return;
+        }
+
+        var tasks = await _taskRepository.GetListAsync(task => ids.Contains(task.Id));
+        var processingTask = tasks.FirstOrDefault(task => task.Status == 1);
+        if (processingTask != null)
+        {
+            throw new BusinessException($"任务 {processingTask.Id} 正在处理中，不能批量删除");
+        }
+
+        foreach (var task in tasks)
+        {
+            await DeleteTaskInternalAsync(task);
+        }
+
+        _logger.LogInformation("批量删除任务成功: Count={Count}", tasks.Count);
+    }
+
+    private async Task DeleteTaskInternalAsync(WorkshopTelemetryTask task)
+    {
         var fileObject = await _fileObjectRepository.FindAsync(task.FileObjectId);
         if (fileObject != null)
         {
             await _fileObjectManager.DeleteFileAsync(task.FileObjectId);
         }
 
-        // 2. 真删除任务（物理删除）
         await _taskRepository.DeleteAsync(task);
-
-        _logger.LogInformation("删除任务成功: TaskId={TaskId}", taskId);
     }
 
     /// <summary>

@@ -18,6 +18,13 @@ export function useWorkshopTelemetryApi() {
     });
   }
 
+  function deleteManyApi(ids: number[]): Promise<void> {
+    return request('/api/workshop/telemetry/batch-delete', {
+      data: { ids },
+      method: 'POST',
+    });
+  }
+
   function getListApi(
     input?: WorkshopTelemetryTaskListInput,
   ): Promise<PagedResultDto<WorkshopTelemetryTaskDto>> {
@@ -65,6 +72,7 @@ export function useWorkshopTelemetryApi() {
   return {
     cancel,
     deleteApi,
+    deleteManyApi,
     getListApi,
     getStatisticsApi,
     retryApi,

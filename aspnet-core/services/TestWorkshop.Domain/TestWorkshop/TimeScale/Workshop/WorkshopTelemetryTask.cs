@@ -52,7 +52,8 @@ public class WorkshopTelemetryTask : Entity<long>, IMultiTenant
     public DateTime? ProcessingStartedAt { get; private set; }
 
     /// <summary>
-    /// 过期时间
+    /// 任务和关联文件的统一过期时间。
+    /// 由 WorkshopTelemetry:RetentionDays 计算，到期且处理结束后允许清理。
     /// </summary>
     public DateTime ExpiresAt { get; private set; }
 

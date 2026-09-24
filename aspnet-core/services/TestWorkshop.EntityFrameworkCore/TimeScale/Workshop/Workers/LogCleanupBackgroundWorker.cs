@@ -4,7 +4,12 @@ public class LogCleanupBackgroundWorker : AsyncPeriodicBackgroundWorkerBase
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<LogCleanupBackgroundWorker> _logger;
+
+    // 审计日志和安全日志保留 365 天，满足常规审计留痕需求。
     private const int RetentionDays = 365;
+
+    // 每天执行一次即可；日志清理不需要像遥测任务一样高频轮询。
+    private static readonly TimeSpan CleanupInterval = TimeSpan.FromDays(1);
 
     public LogCleanupBackgroundWorker(
       AbpAsyncTimer timer,
@@ -14,7 +19,7 @@ public class LogCleanupBackgroundWorker : AsyncPeriodicBackgroundWorkerBase
     {
         _scopeFactory = scopeFactory;
         _logger = logger;
-        Timer.Period = (int)new TimeSpan(24, 0, 0).TotalMilliseconds;
+        Timer.Period = (int)CleanupInterval.TotalMilliseconds;
     }
 
     protected override async Task DoWorkAsync(PeriodicBackgroundWorkerContext workerContext)

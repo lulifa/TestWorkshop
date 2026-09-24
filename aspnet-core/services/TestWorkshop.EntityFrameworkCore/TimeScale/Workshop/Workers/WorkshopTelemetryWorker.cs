@@ -11,6 +11,15 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
     private const string DeviceMapCacheKeyPrefix = "DeviceMap_TelemetryWorker_";
     private const string TelemetryInputPrefix = TestWorkshopConsts.TelemetryInputExtraPropertiesPrefix;
 
+    // 5 秒轮询一次：兼顾下位机上传后的处理及时性和查询压力。
+    private static readonly TimeSpan PollingInterval = TimeSpan.FromSeconds(5);
+
+    // 处理中超过 10 分钟视为 Worker 异常退出，自动恢复为待处理。
+    private static readonly TimeSpan StuckTaskTimeout = TimeSpan.FromMinutes(10);
+
+    // 卡死任务恢复后等待 30 秒再重试，避免立即重复命中同一异常。
+    private static readonly TimeSpan StuckTaskRetryDelay = TimeSpan.FromSeconds(30);
+
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IMemoryCache _cache;
     private readonly ILogger<WorkshopTelemetryWorker> _logger;
@@ -25,7 +34,7 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
         _scopeFactory = scopeFactory;
         _cache = cache;
         _logger = logger;
-        Timer.Period = 5000;
+        Timer.Period = (int)PollingInterval.TotalMilliseconds;
     }
 
     public override async Task StartAsync(CancellationToken cancellationToken = default)
@@ -76,39 +85,37 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
 
         using (currentTenant.Change(telemetryTask.TenantId))
         {
-            await db.Database.OpenConnectionAsync(ct);
-            await using var transaction = await db.Database.BeginTransactionAsync(ct);
-
             try
             {
                 var metadata = ReadMetadata(fileObject);
                 var deviceMap = await GetDeviceMapAsync(db, telemetryTask.TenantId, ct);
                 if (!deviceMap.TryGetValue(metadata.DeviceCode, out var deviceId))
                 {
-                    throw new InvalidDataException($"未知设备编码: {metadata.DeviceCode}");
+                    // 设备缓存可能尚未感知刚新增的设备，失效后仅重查一次。
+                    _cache.Remove(GetDeviceMapCacheKey(telemetryTask.TenantId));
+                    deviceMap = await GetDeviceMapAsync(db, telemetryTask.TenantId, ct);
+                    if (!deviceMap.TryGetValue(metadata.DeviceCode, out deviceId))
+                    {
+                        throw new InvalidDataException($"未知设备编码: {metadata.DeviceCode}");
+                    }
                 }
 
                 var fileManager = sp.GetRequiredService<IFileObjectManager>();
                 var (stream, _, _) = await fileManager.GetFileAsync(fileObject.Id);
+                double[] values;
                 await using (stream)
                 {
-                    var values = await ReadValuesAsync(stream, ct);
-                    await UpsertTelemetryAsync(
-                        db,
-                        transaction.GetDbTransaction() as NpgsqlTransaction
-                        ?? throw new InvalidOperationException("无法获取 NpgsqlTransaction"),
-                        deviceId,
-                        telemetryTask.Id,
-                        metadata,
-                        values,
-                        ct);
-
-                    telemetryTask.MarkAsSuccess(values.Length);
+                    values = await ReadValuesAsync(stream, ct);
                 }
 
-                await taskRepo.UpdateAsync(telemetryTask);
-                await db.SaveChangesAsync(ct);
-                await transaction.CommitAsync(ct);
+                await PersistSuccessAsync(
+                    db,
+                    taskRepo,
+                    telemetryTask,
+                    deviceId,
+                    metadata,
+                    values,
+                    ct);
 
                 _logger.LogInformation(
                     "任务 {TaskId} 处理完成，通道 {ChannelType}，采样点 {Count}",
@@ -118,24 +125,60 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync(ct);
                 _logger.LogError(ex, "任务 {TaskId} 处理失败", taskId);
 
                 telemetryTask.MarkAsFailed(ex.Message);
                 await taskRepo.UpdateAsync(telemetryTask);
                 await db.SaveChangesAsync(ct);
             }
-            finally
-            {
-                await db.Database.CloseConnectionAsync();
-            }
+        }
+    }
+
+    private async Task PersistSuccessAsync(
+        TestWorkshopDbContext db,
+        IWorkshopTelemetryTaskRepository taskRepo,
+        WorkshopTelemetryTask telemetryTask,
+        Guid deviceId,
+        TelemetryFileMetadata metadata,
+        double[] values,
+        CancellationToken ct)
+    {
+        // 文件读取和 CSV 解析已完成，事务只覆盖最终的波形写入与状态提交。
+        await db.Database.OpenConnectionAsync(ct);
+        await using var transaction = await db.Database.BeginTransactionAsync(ct);
+
+        try
+        {
+            await UpsertTelemetryAsync(
+                db,
+                transaction.GetDbTransaction() as NpgsqlTransaction
+                ?? throw new InvalidOperationException("无法获取 NpgsqlTransaction"),
+                deviceId,
+                telemetryTask.Id,
+                metadata,
+                values,
+                ct);
+
+            telemetryTask.MarkAsSuccess(values.Length);
+            await taskRepo.UpdateAsync(telemetryTask);
+            await db.SaveChangesAsync(ct);
+            await transaction.CommitAsync(ct);
+        }
+        catch
+        {
+            await transaction.RollbackAsync(ct);
+            throw;
+        }
+        finally
+        {
+            await db.Database.CloseConnectionAsync();
         }
     }
 
     private async Task<double[]> ReadValuesAsync(Stream csvStream, CancellationToken ct)
     {
         using var reader = new StreamReader(csvStream);
-        var values = new List<double>();
+        var values = new List<double>(1024);
         var lineNumber = 0;
 
         string line;
@@ -152,15 +195,19 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
                 throw new InvalidDataException($"CSV 数据超过单文件上限 {MaxRowsPerFile} 行");
             }
 
-            var parts = line.Split(',', StringSplitOptions.TrimEntries);
-            if (parts.Length != 2)
+            var lineSpan = line.AsSpan().Trim();
+            var separatorIndex = lineSpan.IndexOf(',');
+            if (separatorIndex <= 0 || lineSpan[(separatorIndex + 1)..].IndexOf(',') >= 0)
             {
                 throw new InvalidDataException($"CSV 第 {lineNumber} 行格式错误，应为 index,value");
             }
 
-            if (!long.TryParse(parts[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out var index))
+            var indexSpan = lineSpan[..separatorIndex].Trim();
+            var valueSpan = lineSpan[(separatorIndex + 1)..].Trim();
+
+            if (!long.TryParse(indexSpan, NumberStyles.Integer, CultureInfo.InvariantCulture, out var index))
             {
-                throw new InvalidDataException($"CSV 第 {lineNumber} 行 index 不是有效整数: {parts[0]}");
+                throw new InvalidDataException($"CSV 第 {lineNumber} 行 index 不是有效整数: {indexSpan}");
             }
 
             if (index != values.Count)
@@ -169,10 +216,9 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
                     $"CSV 第 {lineNumber} 行 index 应为 {values.Count}，实际为 {index}");
             }
 
-            if (!double.TryParse(parts[1], NumberStyles.Float | NumberStyles.AllowThousands,
-                    CultureInfo.InvariantCulture, out var value))
+            if (!double.TryParse(valueSpan, NumberStyles.Float, CultureInfo.InvariantCulture, out var value))
             {
-                throw new InvalidDataException($"CSV 第 {lineNumber} 行 value 不是有效数字: {parts[1]}");
+                throw new InvalidDataException($"CSV 第 {lineNumber} 行 value 不是有效数字: {valueSpan}");
             }
 
             values.Add(value);
@@ -286,13 +332,18 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
         Guid? tenantId,
         CancellationToken ct)
     {
-        var cacheKey = DeviceMapCacheKeyPrefix + (tenantId?.ToString() ?? "Host");
+        var cacheKey = GetDeviceMapCacheKey(tenantId);
         return await _cache.GetOrCreateAsync(cacheKey, async entry =>
         {
             entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
             var devices = await db.Devices.AsNoTracking().ToListAsync(ct);
             return devices.ToDictionary(d => d.Code, d => d.Id, StringComparer.OrdinalIgnoreCase);
         }) ?? new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static string GetDeviceMapCacheKey(Guid? tenantId)
+    {
+        return DeviceMapCacheKeyPrefix + (tenantId?.ToString() ?? "Host");
     }
 
     private async Task ResetStuckTasksAsync(CancellationToken ct)
@@ -302,8 +353,9 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
             using var scope = _scopeFactory.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<TestWorkshopDbContext>();
 
-            var stuckTime = DateTime.UtcNow.AddMinutes(-10);
-            var retryTime = DateTime.UtcNow.AddSeconds(30);
+            var now = DateTime.UtcNow;
+            var stuckTime = now - StuckTaskTimeout;
+            var retryTime = now + StuckTaskRetryDelay;
 
             const string sql = """
                                UPDATE "AppWorkshopTelemetryTasks"

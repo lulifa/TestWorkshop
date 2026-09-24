@@ -59,6 +59,15 @@ public class WorkshopTelemetryController : TestWorkshopController
     }
 
     /// <summary>
+    /// 批量删除任务
+    /// </summary>
+    [HttpPost("batch-delete")]
+    public async Task DeleteManyAsync(WorkshopTelemetryBatchDeleteInput input)
+    {
+        await Service.DeleteManyAsync(input);
+    }
+
+    /// <summary>
     /// 重新处理任务
     /// </summary>
     [HttpPost("{id}/retry")]

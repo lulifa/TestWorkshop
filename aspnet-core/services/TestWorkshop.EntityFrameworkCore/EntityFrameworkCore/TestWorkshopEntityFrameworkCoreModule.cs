@@ -24,6 +24,9 @@ public class TestWorkshopEntityFrameworkCoreModule : AbpModule
 
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
+        var configuration = context.Services.GetConfiguration();
+        Configure<WorkshopTelemetryOptions>(configuration.GetSection("WorkshopTelemetry"));
+
         context.Services.AddAbpDbContext<TestWorkshopDbContext>(options =>
         {
             /* Remove "includeAllEntities: true" to create

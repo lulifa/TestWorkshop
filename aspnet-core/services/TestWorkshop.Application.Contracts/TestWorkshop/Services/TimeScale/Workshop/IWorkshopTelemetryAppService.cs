@@ -28,6 +28,11 @@ public interface IWorkshopTelemetryAppService : IApplicationService
     Task DeleteAsync(long id);
 
     /// <summary>
+    /// 批量删除任务（级联删除 FileObject 和物理文件）
+    /// </summary>
+    Task DeleteManyAsync(WorkshopTelemetryBatchDeleteInput input);
+
+    /// <summary>
     /// 重新处理失败的任务
     /// </summary>
     Task RetryAsync(long id);
