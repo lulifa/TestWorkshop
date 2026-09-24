@@ -77,6 +77,10 @@ function getPropertyLabel(key: string) {
   return propertyLabelMap[key] ?? key;
 }
 
+function getExtraPropertyValue(propertyName: string) {
+  return row.value?.extraProperties?.[`TelemetryInput.${propertyName}`];
+}
+
 function buildExtraPropertiesObject() {
   const result: Record<string, any> = {};
 
@@ -139,8 +143,8 @@ function formatFileSize(size?: number) {
           <Tag :color="statusColorMap[row.status]">
             {{ statusLabelMap[row.status] ?? row.statusName }}
           </Tag>
-          <Tag v-if="row.channelType" color="blue">
-            {{ row.channelType }}
+          <Tag v-if="getExtraPropertyValue('ChannelType')" color="blue">
+            {{ getExtraPropertyValue('ChannelType') }}
           </Tag>
         </div>
         <h2 class="mt-3 break-all text-lg font-semibold leading-6">

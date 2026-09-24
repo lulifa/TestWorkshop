@@ -185,6 +185,7 @@ const gridOptions: VxeGridProps<WorkshopTelemetryTaskDto> = {
     {
       field: 'deviceCode',
       minWidth: 140,
+      slots: { default: 'deviceCode' },
       title: $t('TestWorkshop.Telemetry:DeviceCode'),
     },
     {
@@ -197,6 +198,7 @@ const gridOptions: VxeGridProps<WorkshopTelemetryTaskDto> = {
     {
       field: 'fileTime',
       minWidth: 170,
+      slots: { default: 'fileTime' },
       title: $t('TestWorkshop.Telemetry:FileTime'),
     },
     {
@@ -301,6 +303,13 @@ const [Grid, gridApi] = useVbenVxeGrid({
 function syncSelectedRows() {
   selectedRows.value = (gridApi.grid.getCheckboxRecords() ??
     []) as WorkshopTelemetryTaskDto[];
+}
+
+function getTelemetryExtraValue(
+  row: WorkshopTelemetryTaskDto,
+  propertyName: string,
+) {
+  return row.extraProperties?.[`TelemetryInput.${propertyName}`] ?? null;
 }
 
 const [TelemetryUploadModal, telemetryUploadModalApi] = useVbenModal({
@@ -483,11 +492,17 @@ onMounted(async () => {
           {{ row.fileName }}
         </span>
       </template>
+      <template #deviceCode="{ row }">
+        {{ getTelemetryExtraValue(row, 'DeviceCode') || '-' }}
+      </template>
       <template #channelType="{ row }">
-        <Tag v-if="row.channelType" color="blue">
-          {{ row.channelType }}
+        <Tag v-if="getTelemetryExtraValue(row, 'ChannelType')" color="blue">
+          {{ getTelemetryExtraValue(row, 'ChannelType') }}
         </Tag>
         <span v-else>-</span>
+      </template>
+      <template #fileTime="{ row }">
+        {{ getTelemetryExtraValue(row, 'FileTime') || '-' }}
       </template>
       <template #status="{ row }">
         <Tag :color="statusColorMap[row.status]">

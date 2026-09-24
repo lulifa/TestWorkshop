@@ -8,32 +8,19 @@ enum WorkshopTelemetryStatus {
 }
 
 interface WorkshopTelemetryTaskDto extends EntityDto<number> {
-  channelType?: string;
   createdAt: string;
-  deviceCode?: string;
-  endTime?: string;
-  endTime2?: string;
   error?: string;
   expiresAt: string;
   extraProperties?: Record<string, any>;
   fileName: string;
   fileObjectId: string;
   fileSize: number;
-  fileTime?: string;
   nextRetryTime?: string;
-  pilotSN?: string;
   processedAt?: string;
   recordCount?: number;
   retryCount: number;
-  shipName?: string;
-  startTime?: string;
-  startTime2?: string;
   status: WorkshopTelemetryStatus;
   statusName: string;
-  testBy?: string;
-  testDate?: string;
-  testedDeviceCode?: string;
-  testedDeviceName?: string;
 }
 
 interface WorkshopTelemetryTaskListInput extends PagedAndSortedResultRequestDto {

@@ -86,7 +86,7 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
             ProcessedAt = task.ProcessedAt,
             ExpiresAt = task.ExpiresAt
         };
-        FillTelemetryMetadata(dto, fileObject);
+        FillTelemetryExtraProperties(dto, fileObject);
         return dto;
     }
 
@@ -111,7 +111,7 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
             ProcessedAt = task.ProcessedAt,
             ExpiresAt = task.ExpiresAt
         };
-        FillTelemetryMetadata(dto, fileObject);
+        FillTelemetryExtraProperties(dto, fileObject);
         return dto;
     }
 
@@ -153,7 +153,7 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
                 ProcessedAt = task.ProcessedAt,
                 ExpiresAt = task.ExpiresAt
             };
-            FillTelemetryMetadata(dto, fileObject);
+            FillTelemetryExtraProperties(dto, fileObject);
             dtos.Add(dto);
         }
 
@@ -246,24 +246,10 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
         input.TestInfo.TestedDeviceName = input.TestInfo.TestedDeviceName?.Trim();
     }
 
-    private static void FillTelemetryMetadata(
+    private static void FillTelemetryExtraProperties(
         WorkshopTelemetryTaskDto dto,
         FileObject fileObject)
     {
-        dto.DeviceCode = GetTelemetryExtraString(fileObject, "DeviceCode");
-        dto.ChannelType = GetTelemetryExtraString(fileObject, "ChannelType");
-        dto.FileTime = GetTelemetryExtraString(fileObject, "FileTime");
-        dto.StartTime = GetTelemetryExtraString(fileObject, "TestInfo.StartTime");
-        dto.EndTime = GetTelemetryExtraString(fileObject, "TestInfo.EndTime");
-        dto.StartTime2 = GetTelemetryExtraString(fileObject, "TestInfo.StartTime2");
-        dto.EndTime2 = GetTelemetryExtraString(fileObject, "TestInfo.EndTime2");
-        dto.TestDate = GetTelemetryExtraString(fileObject, "TestInfo.TestDate");
-        dto.TestedDeviceCode = GetTelemetryExtraString(fileObject, "TestInfo.TestedDeviceCode");
-        dto.TestedDeviceName = GetTelemetryExtraString(fileObject, "TestInfo.TestedDeviceName");
-        dto.PilotSN = GetTelemetryExtraString(fileObject, "TestInfo.PilotSN");
-        dto.ShipName = GetTelemetryExtraString(fileObject, "TestInfo.ShipName");
-        dto.TestBy = GetTelemetryExtraString(fileObject, "TestInfo.TestBy");
-
         dto.ExtraProperties.Clear();
         if (fileObject == null)
         {
@@ -274,12 +260,6 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
         {
             dto.ExtraProperties[item.Key] = item.Value;
         }
-    }
-
-    private static string GetTelemetryExtraString(FileObject fileObject, string propertyName)
-    {
-        var value = fileObject?.GetProperty(TestWorkshopConsts.TelemetryInputExtraPropertiesPrefix + propertyName);
-        return Convert.ToString(value);
     }
 
     private static void AddTelemetryExtraProperties(
