@@ -13,17 +13,20 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
     private readonly IWorkshopTelemetryTaskManager _taskManager;
     private readonly IWorkshopTelemetryTaskRepository _taskRepository;
     private readonly IFileObjectRepository _fileObjectRepository;
+    private readonly IWorkshopDeviceRepository _workshopDeviceRepository;
     private readonly ICurrentTenant _currentTenant;
 
     public WorkshopTelemetryAppService(
         IWorkshopTelemetryTaskManager taskManager,
         IWorkshopTelemetryTaskRepository taskRepository,
         IFileObjectRepository fileObjectRepository,
+        IWorkshopDeviceRepository workshopDeviceRepository,
         ICurrentTenant currentTenant)
     {
         _taskManager = taskManager;
         _taskRepository = taskRepository;
         _fileObjectRepository = fileObjectRepository;
+        _workshopDeviceRepository = workshopDeviceRepository;
         _currentTenant = currentTenant;
     }
 
@@ -37,12 +40,21 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
             throw new UserFriendlyException("请选择有效的文件");
         if (input == null)
             throw new UserFriendlyException("请提供遥测文件参数");
+
+        NormalizeTelemetryInput(input);
+
         if (input.DeviceCode.IsNullOrWhiteSpace())
             throw new UserFriendlyException("设备编码不能为空");
         if (input.ChannelType.IsNullOrWhiteSpace())
             throw new UserFriendlyException("通道类型不能为空");
-        if (input.TestInfo == null || input.TestInfo.StartTime.IsNullOrWhiteSpace())
-            throw new UserFriendlyException("测试开始时间不能为空");
+        if (input.FileTime.IsNullOrWhiteSpace())
+            throw new UserFriendlyException("文件生成时间不能为空");
+        if (input.TestInfo == null)
+            throw new UserFriendlyException("测试信息不能为空");
+
+        var device = await _workshopDeviceRepository.FindByCodeAsync(input.DeviceCode);
+        if (device == null)
+            throw new UserFriendlyException($"设备编码不存在: {input.DeviceCode}");
 
         var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
         if (extension != ".csv")
@@ -60,7 +72,7 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
 
         var fileObject = await _fileObjectRepository.GetAsync(task.FileObjectId);
 
-        return new WorkshopTelemetryTaskDto
+        var dto = new WorkshopTelemetryTaskDto
         {
             Id = task.Id,
             FileObjectId = task.FileObjectId,
@@ -74,6 +86,8 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
             ProcessedAt = task.ProcessedAt,
             ExpiresAt = task.ExpiresAt
         };
+        FillTelemetryMetadata(dto, fileObject);
+        return dto;
     }
 
     /// <summary>
@@ -83,7 +97,7 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
     {
         var (task, fileObject) = await _taskManager.GetTaskWithFileAsync(id);
 
-        return new WorkshopTelemetryTaskDto
+        var dto = new WorkshopTelemetryTaskDto
         {
             Id = task.Id,
             FileObjectId = task.FileObjectId,
@@ -97,6 +111,8 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
             ProcessedAt = task.ProcessedAt,
             ExpiresAt = task.ExpiresAt
         };
+        FillTelemetryMetadata(dto, fileObject);
+        return dto;
     }
 
     /// <summary>
@@ -123,7 +139,7 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
         foreach (var task in result.Items)
         {
             var fileObject = await _fileObjectRepository.FindAsync(task.FileObjectId);
-            dtos.Add(new WorkshopTelemetryTaskDto
+            var dto = new WorkshopTelemetryTaskDto
             {
                 Id = task.Id,
                 FileObjectId = task.FileObjectId,
@@ -136,7 +152,9 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
                 CreatedAt = task.CreatedAt,
                 ProcessedAt = task.ProcessedAt,
                 ExpiresAt = task.ExpiresAt
-            });
+            };
+            FillTelemetryMetadata(dto, fileObject);
+            dtos.Add(dto);
         }
 
         return new PagedResultDto<WorkshopTelemetryTaskDto>(result.TotalCount, dtos);
@@ -201,6 +219,69 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
         return result;
     }
 
+    private static void NormalizeTelemetryInput(WorkshopTelemetryFileInput input)
+    {
+        input.ChannelType = input.ChannelType?.Trim();
+        input.CurrentFile = input.CurrentFile?.Trim();
+        input.DeviceCode = input.DeviceCode?.Trim();
+        input.FileTime = input.FileTime?.Trim();
+        input.Group = input.Group?.Trim();
+        input.IfSource = input.IfSource?.Trim();
+        input.Source = input.Source?.Trim();
+
+        if (input.TestInfo == null)
+        {
+            return;
+        }
+
+        input.TestInfo.PilotSN = input.TestInfo.PilotSN?.Trim();
+        input.TestInfo.ShipName = input.TestInfo.ShipName?.Trim();
+        input.TestInfo.StartTime = input.TestInfo.StartTime?.Trim();
+        input.TestInfo.EndTime = input.TestInfo.EndTime?.Trim();
+        input.TestInfo.StartTime2 = input.TestInfo.StartTime2?.Trim();
+        input.TestInfo.EndTime2 = input.TestInfo.EndTime2?.Trim();
+        input.TestInfo.TestBy = input.TestInfo.TestBy?.Trim();
+        input.TestInfo.TestDate = input.TestInfo.TestDate?.Trim();
+        input.TestInfo.TestedDeviceCode = input.TestInfo.TestedDeviceCode?.Trim();
+        input.TestInfo.TestedDeviceName = input.TestInfo.TestedDeviceName?.Trim();
+    }
+
+    private static void FillTelemetryMetadata(
+        WorkshopTelemetryTaskDto dto,
+        FileObject fileObject)
+    {
+        dto.DeviceCode = GetTelemetryExtraString(fileObject, "DeviceCode");
+        dto.ChannelType = GetTelemetryExtraString(fileObject, "ChannelType");
+        dto.FileTime = GetTelemetryExtraString(fileObject, "FileTime");
+        dto.StartTime = GetTelemetryExtraString(fileObject, "TestInfo.StartTime");
+        dto.EndTime = GetTelemetryExtraString(fileObject, "TestInfo.EndTime");
+        dto.StartTime2 = GetTelemetryExtraString(fileObject, "TestInfo.StartTime2");
+        dto.EndTime2 = GetTelemetryExtraString(fileObject, "TestInfo.EndTime2");
+        dto.TestDate = GetTelemetryExtraString(fileObject, "TestInfo.TestDate");
+        dto.TestedDeviceCode = GetTelemetryExtraString(fileObject, "TestInfo.TestedDeviceCode");
+        dto.TestedDeviceName = GetTelemetryExtraString(fileObject, "TestInfo.TestedDeviceName");
+        dto.PilotSN = GetTelemetryExtraString(fileObject, "TestInfo.PilotSN");
+        dto.ShipName = GetTelemetryExtraString(fileObject, "TestInfo.ShipName");
+        dto.TestBy = GetTelemetryExtraString(fileObject, "TestInfo.TestBy");
+
+        dto.ExtraProperties.Clear();
+        if (fileObject == null)
+        {
+            return;
+        }
+
+        foreach (var item in fileObject.ExtraProperties)
+        {
+            dto.ExtraProperties[item.Key] = item.Value;
+        }
+    }
+
+    private static string GetTelemetryExtraString(FileObject fileObject, string propertyName)
+    {
+        var value = fileObject?.GetProperty(TestWorkshopConsts.TelemetryInputExtraPropertiesPrefix + propertyName);
+        return Convert.ToString(value);
+    }
+
     private static void AddTelemetryExtraProperties(
         ExtraPropertyDictionary target,
         object source,
@@ -219,18 +300,14 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
             }
 
             var value = property.GetValue(source);
-            if (value == null)
-            {
-                continue;
-            }
-
             var key = prefix + property.Name;
             var propertyType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
             if (IsSimpleValue(propertyType))
             {
+                // 即使值为 null 也保留键，保证详情页能看到完整的请求参数结构。
                 target[key] = value;
             }
-            else
+            else if (value != null)
             {
                 AddTelemetryExtraProperties(target, value, key + ".");
             }

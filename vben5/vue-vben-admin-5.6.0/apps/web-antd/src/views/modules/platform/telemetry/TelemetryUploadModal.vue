@@ -193,19 +193,26 @@ function buildInput(
   file: File,
 ): WorkshopTelemetryFileInput {
   const now = new Date();
+  const testStartTime = new Date(now.getTime() - 10 * 60 * 1000);
+  const testEndTime = new Date(now.getTime() - 5 * 60 * 1000);
+  const testStartTime2 = new Date(now.getTime() - 4 * 60 * 1000);
   const source = buildSource(now);
 
   return {
     channelType: values.channelType,
     currentFile: file.name,
     deviceCode: values.deviceCode,
+    fileTime: formatDateTime(now),
     fileCount: 1,
     group: `${values.deviceCode}_${source}`,
     source,
     testInfo: {
+      endTime: formatDateTime(testEndTime),
+      endTime2: formatDateTime(now),
       pilotSN: values.pilotSN,
       shipName: values.shipName,
-      startTime: formatDateTime(now),
+      startTime: formatDateTime(testStartTime),
+      startTime2: formatDateTime(testStartTime2),
       testBy: values.testBy,
       testDate: formatDate(now),
       testedDeviceCode: values.testedDeviceCode,

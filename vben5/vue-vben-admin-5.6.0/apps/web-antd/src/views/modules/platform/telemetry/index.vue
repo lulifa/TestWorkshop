@@ -11,7 +11,7 @@ import type { VxeGridListeners, VxeGridProps } from '#/adapter/vxe-table';
 
 import { computed, defineAsyncComponent, h, onMounted, ref } from 'vue';
 
-import { Page, useVbenModal } from '@vben/common-ui';
+import { Page, useVbenDrawer, useVbenModal } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 import { downloadFileFromBlob } from '@vben/utils';
 
@@ -25,6 +25,7 @@ import {
   DeleteOutlined,
   DownloadOutlined,
   EyeOutlined,
+  InfoCircleOutlined,
   RedoOutlined,
   UploadOutlined,
 } from '@ant-design/icons-vue';
@@ -175,17 +176,34 @@ const gridOptions: VxeGridProps<WorkshopTelemetryTaskDto> = {
       width: 50,
     },
     {
+      align: 'left',
       field: 'fileName',
-      minWidth: 220,
+      minWidth: 360,
       slots: { default: 'fileName' },
       title: $t('TestWorkshop.Telemetry:FileName'),
     },
     {
-      align: 'right',
-      field: 'fileSize',
-      formatter: ({ cellValue }) => formatFileSize(cellValue),
-      minWidth: 100,
-      title: $t('TestWorkshop.Telemetry:FileSize'),
+      field: 'deviceCode',
+      minWidth: 140,
+      title: $t('TestWorkshop.Telemetry:DeviceCode'),
+    },
+    {
+      align: 'center',
+      field: 'channelType',
+      minWidth: 140,
+      slots: { default: 'channelType' },
+      title: $t('TestWorkshop.Telemetry:ChannelType'),
+    },
+    {
+      field: 'fileTime',
+      minWidth: 170,
+      title: $t('TestWorkshop.Telemetry:FileTime'),
+    },
+    {
+      field: 'createdAt',
+      formatter: ({ cellValue }) => formatToDateTime(cellValue),
+      minWidth: 150,
+      title: $t('TestWorkshop.DisplayName:CreatedAt'),
     },
     {
       align: 'center',
@@ -198,21 +216,7 @@ const gridOptions: VxeGridProps<WorkshopTelemetryTaskDto> = {
       align: 'right',
       field: 'recordCount',
       minWidth: 100,
-      title: $t('TestWorkshop.Telemetry:RecordCount'),
-    },
-    {
-      align: 'center',
-      field: 'retryCount',
-      minWidth: 90,
-      title: $t('TestWorkshop.Telemetry:RetryCount'),
-    },
-    {
-      field: 'nextRetryTime',
-      formatter: ({ cellValue }) => {
-        return cellValue ? formatToDateTime(cellValue) : '';
-      },
-      minWidth: 150,
-      title: $t('TestWorkshop.Telemetry:NextRetryTime'),
+      title: $t('TestWorkshop.Telemetry:SampleCount'),
     },
     {
       field: 'error',
@@ -221,25 +225,11 @@ const gridOptions: VxeGridProps<WorkshopTelemetryTaskDto> = {
       title: $t('TestWorkshop.Telemetry:Error'),
     },
     {
-      field: 'createdAt',
-      formatter: ({ cellValue }) => formatToDateTime(cellValue),
-      minWidth: 150,
-      title: $t('TestWorkshop.DisplayName:CreatedAt'),
-    },
-    {
-      field: 'processedAt',
-      formatter: ({ cellValue }) => {
-        return cellValue ? formatToDateTime(cellValue) : '';
-      },
-      minWidth: 150,
-      title: $t('TestWorkshop.Telemetry:ProcessedAt'),
-    },
-    {
       field: 'action',
       fixed: 'right',
       slots: { default: 'action' },
       title: $t('AbpUi.Actions'),
-      width: 220,
+      width: 340,
     },
   ],
   exportConfig: {},
@@ -319,6 +309,12 @@ const [TelemetryUploadModal, telemetryUploadModalApi] = useVbenModal({
   ),
 });
 
+const [TelemetryDetailDrawer, telemetryDetailDrawerApi] = useVbenDrawer({
+  connectedComponent: defineAsyncComponent(
+    () => import('./TelemetryDetailDrawer.vue'),
+  ),
+});
+
 const { PreviewModal, openFilePreview } = useFilePreview();
 
 async function loadStatistics() {
@@ -347,6 +343,11 @@ function onUploadCsv() {
 async function onPreviewCsv(row: WorkshopTelemetryTaskDto) {
   const file = await getFileApi(row.fileObjectId);
   openFilePreview(file);
+}
+
+function onDetail(row: WorkshopTelemetryTaskDto) {
+  telemetryDetailDrawerApi.setData(row);
+  telemetryDetailDrawerApi.open();
 }
 
 async function onUploadChange() {
@@ -478,9 +479,15 @@ onMounted(async () => {
         </Space>
       </template>
       <template #fileName="{ row }">
-        <span class="block max-w-[260px] truncate" :title="row.fileName">
+        <span class="block max-w-[520px] truncate" :title="row.fileName">
           {{ row.fileName }}
         </span>
+      </template>
+      <template #channelType="{ row }">
+        <Tag v-if="row.channelType" color="blue">
+          {{ row.channelType }}
+        </Tag>
+        <span v-else>-</span>
       </template>
       <template #status="{ row }">
         <Tag :color="statusColorMap[row.status]">
@@ -497,7 +504,14 @@ onMounted(async () => {
       </template>
       <template #action="{ row }">
         <div class="flex flex-row justify-center">
-          <Space>
+          <Space :size="4">
+            <Button
+              :icon="h(InfoCircleOutlined)"
+              type="link"
+              @click="onDetail(row)"
+            >
+              {{ $t('TestWorkshop.Telemetry:Parameters') }}
+            </Button>
             <Button
               :icon="h(EyeOutlined)"
               type="link"
@@ -526,6 +540,7 @@ onMounted(async () => {
       </template>
     </Grid>
     <PreviewModal />
+    <TelemetryDetailDrawer />
     <TelemetryUploadModal @change="onUploadChange" />
   </Page>
 </template>

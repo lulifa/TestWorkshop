@@ -24,6 +24,13 @@ public class WorkshopTelemetryFileInput
     [DynamicStringLength(typeof(TestWorkshopConsts), nameof(TestWorkshopConsts.MaxLength64))]
     public string DeviceCode { get; set; }
 
+
+    /// <summary>
+    /// 文件生成时间（格式：yyyy-MM-dd HH:mm:ss）
+    /// </summary>
+    [Required]
+    public string FileTime { get; set; }
+
     /// <summary>
     /// 本次任务包含的文件总数
     /// </summary>
@@ -57,7 +64,7 @@ public class WorkshopTelemetryFileInput
 public class TestInfoInput
 {
     /// <summary>
-    /// 引航员序列号
+    /// 先导部件序列号（如 "Yk23D875"，Pilot = 先导，非“引航员”）
     /// </summary>
     [DynamicStringLength(typeof(TestWorkshopConsts), nameof(TestWorkshopConsts.MaxLength64))]
     public string PilotSN { get; set; }
@@ -69,10 +76,24 @@ public class TestInfoInput
     public string ShipName { get; set; }
 
     /// <summary>
-    /// 测试开始时间（格式：yyyy-MM-dd HH:mm:ss）
+    /// 测试开始时间1（格式：yyyy-MM-dd HH:mm:ss，可为空）
     /// </summary>
-    [Required]
     public string StartTime { get; set; }
+
+    /// <summary>
+    /// 测试结束时间1（格式：yyyy-MM-dd HH:mm:ss，可为空）
+    /// </summary>
+    public string EndTime { get; set; }
+
+    /// <summary>
+    /// 测试开始时间2（格式：yyyy-MM-dd HH:mm:ss，可为空）
+    /// </summary>
+    public string StartTime2 { get; set; }
+
+    /// <summary>
+    /// 测试结束时间2（格式：yyyy-MM-dd HH:mm:ss，可为空）
+    /// </summary>
+    public string EndTime2 { get; set; }
 
     /// <summary>
     /// 测试人
@@ -81,7 +102,7 @@ public class TestInfoInput
     public string TestBy { get; set; }
 
     /// <summary>
-    /// 测试日期（格式：yyyy-MM-dd）
+    /// 测试日期（格式：yyyy-MM-dd，可为空）
     /// </summary>
     public string TestDate { get; set; }
 

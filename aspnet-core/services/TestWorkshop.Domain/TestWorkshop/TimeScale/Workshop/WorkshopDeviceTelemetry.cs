@@ -17,10 +17,35 @@ public class WorkshopDeviceTelemetry
     public long TaskId { get; set; }
 
     /// <summary>
-    /// 数据采集时间（对应上传数据里的 StartTime）
+    /// 数据采集时间（对应上传参数里的 FileTime）
     /// 用于：按时间查询、排序、在界面上展示“该段波形的采集时间”
     /// </summary>
     public DateTime Timestamp { get; set; }
+
+    /// <summary>
+    /// 测试开始时间1（下位机原始本地时间，不携带时区）
+    /// </summary>
+    public DateTime? StartTime { get; set; }
+
+    /// <summary>
+    /// 测试结束时间1（下位机原始本地时间，不携带时区）
+    /// </summary>
+    public DateTime? EndTime { get; set; }
+
+    /// <summary>
+    /// 测试开始时间2（下位机原始本地时间，不携带时区）
+    /// </summary>
+    public DateTime? StartTime2 { get; set; }
+
+    /// <summary>
+    /// 测试结束时间2（下位机原始本地时间，不携带时区）
+    /// </summary>
+    public DateTime? EndTime2 { get; set; }
+
+    /// <summary>
+    /// 测试业务日期（下位机原始本地时间，不携带时区）
+    /// </summary>
+    public DateTime? TestDate { get; set; }
 
 
     // ===== 遥测数据本身 =====

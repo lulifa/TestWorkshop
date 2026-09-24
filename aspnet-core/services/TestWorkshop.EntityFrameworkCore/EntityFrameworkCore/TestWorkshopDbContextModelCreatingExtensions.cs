@@ -119,6 +119,11 @@ public static class TestWorkshopDbContextModelCreatingExtensions
                 .HasMaxLength(TestWorkshopConsts.MaxLength128)
                 .IsRequired();
             b.Property(p => p.Timestamp).HasColumnType("timestamp with time zone").IsRequired();
+            b.Property(p => p.StartTime).HasColumnType("timestamp without time zone");
+            b.Property(p => p.EndTime).HasColumnType("timestamp without time zone");
+            b.Property(p => p.StartTime2).HasColumnType("timestamp without time zone");
+            b.Property(p => p.EndTime2).HasColumnType("timestamp without time zone");
+            b.Property(p => p.TestDate).HasColumnType("timestamp without time zone");
             b.Property(p => p.DeviceId).IsRequired();
             b.Property(p => p.TaskId).IsRequired();
             b.Property(p => p.Value).IsRequired();

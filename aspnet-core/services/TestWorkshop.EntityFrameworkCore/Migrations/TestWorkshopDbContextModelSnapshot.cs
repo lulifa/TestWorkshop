@@ -816,6 +816,12 @@ namespace TestWorkshop.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)");
 
+                    b.Property<DateTime?>("EndTime")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("EndTime2")
+                        .HasColumnType("timestamp without time zone");
+
                     b.Property<string>("PilotSN")
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
@@ -824,12 +830,21 @@ namespace TestWorkshop.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)");
 
+                    b.Property<DateTime?>("StartTime")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("StartTime2")
+                        .HasColumnType("timestamp without time zone");
+
                     b.Property<long>("TaskId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("TestBy")
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
+
+                    b.Property<DateTime>("TestDate")
+                        .HasColumnType("date");
 
                     b.Property<string>("TestedDeviceCode")
                         .HasMaxLength(64)

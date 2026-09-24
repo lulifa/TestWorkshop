@@ -253,13 +253,18 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
         command.CommandText =
             $"""
              INSERT INTO {fullTableName}
-                 ("DeviceId", "TaskId", "Timestamp", "ChannelType", "Value",
+                 ("DeviceId", "TaskId", "Timestamp", "StartTime", "EndTime", "StartTime2", "EndTime2", "TestDate", "ChannelType", "Value",
                   "TestedDeviceCode", "TestedDeviceName", "PilotSN", "ShipName", "TestBy")
              VALUES
-                 (@DeviceId, @TaskId, @Timestamp, @ChannelType, @Value,
+                 (@DeviceId, @TaskId, @Timestamp, @StartTime, @EndTime, @StartTime2, @EndTime2, @TestDate, @ChannelType, @Value,
                   @TestedDeviceCode, @TestedDeviceName, @PilotSN, @ShipName, @TestBy)
              ON CONFLICT ("DeviceId", "Timestamp", "ChannelType") DO UPDATE SET
                  "TaskId" = EXCLUDED."TaskId",
+                 "StartTime" = EXCLUDED."StartTime",
+                 "EndTime" = EXCLUDED."EndTime",
+                 "StartTime2" = EXCLUDED."StartTime2",
+                 "EndTime2" = EXCLUDED."EndTime2",
+                 "TestDate" = EXCLUDED."TestDate",
                  "Value" = EXCLUDED."Value",
                  "TestedDeviceCode" = EXCLUDED."TestedDeviceCode",
                  "TestedDeviceName" = EXCLUDED."TestedDeviceName",
@@ -271,6 +276,11 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
         command.Parameters.Add(new NpgsqlParameter("DeviceId", NpgsqlDbType.Uuid) { Value = deviceId });
         command.Parameters.Add(new NpgsqlParameter("TaskId", NpgsqlDbType.Bigint) { Value = taskId });
         command.Parameters.Add(new NpgsqlParameter("Timestamp", NpgsqlDbType.TimestampTz) { Value = metadata.Timestamp });
+        command.Parameters.Add(new NpgsqlParameter("StartTime", NpgsqlDbType.Timestamp) { Value = metadata.StartTime ?? (object)DBNull.Value });
+        command.Parameters.Add(new NpgsqlParameter("EndTime", NpgsqlDbType.Timestamp) { Value = metadata.EndTime ?? (object)DBNull.Value });
+        command.Parameters.Add(new NpgsqlParameter("StartTime2", NpgsqlDbType.Timestamp) { Value = metadata.StartTime2 ?? (object)DBNull.Value });
+        command.Parameters.Add(new NpgsqlParameter("EndTime2", NpgsqlDbType.Timestamp) { Value = metadata.EndTime2 ?? (object)DBNull.Value });
+        command.Parameters.Add(new NpgsqlParameter("TestDate", NpgsqlDbType.Timestamp) { Value = metadata.TestDate ?? (object)DBNull.Value });
         command.Parameters.Add(new NpgsqlParameter("ChannelType", NpgsqlDbType.Text) { Value = metadata.ChannelType });
         command.Parameters.Add(new NpgsqlParameter("Value", NpgsqlDbType.Array | NpgsqlDbType.Double) { Value = values });
         command.Parameters.Add(new NpgsqlParameter("TestedDeviceCode", NpgsqlDbType.Text) { Value = metadata.TestedDeviceCode ?? (object)DBNull.Value });
@@ -286,28 +296,64 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
     {
         var deviceCode = GetRequiredString(fileObject, "DeviceCode").Trim();
         var channelType = GetRequiredString(fileObject, "ChannelType").Trim();
-        var startTimeText = GetRequiredString(fileObject, "TestInfo.StartTime").Trim();
-
-        if (!DateTime.TryParse(
-                startTimeText,
-                CultureInfo.InvariantCulture,
-                DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
-                out var timestamp))
-        {
-            throw new InvalidDataException($"测试开始时间格式错误: {startTimeText}");
-        }
 
         return new TelemetryFileMetadata
         {
             DeviceCode = deviceCode,
             ChannelType = channelType,
-            Timestamp = timestamp,
+            Timestamp = GetRequiredDateTime(fileObject, "FileTime", "文件生成时间"),
+            StartTime = GetOptionalDateTime(fileObject, "TestInfo.StartTime", "测试开始时间1"),
+            EndTime = GetOptionalDateTime(fileObject, "TestInfo.EndTime", "测试结束时间1"),
+            StartTime2 = GetOptionalDateTime(fileObject, "TestInfo.StartTime2", "测试开始时间2"),
+            EndTime2 = GetOptionalDateTime(fileObject, "TestInfo.EndTime2", "测试结束时间2"),
+            TestDate = GetOptionalDateTime(fileObject, "TestInfo.TestDate", "测试日期"),
             TestedDeviceCode = GetOptionalString(fileObject, "TestInfo.TestedDeviceCode"),
             TestedDeviceName = GetOptionalString(fileObject, "TestInfo.TestedDeviceName"),
             PilotSN = GetOptionalString(fileObject, "TestInfo.PilotSN"),
             ShipName = GetOptionalString(fileObject, "TestInfo.ShipName"),
             TestBy = GetOptionalString(fileObject, "TestInfo.TestBy")
         };
+    }
+
+    private static DateTime GetRequiredDateTime(
+        FileObject fileObject,
+        string propertyName,
+        string displayName)
+    {
+        var value = GetRequiredString(fileObject, propertyName);
+        if (!DateTime.TryParse(
+                value,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.AllowWhiteSpaces,
+                out var result))
+        {
+            throw new InvalidDataException($"{displayName}格式错误: {value}");
+        }
+
+        return DateTime.SpecifyKind(result, DateTimeKind.Unspecified);
+    }
+
+    private static DateTime? GetOptionalDateTime(
+        FileObject fileObject,
+        string propertyName,
+        string displayName)
+    {
+        var value = GetOptionalString(fileObject, propertyName);
+        if (value.IsNullOrWhiteSpace())
+        {
+            return null;
+        }
+
+        if (!DateTime.TryParse(
+                value,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+                out var result))
+        {
+            throw new InvalidDataException($"{displayName}格式错误: {value}");
+        }
+
+        return result;
     }
 
     private static string GetRequiredString(FileObject fileObject, string propertyName)
@@ -324,7 +370,7 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
     private static string GetOptionalString(FileObject fileObject, string propertyName)
     {
         var value = fileObject.GetProperty(TelemetryInputPrefix + propertyName);
-        return Convert.ToString(value, CultureInfo.InvariantCulture);
+        return Convert.ToString(value, CultureInfo.InvariantCulture)?.Trim();
     }
 
     private async Task<Dictionary<string, Guid>> GetDeviceMapAsync(
@@ -391,6 +437,11 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
         public string DeviceCode { get; init; }
         public string ChannelType { get; init; }
         public DateTime Timestamp { get; init; }
+        public DateTime? StartTime { get; init; }
+        public DateTime? EndTime { get; init; }
+        public DateTime? StartTime2 { get; init; }
+        public DateTime? EndTime2 { get; init; }
+        public DateTime? TestDate { get; init; }
         public string TestedDeviceCode { get; init; }
         public string TestedDeviceName { get; init; }
         public string PilotSN { get; init; }

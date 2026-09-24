@@ -13,8 +13,8 @@ using Volo.Abp.EntityFrameworkCore;
 namespace TestWorkshop.Migrations
 {
     [DbContext(typeof(TestWorkshopDbContext))]
-    [Migration("20260924013804_AddTimeScaleDb")]
-    partial class AddTimeScaleDb
+    [Migration("20260924033946_InitialDB")]
+    partial class InitialDB
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -805,52 +805,6 @@ namespace TestWorkshop.Migrations
                         .IsUnique();
 
                     b.ToTable("AppWorkshopDevices", (string)null);
-                });
-
-            modelBuilder.Entity("TestWorkshop.TimeScale.WorkshopDeviceTelemetry", b =>
-                {
-                    b.Property<Guid>("DeviceId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("Timestamp")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ChannelType")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.Property<string>("PilotSN")
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
-                    b.Property<string>("ShipName")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.Property<long>("TaskId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("TestBy")
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
-                    b.Property<string>("TestedDeviceCode")
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
-                    b.Property<string>("TestedDeviceName")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.PrimitiveCollection<double[]>("Value")
-                        .IsRequired()
-                        .HasColumnType("double precision[]");
-
-                    b.HasKey("DeviceId", "Timestamp", "ChannelType");
-
-                    b.HasIndex("TaskId", "Timestamp");
-
-                    b.ToTable("AppWorkshopDeviceTelemetries", (string)null);
                 });
 
             modelBuilder.Entity("TestWorkshop.TimeScale.WorkshopTelemetryTask", b =>

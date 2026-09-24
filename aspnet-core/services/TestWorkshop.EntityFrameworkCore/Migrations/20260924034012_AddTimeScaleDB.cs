@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace TestWorkshop.Migrations
 {
     /// <inheritdoc />
-    public partial class AddTimeScaleDb : Migration
+    public partial class AddTimeScaleDB : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -19,6 +19,11 @@ namespace TestWorkshop.Migrations
                     Timestamp = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     ChannelType = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
                     TaskId = table.Column<long>(type: "bigint", nullable: false),
+                    StartTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    EndTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    StartTime2 = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    EndTime2 = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    TestDate = table.Column<DateTime>(type: "date", nullable: false),
                     Value = table.Column<double[]>(type: "double precision[]", nullable: false),
                     TestedDeviceCode = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
                     TestedDeviceName = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: true),
@@ -30,22 +35,6 @@ namespace TestWorkshop.Migrations
                 {
                     table.PrimaryKey("PK_AppWorkshopDeviceTelemetries", x => new { x.DeviceId, x.Timestamp, x.ChannelType });
                 });
-
-            // TimescaleDB 扩展核心配置（手动添加）
-            migrationBuilder.Sql(@"CREATE EXTENSION IF NOT EXISTS timescaledb;");
-
-            migrationBuilder.Sql(@"
-            SELECT create_hypertable(
-                '""AppWorkshopDeviceTelemetries""',
-                'Timestamp',
-                if_not_exists => TRUE
-            );
-        ");
-
-            migrationBuilder.Sql(@"
-            CREATE INDEX IF NOT EXISTS idx_device_time
-            ON ""AppWorkshopDeviceTelemetries"" (""DeviceId"", ""Timestamp"" DESC);
-        ");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AppWorkshopDeviceTelemetries_TaskId_Timestamp",

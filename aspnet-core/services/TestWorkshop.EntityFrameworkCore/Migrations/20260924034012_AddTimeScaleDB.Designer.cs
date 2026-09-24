@@ -13,8 +13,8 @@ using Volo.Abp.EntityFrameworkCore;
 namespace TestWorkshop.Migrations
 {
     [DbContext(typeof(TestWorkshopDbContext))]
-    [Migration("20260924013728_InitialDb")]
-    partial class InitialDb
+    [Migration("20260924034012_AddTimeScaleDB")]
+    partial class AddTimeScaleDB
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -805,6 +805,67 @@ namespace TestWorkshop.Migrations
                         .IsUnique();
 
                     b.ToTable("AppWorkshopDevices", (string)null);
+                });
+
+            modelBuilder.Entity("TestWorkshop.TimeScale.WorkshopDeviceTelemetry", b =>
+                {
+                    b.Property<Guid>("DeviceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ChannelType")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<DateTime?>("EndTime")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("EndTime2")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("PilotSN")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("ShipName")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<DateTime?>("StartTime")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("StartTime2")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<long>("TaskId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("TestBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTime>("TestDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("TestedDeviceCode")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("TestedDeviceName")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.PrimitiveCollection<double[]>("Value")
+                        .IsRequired()
+                        .HasColumnType("double precision[]");
+
+                    b.HasKey("DeviceId", "Timestamp", "ChannelType");
+
+                    b.HasIndex("TaskId", "Timestamp");
+
+                    b.ToTable("AppWorkshopDeviceTelemetries", (string)null);
                 });
 
             modelBuilder.Entity("TestWorkshop.TimeScale.WorkshopTelemetryTask", b =>
