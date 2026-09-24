@@ -29,7 +29,6 @@ const channelTypeOptions = [
 const { getListApi: getDeviceListApi } = useWorkshopDeviceApi();
 const { uploadApi } = useWorkshopTelemetryApi();
 
-const generatedFileName = ref('');
 const selectedFile = ref<File>();
 const selectedFileList = ref<UploadFile[]>([]);
 
@@ -40,6 +39,7 @@ const [Form, formApi] = useVbenForm({
     },
   },
   handleSubmit: onSubmit,
+  wrapperClass: 'grid-cols-2',
   schema: [
     {
       component: 'ApiSelect',
@@ -62,6 +62,7 @@ const [Form, formApi] = useVbenForm({
         valueField: 'value',
       },
       fieldName: 'deviceCode',
+      formItemClass: 'col-span-1',
       label: $t('TestWorkshop.Telemetry:DeviceCode'),
       rules: 'selectRequired',
     },
@@ -72,51 +73,143 @@ const [Form, formApi] = useVbenForm({
         options: channelTypeOptions,
       },
       fieldName: 'channelType',
+      formItemClass: 'col-span-1',
       label: $t('TestWorkshop.Telemetry:ChannelType'),
       rules: 'selectRequired',
     },
     {
+      component: 'DatePicker',
+      componentProps: {
+        showTime: true,
+        type: 'datetime',
+        valueFormat: 'YYYY-MM-DD HH:mm:ss',
+      },
+      fieldName: 'fileTime',
+      formItemClass: 'col-span-1',
+      label: $t('TestWorkshop.Telemetry:FileTime'),
+      rules: 'selectRequired',
+    },
+    {
+      component: 'InputNumber',
+      componentProps: {
+        max: 1000,
+        min: 1,
+      },
+      fieldName: 'fileCount',
+      formItemClass: 'col-span-1',
+      label: $t('TestWorkshop.Telemetry:FileCount'),
+    },
+    {
       component: 'Input',
       fieldName: 'testedDeviceCode',
+      formItemClass: 'col-span-1',
       label: $t('TestWorkshop.Telemetry:TestedDeviceCode'),
       rules: 'required',
     },
     {
       component: 'Input',
       fieldName: 'testedDeviceName',
+      formItemClass: 'col-span-1',
       label: $t('TestWorkshop.Telemetry:TestedDeviceName'),
       rules: 'required',
     },
     {
       component: 'Input',
       fieldName: 'pilotSN',
+      formItemClass: 'col-span-1',
       label: $t('TestWorkshop.Telemetry:PilotSN'),
     },
     {
       component: 'Input',
       fieldName: 'shipName',
+      formItemClass: 'col-span-1',
       label: $t('TestWorkshop.Telemetry:ShipName'),
     },
     {
       component: 'Input',
       fieldName: 'testBy',
+      formItemClass: 'col-span-1',
       label: $t('TestWorkshop.Telemetry:TestBy'),
     },
     {
-      component: 'InputNumber',
+      component: 'DatePicker',
       componentProps: {
-        max: 1_000_000,
-        min: 1,
+        showTime: true,
+        type: 'datetime',
+        valueFormat: 'YYYY-MM-DD HH:mm:ss',
       },
-      fieldName: 'recordCount',
-      label: $t('TestWorkshop.Telemetry:RecordCount'),
-      rules: 'required',
+      fieldName: 'startTime',
+      formItemClass: 'col-span-1',
+      label: $t('TestWorkshop.Telemetry:StartTime'),
+    },
+    {
+      component: 'DatePicker',
+      componentProps: {
+        showTime: true,
+        type: 'datetime',
+        valueFormat: 'YYYY-MM-DD HH:mm:ss',
+      },
+      fieldName: 'endTime',
+      formItemClass: 'col-span-1',
+      label: $t('TestWorkshop.Telemetry:EndTime'),
+    },
+    {
+      component: 'DatePicker',
+      componentProps: {
+        showTime: true,
+        type: 'datetime',
+        valueFormat: 'YYYY-MM-DD HH:mm:ss',
+      },
+      fieldName: 'startTime2',
+      formItemClass: 'col-span-1',
+      label: $t('TestWorkshop.Telemetry:StartTime2'),
+    },
+    {
+      component: 'DatePicker',
+      componentProps: {
+        showTime: true,
+        type: 'datetime',
+        valueFormat: 'YYYY-MM-DD HH:mm:ss',
+      },
+      fieldName: 'endTime2',
+      formItemClass: 'col-span-1',
+      label: $t('TestWorkshop.Telemetry:EndTime2'),
+    },
+    {
+      component: 'DatePicker',
+      componentProps: {
+        showTime: true,
+        type: 'datetime',
+        valueFormat: 'YYYY-MM-DD HH:mm:ss',
+      },
+      fieldName: 'testDate',
+      formItemClass: 'col-span-1',
+      label: $t('TestWorkshop.Telemetry:TestDate'),
+    },
+    {
+      component: 'Input',
+      fieldName: 'group',
+      formItemClass: 'col-span-1',
+      label: $t('TestWorkshop.Telemetry:Group'),
+    },
+    {
+      component: 'Input',
+      fieldName: 'ifSource',
+      formItemClass: 'col-span-1',
+      label: $t('TestWorkshop.Telemetry:IfSource'),
+    },
+    {
+      component: 'Input',
+      fieldName: 'source',
+      formItemClass: 'col-span-1',
+      label: $t('TestWorkshop.Telemetry:Source'),
     },
   ],
   showDefaultActions: false,
 });
 
 const [Modal, modalApi] = useVbenModal({
+  class: 'w-[980px] max-w-[96vw]',
   onConfirm: async () => {
     await formApi.validateAndSubmitForm();
   },
@@ -125,19 +218,15 @@ const [Modal, modalApi] = useVbenModal({
       onInit();
     }
   },
-  title: $t('TestWorkshop.Telemetry:SimulateUpload'),
+  title: $t('TestWorkshop.Telemetry:UploadCsv'),
 });
 
 function onInit() {
   formApi.resetForm();
   selectedFile.value = undefined;
   selectedFileList.value = [];
-  generatedFileName.value = buildGeneratedFileName();
   formApi.setValues({
-    channelType: 'PilotDriveFb',
-    recordCount: 128,
-    testedDeviceCode: 'DUT-A1',
-    testedDeviceName: '水泵A',
+    fileCount: 1,
   });
 }
 
@@ -166,8 +255,12 @@ function onRemoveFile() {
 }
 
 async function onSubmit(values: Record<string, any>) {
-  const file = selectedFile.value ?? buildCsvFile(values);
-  await uploadFile(file, buildInput(values, file));
+  if (!selectedFile.value) {
+    message.warning($t('TestWorkshop.Telemetry:PleaseSelectCsv'));
+    return;
+  }
+
+  await uploadFile(selectedFile.value, buildInput(values, selectedFile.value));
 }
 
 async function uploadFile(file: File, input: WorkshopTelemetryFileInput) {
@@ -182,102 +275,32 @@ async function uploadFile(file: File, input: WorkshopTelemetryFileInput) {
   }
 }
 
-function buildGeneratedFileName() {
-  const now = new Date();
-  const pad = (value: number) => String(value).padStart(2, '0');
-  return `simulated-telemetry-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}.csv`;
-}
-
 function buildInput(
   values: Record<string, any>,
   file: File,
 ): WorkshopTelemetryFileInput {
-  const now = new Date();
-  const testStartTime = new Date(now.getTime() - 10 * 60 * 1000);
-  const testEndTime = new Date(now.getTime() - 5 * 60 * 1000);
-  const testStartTime2 = new Date(now.getTime() - 4 * 60 * 1000);
-  const source = buildSource(now);
-
   return {
     channelType: values.channelType,
     currentFile: file.name,
     deviceCode: values.deviceCode,
-    fileTime: formatDateTime(now),
-    fileCount: 1,
-    group: `${values.deviceCode}_${source}`,
-    source,
+    fileTime: values.fileTime,
+    fileCount: values.fileCount ?? 1,
+    group: values.group,
+    ifSource: values.ifSource,
+    source: values.source,
     testInfo: {
-      endTime: formatDateTime(testEndTime),
-      endTime2: formatDateTime(now),
+      endTime: values.endTime,
+      endTime2: values.endTime2,
       pilotSN: values.pilotSN,
       shipName: values.shipName,
-      startTime: formatDateTime(testStartTime),
-      startTime2: formatDateTime(testStartTime2),
+      startTime: values.startTime,
+      startTime2: values.startTime2,
       testBy: values.testBy,
-      testDate: formatDate(now),
+      testDate: values.testDate,
       testedDeviceCode: values.testedDeviceCode,
       testedDeviceName: values.testedDeviceName,
     },
   };
-}
-
-function buildCsvFile(values: Record<string, any>): File {
-  const recordCount = Number(values.recordCount);
-  const lines: string[] = [];
-
-  for (let index = 0; index < recordCount; index += 1) {
-    const value = generateChannelValue(values.channelType, index);
-    lines.push(`${index},${value.toFixed(4)}`);
-  }
-
-  const blob = new Blob([lines.join('\n')], {
-    type: 'text/csv',
-  });
-  return new File([blob], generatedFileName.value, {
-    type: 'text/csv',
-  });
-}
-
-function generateChannelValue(channelType: string, index: number) {
-  const wave = Math.sin(index / 10);
-  switch (channelType) {
-    case 'BackPressure': {
-      return 5 + wave + Math.random() * 0.2;
-    }
-    case 'Cmd': {
-      return 50 + wave * 10;
-    }
-    case 'FivaFbCurrent': {
-      return 12 + wave * 1.5 + Math.random() * 0.2;
-    }
-    case 'Flow': {
-      return 30 + wave * 5 + Math.random();
-    }
-    case 'FopPressure': {
-      return 20 + wave * 3 + Math.random() * 0.5;
-    }
-    case 'PilotPosFb':
-    case 'PlungerFb': {
-      return 25 + wave * 2 + Math.random() * 0.2;
-    }
-    default: {
-      return 45 + wave * 5 + Math.random() * 0.5;
-    }
-  }
-}
-
-function formatDateTime(value: Date) {
-  return `${formatDate(value)} ${String(value.getHours()).padStart(2, '0')}:${String(value.getMinutes()).padStart(2, '0')}:${String(value.getSeconds()).padStart(2, '0')}`;
-}
-
-function formatDate(value: Date) {
-  const pad = (part: number) => String(part).padStart(2, '0');
-  return `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())}`;
-}
-
-function buildSource(value: Date) {
-  const pad = (part: number) => String(part).padStart(2, '0');
-  return `@${value.getFullYear()}-${value.getMonth() + 1}-${value.getDate()}-${pad(value.getHours())}-${pad(value.getMinutes())}-${pad(value.getSeconds())}`;
 }
 </script>
 
@@ -290,14 +313,14 @@ function buildSource(value: Date) {
         <div class="min-w-0">
           <div class="truncate text-sm font-medium">
             {{
-              selectedFile?.name ?? $t('TestWorkshop.Telemetry:NoCsvSelected')
+              selectedFile?.name ?? $t('TestWorkshop.Telemetry:PleaseSelectCsv')
             }}
           </div>
           <div class="text-xs text-gray-500">
             {{
               selectedFile
                 ? $t('TestWorkshop.Telemetry:UseSelectedCsv')
-                : $t('TestWorkshop.Telemetry:GenerateMode')
+                : $t('TestWorkshop.Telemetry:PleaseSelectCsv')
             }}
           </div>
         </div>
@@ -323,11 +346,6 @@ function buildSource(value: Date) {
             </Button>
           </Upload>
         </div>
-      </div>
-
-      <div class="text-xs text-gray-500">
-        {{ $t('TestWorkshop.Telemetry:GeneratedFileName') }}:
-        {{ selectedFile?.name ?? generatedFileName }}
       </div>
 
       <Form />

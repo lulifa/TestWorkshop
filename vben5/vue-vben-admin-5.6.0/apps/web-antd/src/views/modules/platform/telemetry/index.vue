@@ -330,10 +330,6 @@ async function loadStatistics() {
   statistics.value = await getStatisticsApi();
 }
 
-function onSimulateUpload() {
-  telemetryUploadModalApi.open();
-}
-
 function onDownloadTemplate() {
   const template = ['0,20', '1,20', '2,20', '3,20'].join('\n');
   const blob = new Blob([template], {
@@ -477,13 +473,6 @@ onMounted(async () => {
           </Button>
           <Button :icon="h(DownloadOutlined)" @click="onDownloadTemplate">
             {{ $t('TestWorkshop.Telemetry:DownloadTemplate') }}
-          </Button>
-          <Button
-            :icon="h(UploadOutlined)"
-            type="primary"
-            @click="onSimulateUpload"
-          >
-            {{ $t('TestWorkshop.Telemetry:SimulateUpload') }}
           </Button>
         </Space>
       </template>
