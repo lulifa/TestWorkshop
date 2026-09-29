@@ -60,8 +60,27 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
             foreach (var telemetryTask in tasks)
             {
                 using var processScope = _scopeFactory.CreateScope();
-                await ProcessTaskAsync(telemetryTask.Id, processScope.ServiceProvider, ct);
+                try
+                {
+                    await ProcessTaskAsync(
+                        telemetryTask.Id,
+                        telemetryTask.TenantId,
+                        processScope.ServiceProvider,
+                        ct);
+                }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "任务 {TaskId} 处理时发生未捕获异常", telemetryTask.Id);
+                }
             }
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -69,22 +88,36 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
         }
     }
 
-    private async Task ProcessTaskAsync(long taskId, IServiceProvider sp, CancellationToken ct)
+    private async Task ProcessTaskAsync(
+        long taskId,
+        Guid? tenantId,
+        IServiceProvider sp,
+        CancellationToken ct)
     {
-        var taskManager = sp.GetRequiredService<IWorkshopTelemetryTaskManager>();
-        var taskRepo = sp.GetRequiredService<IWorkshopTelemetryTaskRepository>();
-        var db = sp.GetRequiredService<TestWorkshopDbContext>();
         var currentTenant = sp.GetRequiredService<ICurrentTenant>();
 
-        var (telemetryTask, fileObject) = await taskManager.GetTaskWithFileAsync(taskId);
-        if (telemetryTask == null || fileObject == null || telemetryTask.Status != 1)
+        using (currentTenant.Change(tenantId))
         {
-            _logger.LogWarning("任务 {TaskId} 或关联文件不存在，或状态不是 Processing，已跳过", taskId);
-            return;
-        }
+            // DbContext 和仓储必须在租户切换后解析，否则 ABP 会按 Host 上下文构造数据过滤器。
+            var taskManager = sp.GetRequiredService<IWorkshopTelemetryTaskManager>();
+            var taskRepo = sp.GetRequiredService<IWorkshopTelemetryTaskRepository>();
+            var db = sp.GetRequiredService<TestWorkshopDbContext>();
 
-        using (currentTenant.Change(telemetryTask.TenantId))
-        {
+            var (telemetryTask, fileObject) = await taskManager.GetTaskWithFileAsync(taskId);
+            if (telemetryTask == null || telemetryTask.Status != 1)
+            {
+                _logger.LogWarning("任务 {TaskId} 状态不是 Processing，已跳过", taskId);
+                return;
+            }
+
+            if (fileObject == null)
+            {
+                telemetryTask.MarkAsFailed("关联的 FileObject 不存在");
+                await taskRepo.UpdateAsync(telemetryTask);
+                await db.SaveChangesAsync(ct);
+                return;
+            }
+
             try
             {
                 var metadata = ReadMetadata(fileObject);
@@ -123,11 +156,15 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
                     metadata.ChannelType,
                     telemetryTask.RecordCount);
             }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "任务 {TaskId} 处理失败", taskId);
 
-                telemetryTask.MarkAsFailed(ex.Message);
+                telemetryTask.MarkAsFailed(TruncateError(ex.Message));
                 await taskRepo.UpdateAsync(telemetryTask);
                 await db.SaveChangesAsync(ct);
             }
@@ -145,29 +182,31 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
     {
         // 文件读取和 CSV 解析已完成，事务只覆盖最终的波形写入与状态提交。
         await db.Database.OpenConnectionAsync(ct);
-        await using var transaction = await db.Database.BeginTransactionAsync(ct);
-
         try
         {
-            await UpsertTelemetryAsync(
-                db,
-                transaction.GetDbTransaction() as NpgsqlTransaction
-                ?? throw new InvalidOperationException("无法获取 NpgsqlTransaction"),
-                deviceId,
-                telemetryTask.Id,
-                metadata,
-                values,
-                ct);
+            await using var transaction = await db.Database.BeginTransactionAsync(ct);
+            try
+            {
+                await UpsertTelemetryAsync(
+                    db,
+                    transaction.GetDbTransaction() as NpgsqlTransaction
+                    ?? throw new InvalidOperationException("无法获取 NpgsqlTransaction"),
+                    deviceId,
+                    telemetryTask.Id,
+                    metadata,
+                    values,
+                    ct);
 
-            telemetryTask.MarkAsSuccess(values.Length);
-            await taskRepo.UpdateAsync(telemetryTask);
-            await db.SaveChangesAsync(ct);
-            await transaction.CommitAsync(ct);
-        }
-        catch
-        {
-            await transaction.RollbackAsync(ct);
-            throw;
+                telemetryTask.MarkAsSuccess(values.Length);
+                await taskRepo.UpdateAsync(telemetryTask);
+                await db.SaveChangesAsync(ct);
+                await transaction.CommitAsync(ct);
+            }
+            catch
+            {
+                await transaction.RollbackAsync(ct);
+                throw;
+            }
         }
         finally
         {
@@ -250,6 +289,8 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
 
         await using var command = transaction.Connection.CreateCommand();
         command.Transaction = transaction;
+        // 大数组从应用端发送到 PostgreSQL 时可能超过默认 30 秒。
+        command.CommandTimeout = 120;
         command.CommandText =
             $"""
              INSERT INTO {fullTableName}
@@ -324,13 +365,13 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
         if (!DateTime.TryParse(
                 value,
                 CultureInfo.InvariantCulture,
-                DateTimeStyles.AllowWhiteSpaces,
+                DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
                 out var result))
         {
             throw new InvalidDataException($"{displayName}格式错误: {value}");
         }
 
-        return DateTime.SpecifyKind(result, DateTimeKind.Unspecified);
+        return DateTime.SpecifyKind(result, DateTimeKind.Utc);
     }
 
     private static DateTime? GetOptionalDateTime(
@@ -347,13 +388,13 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
         if (!DateTime.TryParse(
                 value,
                 CultureInfo.InvariantCulture,
-                DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+                DateTimeStyles.AllowWhiteSpaces,
                 out var result))
         {
             throw new InvalidDataException($"{displayName}格式错误: {value}");
         }
 
-        return result;
+        return DateTime.SpecifyKind(result, DateTimeKind.Unspecified);
     }
 
     private static string GetRequiredString(FileObject fileObject, string propertyName)
@@ -403,14 +444,20 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
             var stuckTime = now - StuckTaskTimeout;
             var retryTime = now + StuckTaskRetryDelay;
 
-            const string sql = """
-                               UPDATE "AppWorkshopTelemetryTasks"
-                               SET "Status" = 0,
-                                   "RetryCount" = "RetryCount" + 1,
-                                   "NextRetryTime" = @RetryTime
-                               WHERE "Status" = 1
-                                 AND "ProcessingStartedAt" < @StuckTime
-                               """;
+            var entityType = db.Model.FindEntityType(typeof(WorkshopTelemetryTask));
+            var rawTableName = entityType?.GetTableName() ?? "AppWorkshopTelemetryTasks";
+            var schema = entityType?.GetSchema();
+            var fullTableName = string.IsNullOrWhiteSpace(schema)
+                ? $"\"{rawTableName}\""
+                : $"\"{schema}\".\"{rawTableName}\"";
+            var sql = $"""
+                       UPDATE {fullTableName}
+                       SET "Status" = 0,
+                           "RetryCount" = "RetryCount" + 1,
+                           "NextRetryTime" = @RetryTime
+                       WHERE "Status" = 1
+                         AND "ProcessingStartedAt" < @StuckTime
+                       """;
 
             var rowsAffected = await db.Database.ExecuteSqlRawAsync(
                 sql,
@@ -447,5 +494,15 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
         public string PilotSN { get; init; }
         public string ShipName { get; init; }
         public string TestBy { get; init; }
+    }
+
+    private static string TruncateError(string error)
+    {
+        const int maxErrorLength = 2000;
+        return error.IsNullOrWhiteSpace()
+            ? "未知错误"
+            : error.Length <= maxErrorLength
+                ? error
+                : error[..maxErrorLength];
     }
 }
