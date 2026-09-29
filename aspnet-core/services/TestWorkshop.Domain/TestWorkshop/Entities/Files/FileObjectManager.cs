@@ -6,17 +6,20 @@ public class FileObjectManager : DomainService, IFileObjectManager
     private readonly IFileObjectRepository _fileObjectRepository;
     private readonly IGuidGenerator _guidGenerator;
     private readonly ILogger<FileObjectManager> _logger;
+    private readonly string _blobRootPath;
 
     public FileObjectManager(
         IBlobContainer blobContainer,
         IFileObjectRepository fileObjectRepository,
         IGuidGenerator guidGenerator,
-        ILogger<FileObjectManager> logger)
+        ILogger<FileObjectManager> logger,
+        IConfiguration configuration)
     {
         _blobContainer = blobContainer;
         _fileObjectRepository = fileObjectRepository;
         _guidGenerator = guidGenerator;
         _logger = logger;
+        _blobRootPath = configuration["Blob:Path"];
     }
 
     /// <summary>
@@ -88,6 +91,7 @@ public class FileObjectManager : DomainService, IFileObjectManager
             try
             {
                 await _blobContainer.DeleteAsync(oldFile.BlobPath);
+                DeleteEmptyParentDirectories(oldFile.BlobPath);
             }
             catch (Exception ex)
             {
@@ -149,6 +153,7 @@ public class FileObjectManager : DomainService, IFileObjectManager
             try
             {
                 await _blobContainer.DeleteAsync(file.BlobPath);
+                DeleteEmptyParentDirectories(file.BlobPath);
             }
             catch (Exception ex)
             {
@@ -175,6 +180,7 @@ public class FileObjectManager : DomainService, IFileObjectManager
         try
         {
             await _blobContainer.DeleteAsync(file.BlobPath);
+            DeleteEmptyParentDirectories(file.BlobPath);
         }
         catch (Exception ex)
         {
@@ -283,6 +289,7 @@ public class FileObjectManager : DomainService, IFileObjectManager
                 try
                 {
                     await _blobContainer.DeleteAsync(oldFile.BlobPath);
+                    DeleteEmptyParentDirectories(oldFile.BlobPath);
                 }
                 catch (Exception ex)
                 {
@@ -300,6 +307,67 @@ public class FileObjectManager : DomainService, IFileObjectManager
 
         _logger.LogInformation("文件上传成功: {BlobPath}", blobPath);
         return fileObject;
+    }
+
+    /// <summary>
+    /// 删除文件后向上清理空目录，遇到根目录或非空目录立即停止。
+    /// </summary>
+    private void DeleteEmptyParentDirectories(string blobPath)
+    {
+        if (_blobRootPath.IsNullOrWhiteSpace() || blobPath.IsNullOrWhiteSpace())
+        {
+            return;
+        }
+
+        var rootPath = Path.GetFullPath(_blobRootPath);
+        if (rootPath.Length > 1)
+        {
+            rootPath = rootPath.TrimEnd(
+                Path.DirectorySeparatorChar,
+                Path.AltDirectorySeparatorChar);
+        }
+
+        var relativeBlobPath = blobPath
+            .Replace('\\', Path.DirectorySeparatorChar)
+            .Replace('/', Path.DirectorySeparatorChar)
+            .TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        var filePath = Path.GetFullPath(Path.Combine(rootPath, relativeBlobPath));
+        var relativePath = Path.GetRelativePath(rootPath, filePath);
+        var comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+
+        if (Path.IsPathRooted(relativePath)
+            || relativePath == ".."
+            || relativePath.StartsWith($"..{Path.DirectorySeparatorChar}", comparison))
+        {
+            _logger.LogWarning("跳过清理非法文件路径: {BlobPath}", blobPath);
+            return;
+        }
+
+        var directory = Path.GetDirectoryName(filePath);
+        while (!directory.IsNullOrWhiteSpace()
+               && !string.Equals(directory, rootPath, comparison))
+        {
+            try
+            {
+                if (!Directory.Exists(directory)
+                    || Directory.EnumerateFileSystemEntries(directory).Any())
+                {
+                    break;
+                }
+
+                Directory.Delete(directory);
+                _logger.LogDebug("已删除空目录: {Directory}", directory);
+                directory = Path.GetDirectoryName(directory);
+            }
+            catch (Exception ex)
+            {
+                // 并发上传可能在这期间创建文件，目录变成非空后停止清理即可。
+                _logger.LogDebug(ex, "清理空目录失败，已停止: {Directory}", directory);
+                break;
+            }
+        }
     }
 
     /// <summary>
