@@ -60,6 +60,7 @@ public class WorkshopTelemetryTaskRepository :
     /// 分页查询任务列表（JOIN FileObject 表获取文件信息）
     /// </summary>
     public async Task<PagedResultDto<WorkshopTelemetryTask>> GetPagedListAsync(
+        Guid? orderId = null,
         string fileName = null,
         int? status = null,
         DateTime? startTime = null,
@@ -74,6 +75,11 @@ public class WorkshopTelemetryTaskRepository :
                     join file in dbContext.FileObjects on task.FileObjectId equals file.Id into fileGroup
                     from file in fileGroup.DefaultIfEmpty()
                     select new { Task = task, File = file };
+
+        if (orderId.HasValue)
+        {
+            query = query.Where(x => x.Task.OrderId == orderId.Value);
+        }
 
         // 按文件名过滤
         if (!string.IsNullOrWhiteSpace(fileName))

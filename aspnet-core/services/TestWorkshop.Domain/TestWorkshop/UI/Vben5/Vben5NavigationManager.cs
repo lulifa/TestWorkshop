@@ -52,6 +52,15 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
             .SetProperty("title", "page.business.workshopdevices"));
         business.AddItem(
           new ApplicationMenu(
+              name: "Vben5BusinessWorkshopOrders",
+              displayName: "订单管理",
+              url: "/business/workshoporders",
+              component: "/business/workshoporders/index",
+              icon: "lucide:clipboard-list",
+              description: "订单管理")
+            .SetProperty("title", "page.business.workshoporders"));
+        business.AddItem(
+          new ApplicationMenu(
               name: "Vben5BusinessMyBroadcast",
               displayName: "我的通告",
               url: "/business/notifications/my-broadcast",

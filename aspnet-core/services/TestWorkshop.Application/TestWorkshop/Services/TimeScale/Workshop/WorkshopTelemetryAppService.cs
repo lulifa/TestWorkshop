@@ -14,6 +14,8 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
     private readonly IWorkshopTelemetryTaskRepository _taskRepository;
     private readonly IFileObjectRepository _fileObjectRepository;
     private readonly IWorkshopDeviceRepository _workshopDeviceRepository;
+    private readonly IWorkshopOrderManager _orderManager;
+    private readonly IWorkshopOrderRepository _orderRepository;
     private readonly ICurrentTenant _currentTenant;
 
     public WorkshopTelemetryAppService(
@@ -21,12 +23,16 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
         IWorkshopTelemetryTaskRepository taskRepository,
         IFileObjectRepository fileObjectRepository,
         IWorkshopDeviceRepository workshopDeviceRepository,
+        IWorkshopOrderManager orderManager,
+        IWorkshopOrderRepository orderRepository,
         ICurrentTenant currentTenant)
     {
         _taskManager = taskManager;
         _taskRepository = taskRepository;
         _fileObjectRepository = fileObjectRepository;
         _workshopDeviceRepository = workshopDeviceRepository;
+        _orderManager = orderManager;
+        _orderRepository = orderRepository;
         _currentTenant = currentTenant;
     }
 
@@ -56,6 +62,12 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
         if (device == null)
             throw new UserFriendlyException($"设备编码不存在: {input.DeviceCode}");
 
+        var (dataStartTime, dataEndTime) = ResolveTelemetryTimeRange(input);
+        var order = await _orderManager.ResolveTelemetryOrderAsync(
+            device.Id,
+            dataStartTime,
+            dataEndTime);
+
         var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
         if (extension != ".csv")
             throw new UserFriendlyException("仅支持 .csv 文件");
@@ -65,6 +77,7 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
             stream: file.OpenReadStream(),
             fileName: file.FileName,
             contentType: file.ContentType,
+            orderId: order.Id,
             extraProperties: extraProperties
         );
 
@@ -76,6 +89,8 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
         {
             Id = task.Id,
             FileObjectId = task.FileObjectId,
+            OrderId = order.Id,
+            OrderNo = order.OrderNo,
             FileName = fileObject?.FileName,
             FileSize = fileObject?.FileSize ?? 0,
             Status = task.Status,
@@ -96,11 +111,16 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
     public async Task<WorkshopTelemetryTaskDto> GetAsync(long id)
     {
         var (task, fileObject) = await _taskManager.GetTaskWithFileAsync(id);
+        var order = task.OrderId.HasValue
+            ? await _orderRepository.FindAsync(task.OrderId.Value)
+            : null;
 
         var dto = new WorkshopTelemetryTaskDto
         {
             Id = task.Id,
             FileObjectId = task.FileObjectId,
+            OrderId = task.OrderId,
+            OrderNo = order?.OrderNo,
             FileName = fileObject?.FileName,
             FileSize = fileObject?.FileSize ?? 0,
             Status = task.Status,
@@ -128,6 +148,7 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
 
         // ✅ 用 Repository 已有的方法
         var result = await _taskRepository.GetPagedListAsync(
+            input.OrderId,
             input.FileName,
             input.Status,
             input.StartTime,
@@ -135,14 +156,29 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
             input.SkipCount,
             input.MaxResultCount);
 
+        var orderIds = result.Items
+            .Where(x => x.OrderId.HasValue)
+            .Select(x => x.OrderId.Value)
+            .Distinct()
+            .ToList();
+        var orders = orderIds.Count == 0
+            ? new List<WorkshopOrder>()
+            : await _orderRepository.GetListAsync(x => orderIds.Contains(x.Id));
+        var orderMap = orders.ToDictionary(x => x.Id);
+
         var dtos = new List<WorkshopTelemetryTaskDto>();
         foreach (var task in result.Items)
         {
             var fileObject = await _fileObjectRepository.FindAsync(task.FileObjectId);
+            var order = task.OrderId.HasValue
+                ? orderMap.GetValueOrDefault(task.OrderId.Value)
+                : null;
             var dto = new WorkshopTelemetryTaskDto
             {
                 Id = task.Id,
                 FileObjectId = task.FileObjectId,
+                OrderId = task.OrderId,
+                OrderNo = order?.OrderNo,
                 FileName = fileObject?.FileName,
                 FileSize = fileObject?.FileSize ?? 0,
                 Status = task.Status,
@@ -244,6 +280,49 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
         input.TestInfo.TestDate = input.TestInfo.TestDate?.Trim();
         input.TestInfo.TestedDeviceCode = input.TestInfo.TestedDeviceCode?.Trim();
         input.TestInfo.TestedDeviceName = input.TestInfo.TestedDeviceName?.Trim();
+    }
+
+    private static (DateTime StartTime, DateTime EndTime) ResolveTelemetryTimeRange(
+        WorkshopTelemetryFileInput input)
+    {
+        var startTime = ParseTelemetryTime(
+            input.TestInfo.StartTime.IsNullOrWhiteSpace()
+                ? input.FileTime
+                : input.TestInfo.StartTime,
+            "测试开始时间");
+
+        var endTimeText = input.TestInfo.EndTime2.IsNullOrWhiteSpace()
+            ? input.TestInfo.EndTime
+            : input.TestInfo.EndTime2;
+        var endTime = ParseTelemetryTime(
+            endTimeText.IsNullOrWhiteSpace() ? input.FileTime : endTimeText,
+            "测试结束时间");
+
+        if (endTime < startTime)
+        {
+            throw new UserFriendlyException("测试结束时间不能早于测试开始时间");
+        }
+
+        return (startTime, endTime);
+    }
+
+    private static DateTime ParseTelemetryTime(string value, string fieldName)
+    {
+        if (value.IsNullOrWhiteSpace())
+        {
+            throw new UserFriendlyException($"{fieldName}不能为空");
+        }
+
+        if (!DateTime.TryParse(
+                value,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.AllowWhiteSpaces,
+                out var parsed))
+        {
+            throw new UserFriendlyException($"{fieldName}格式错误: {value}");
+        }
+
+        return DateTime.SpecifyKind(parsed, DateTimeKind.Unspecified);
     }
 
     private static void FillTelemetryExtraProperties(

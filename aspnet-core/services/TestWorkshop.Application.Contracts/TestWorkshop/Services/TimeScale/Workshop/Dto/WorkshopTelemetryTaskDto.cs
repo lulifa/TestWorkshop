@@ -11,6 +11,16 @@ public class WorkshopTelemetryTaskDto : ExtensibleEntityDto<long>
     public Guid FileObjectId { get; set; }
 
     /// <summary>
+    /// 关联的订单ID。历史数据可能为空，新上传数据必须有关联订单。
+    /// </summary>
+    public Guid? OrderId { get; set; }
+
+    /// <summary>
+    /// 关联订单号
+    /// </summary>
+    public string OrderNo { get; set; }
+
+    /// <summary>
     /// 原始文件名（来自 FileObject）
     /// </summary>
     public string FileName { get; set; }

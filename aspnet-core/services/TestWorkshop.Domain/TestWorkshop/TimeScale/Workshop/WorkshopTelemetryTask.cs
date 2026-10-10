@@ -12,6 +12,11 @@ public class WorkshopTelemetryTask : Entity<long>, IMultiTenant
     public Guid FileObjectId { get; private set; }
 
     /// <summary>
+    /// 关联订单ID。历史数据允许为空，新上传数据必须关联订单。
+    /// </summary>
+    public Guid? OrderId { get; private set; }
+
+    /// <summary>
     /// 处理状态 (0 = Pending, 1 = Processing, 2 = Success, 3 = Failed)
     /// </summary>
     public int Status { get; private set; }
@@ -68,9 +73,11 @@ public class WorkshopTelemetryTask : Entity<long>, IMultiTenant
     public WorkshopTelemetryTask(
         Guid fileObjectId,
         DateTime expiresAt,
-        Guid? tenantId = null)
+        Guid? tenantId = null,
+        Guid? orderId = null)
     {
         FileObjectId = fileObjectId;
+        OrderId = orderId;
         Status = 0;
         RetryCount = 0;
         CreatedAt = DateTime.UtcNow;

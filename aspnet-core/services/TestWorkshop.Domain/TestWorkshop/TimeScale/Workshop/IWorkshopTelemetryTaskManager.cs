@@ -10,6 +10,7 @@ public interface IWorkshopTelemetryTaskManager : IDomainService
         Stream stream,
         string fileName,
         string contentType,
+        Guid orderId,
         ExtraPropertyDictionary extraProperties = null);
 
     /// <summary>

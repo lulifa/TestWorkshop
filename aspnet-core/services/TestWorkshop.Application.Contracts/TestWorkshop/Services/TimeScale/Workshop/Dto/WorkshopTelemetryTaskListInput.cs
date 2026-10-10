@@ -3,6 +3,11 @@
 public class WorkshopTelemetryTaskListInput : PagedAndSortedResultRequestDto, IEnablePaging
 {
     /// <summary>
+    /// 订单ID过滤
+    /// </summary>
+    public Guid? OrderId { get; set; }
+
+    /// <summary>
     /// 文件名过滤
     /// </summary>
     public string FileName { get; set; }

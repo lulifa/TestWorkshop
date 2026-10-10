@@ -365,13 +365,24 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
         if (!DateTime.TryParse(
                 value,
                 CultureInfo.InvariantCulture,
-                DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+                DateTimeStyles.AllowWhiteSpaces,
                 out var result))
         {
             throw new InvalidDataException($"{displayName}格式错误: {value}");
         }
 
-        return DateTime.SpecifyKind(result, DateTimeKind.Utc);
+        if (result.Kind == DateTimeKind.Utc)
+        {
+            return result;
+        }
+
+        if (result.Kind == DateTimeKind.Local)
+        {
+            return result.ToUniversalTime();
+        }
+
+        return TimeZoneInfo.ConvertTimeToUtc(
+            DateTime.SpecifyKind(result, DateTimeKind.Unspecified));
     }
 
     private static DateTime? GetOptionalDateTime(

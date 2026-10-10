@@ -6,4 +6,5 @@ export * from './platform/menus';
 export * from './platform/notification';
 export * from './platform/routes';
 export * from './workshopDevices';
+export * from './workshopOrders';
 export * from './workshopTelemetry';

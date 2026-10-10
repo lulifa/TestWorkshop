@@ -34,6 +34,7 @@ public class WorkshopTelemetryTaskManager : DomainService, IWorkshopTelemetryTas
         Stream stream,
         string fileName,
         string contentType,
+        Guid orderId,
         ExtraPropertyDictionary extraProperties = null)
     {
         // 1. 先创建任务并保存，拿到 Task.Id
@@ -42,7 +43,8 @@ public class WorkshopTelemetryTaskManager : DomainService, IWorkshopTelemetryTas
         var task = new WorkshopTelemetryTask(
             fileObjectId: fileObjectId,
             expiresAt: DateTime.UtcNow.AddDays(_options.RetentionDays),
-            tenantId: CurrentTenant.Id
+            tenantId: CurrentTenant.Id,
+            orderId: orderId
         );
         await _taskRepository.InsertAsync(task);
         await _unitOfWorkManager.Current.SaveChangesAsync();

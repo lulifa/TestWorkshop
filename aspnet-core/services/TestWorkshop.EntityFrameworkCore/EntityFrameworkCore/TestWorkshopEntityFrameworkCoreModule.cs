@@ -35,6 +35,7 @@ public class TestWorkshopEntityFrameworkCoreModule : AbpModule
 
             options.AddRepository<WorkshopDevice, WorkshopDeviceRepository>();
             options.AddRepository<WorkshopTelemetryTask, WorkshopTelemetryTaskRepository>();
+            options.AddRepository<WorkshopOrder, EfCoreWorkshopOrderRepository>();
 
             options.AddRepository<Menu, EfCoreMenuRepository>();
             options.AddRepository<UserMenu, EfCoreUserMenuRepository>();

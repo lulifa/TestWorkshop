@@ -38,6 +38,60 @@ public static class TestWorkshopDbContextModelCreatingExtensions
             b.HasIndex(x => new { x.TenantId, x.Code }).IsUnique();
         });
 
+        builder.Entity<WorkshopOrder>(b =>
+        {
+            b.ToTable(TestWorkshopDbProperties.DbTablePrefix + "WorkshopOrders", TestWorkshopDbProperties.DbSchema);
+
+            b.HasKey(x => x.Id);
+
+            b.Property(p => p.OrderNo)
+                .HasMaxLength(TestWorkshopConsts.MaxLength64)
+                .IsRequired()
+                .HasComment("订单号");
+
+            b.Property(p => p.DeviceId)
+                .IsRequired()
+                .HasComment("关联设备");
+
+            b.Property(p => p.Status)
+                .IsRequired()
+                .HasComment("测试状态 (0=Draft 1=Testing 2=Completed 3=Cancelled)");
+
+            b.Property(p => p.TestStartedAt)
+                .HasColumnType("timestamp without time zone")
+                .HasComment("实际测试开始时间（本地时间）");
+
+            b.Property(p => p.TestEndedAt)
+                .HasColumnType("timestamp without time zone")
+                .HasComment("实际测试结束时间（本地时间）");
+
+            b.Property(p => p.TenantId)
+                .HasComment("租户ID");
+
+            b.ConfigureByConvention();
+
+            b.HasOne<WorkshopDevice>()
+                .WithMany()
+                .HasForeignKey(x => x.DeviceId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            b.HasIndex(x => x.OrderNo)
+                .IsUnique()
+                .HasFilter("\"TenantId\" IS NULL");
+            b.HasIndex(x => new { x.TenantId, x.OrderNo })
+                .IsUnique()
+                .HasFilter("\"TenantId\" IS NOT NULL");
+            b.HasIndex(x => new { x.DeviceId, x.CreationTime })
+                .HasDatabaseName("IX_AppWorkshopOrders_DeviceId_CreationTime");
+            b.HasIndex(x => new { x.Status, x.TestStartedAt });
+
+            // PostgreSQL 部分唯一索引：一个设备只能有一个测试中订单。
+            b.HasIndex(x => x.DeviceId)
+                .IsUnique()
+                .HasFilter("\"Status\" = 1")
+                .HasDatabaseName("UX_AppWorkshopOrders_DeviceId_Testing");
+        });
+
         // ✅ WorkshopTelemetryTask 配置（清爽版）
         builder.Entity<WorkshopTelemetryTask>(b =>
         {
@@ -49,6 +103,9 @@ public static class TestWorkshopDbContextModelCreatingExtensions
             b.Property(p => p.FileObjectId)
                 .IsRequired()
                 .HasComment("关联的 FileObject ID");
+
+            b.Property(p => p.OrderId)
+                .HasComment("关联订单ID，历史数据可能为空");
 
             // 业务状态
             b.Property(p => p.Status)
@@ -96,7 +153,14 @@ public static class TestWorkshopDbContextModelCreatingExtensions
 
             b.ConfigureByConvention();
 
+            b.HasOne<WorkshopOrder>()
+                .WithMany()
+                .HasForeignKey(x => x.OrderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             b.HasIndex(x => x.FileObjectId);
+
+            b.HasIndex(x => x.OrderId);
 
             b.HasIndex(x => new { x.Status, x.CreatedAt });
 
