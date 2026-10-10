@@ -692,29 +692,6 @@ namespace TestWorkshop.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AppWorkshopTelemetryTasks",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    FileObjectId = table.Column<Guid>(type: "uuid", nullable: false, comment: "关联的 FileObject ID"),
-                    Status = table.Column<int>(type: "integer", nullable: false, comment: "处理状态 (0=Pending 1=Processing 2=Success 3=Failed)"),
-                    RetryCount = table.Column<int>(type: "integer", nullable: false, defaultValue: 0, comment: "重试次数"),
-                    NextRetryTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, comment: "下次重试时间"),
-                    Error = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true, comment: "错误信息"),
-                    RecordCount = table.Column<int>(type: "integer", nullable: true, comment: "解析的记录数"),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, comment: "创建时间"),
-                    ProcessedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, comment: "处理完成时间"),
-                    ProcessingStartedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, comment: "任务开始处理的时间，用于判断是否卡死"),
-                    ExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, comment: "过期时间"),
-                    TenantId = table.Column<Guid>(type: "uuid", nullable: true, comment: "租户ID")
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AppWorkshopTelemetryTasks", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "OpenIddictApplications",
                 columns: table => new
                 {
@@ -1046,6 +1023,38 @@ namespace TestWorkshop.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "AppWorkshopOrders",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    OrderNo = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false, comment: "订单号"),
+                    DeviceId = table.Column<Guid>(type: "uuid", nullable: false, comment: "关联设备"),
+                    Status = table.Column<int>(type: "integer", nullable: false, comment: "测试状态 (0=Draft 1=Testing 2=Completed 3=Cancelled)"),
+                    TestStartedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true, comment: "实际测试开始时间（本地时间）"),
+                    TestEndedAt = table.Column<DateTime>(type: "timestamp without time zone", nullable: true, comment: "实际测试结束时间（本地时间）"),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: true, comment: "租户ID"),
+                    ExtraProperties = table.Column<string>(type: "text", nullable: false),
+                    ConcurrencyStamp = table.Column<string>(type: "character varying(40)", maxLength: 40, nullable: false),
+                    CreationTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    CreatorId = table.Column<Guid>(type: "uuid", nullable: true),
+                    LastModificationTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    LastModifierId = table.Column<Guid>(type: "uuid", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    DeleterId = table.Column<Guid>(type: "uuid", nullable: true),
+                    DeletionTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AppWorkshopOrders", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AppWorkshopOrders_AppWorkshopDevices_DeviceId",
+                        column: x => x.DeviceId,
+                        principalTable: "AppWorkshopDevices",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "OpenIddictAuthorizations",
                 columns: table => new
                 {
@@ -1091,6 +1100,37 @@ namespace TestWorkshop.Migrations
                         principalTable: "AbpEntityChanges",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AppWorkshopTelemetryTasks",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    FileObjectId = table.Column<Guid>(type: "uuid", nullable: false, comment: "关联的 FileObject ID"),
+                    OrderId = table.Column<Guid>(type: "uuid", nullable: true, comment: "关联订单ID，历史数据可能为空"),
+                    ReplacedByTaskId = table.Column<long>(type: "bigint", nullable: true, comment: "被哪个任务替换"),
+                    Status = table.Column<int>(type: "integer", nullable: false, comment: "处理状态 (0=Pending 1=Processing 2=Success 3=Failed)"),
+                    RetryCount = table.Column<int>(type: "integer", nullable: false, defaultValue: 0, comment: "重试次数"),
+                    NextRetryTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, comment: "下次重试时间"),
+                    Error = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true, comment: "错误信息"),
+                    RecordCount = table.Column<int>(type: "integer", nullable: true, comment: "解析的记录数"),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, comment: "创建时间"),
+                    ProcessedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, comment: "处理完成时间"),
+                    ProcessingStartedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, comment: "任务开始处理的时间，用于判断是否卡死"),
+                    ExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, comment: "过期时间"),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: true, comment: "租户ID")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AppWorkshopTelemetryTasks", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AppWorkshopTelemetryTasks_AppWorkshopOrders_OrderId",
+                        column: x => x.OrderId,
+                        principalTable: "AppWorkshopOrders",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -1398,6 +1438,37 @@ namespace TestWorkshop.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_AppWorkshopOrders_DeviceId_CreationTime",
+                table: "AppWorkshopOrders",
+                columns: new[] { "DeviceId", "CreationTime" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppWorkshopOrders_OrderNo",
+                table: "AppWorkshopOrders",
+                column: "OrderNo",
+                unique: true,
+                filter: "\"TenantId\" IS NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppWorkshopOrders_Status_TestStartedAt",
+                table: "AppWorkshopOrders",
+                columns: new[] { "Status", "TestStartedAt" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppWorkshopOrders_TenantId_OrderNo",
+                table: "AppWorkshopOrders",
+                columns: new[] { "TenantId", "OrderNo" },
+                unique: true,
+                filter: "\"TenantId\" IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "UX_AppWorkshopOrders_DeviceId_Testing",
+                table: "AppWorkshopOrders",
+                column: "DeviceId",
+                unique: true,
+                filter: "\"Status\" = 1");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_AppWorkshopTelemetryTasks_CreatedAt",
                 table: "AppWorkshopTelemetryTasks",
                 column: "CreatedAt");
@@ -1411,6 +1482,16 @@ namespace TestWorkshop.Migrations
                 name: "IX_AppWorkshopTelemetryTasks_FileObjectId",
                 table: "AppWorkshopTelemetryTasks",
                 column: "FileObjectId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppWorkshopTelemetryTasks_OrderId",
+                table: "AppWorkshopTelemetryTasks",
+                column: "OrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AppWorkshopTelemetryTasks_ReplacedByTaskId",
+                table: "AppWorkshopTelemetryTasks",
+                column: "ReplacedByTaskId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AppWorkshopTelemetryTasks_Status_CreatedAt",
@@ -1554,9 +1635,6 @@ namespace TestWorkshop.Migrations
                 name: "AppUserMenus");
 
             migrationBuilder.DropTable(
-                name: "AppWorkshopDevices");
-
-            migrationBuilder.DropTable(
                 name: "AppWorkshopTelemetryTasks");
 
             migrationBuilder.DropTable(
@@ -1584,10 +1662,16 @@ namespace TestWorkshop.Migrations
                 name: "AppDatas");
 
             migrationBuilder.DropTable(
+                name: "AppWorkshopOrders");
+
+            migrationBuilder.DropTable(
                 name: "OpenIddictAuthorizations");
 
             migrationBuilder.DropTable(
                 name: "AbpAuditLogs");
+
+            migrationBuilder.DropTable(
+                name: "AppWorkshopDevices");
 
             migrationBuilder.DropTable(
                 name: "OpenIddictApplications");

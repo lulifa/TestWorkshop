@@ -18,6 +18,7 @@ interface WorkshopTelemetryTaskDto extends EntityDto<number> {
   nextRetryTime?: string;
   processedAt?: string;
   recordCount?: number;
+  replacedByTaskId?: number;
   retryCount: number;
   status: WorkshopTelemetryStatus;
   statusName: string;

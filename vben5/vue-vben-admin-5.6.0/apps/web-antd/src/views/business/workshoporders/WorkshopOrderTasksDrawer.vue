@@ -166,7 +166,10 @@ function getStatusLabel(status: WorkshopTelemetryStatus, statusName?: string) {
           </span>
         </template>
         <template v-else-if="column.key === 'status'">
-          <Tag :color="getStatusColor(record.status)">
+          <Tag v-if="record.replacedByTaskId" color="default">
+            {{ $t('TestWorkshop.Telemetry:Replaced') }}
+          </Tag>
+          <Tag v-else :color="getStatusColor(record.status)">
             {{ getStatusLabel(record.status, record.statusName) }}
           </Tag>
         </template>

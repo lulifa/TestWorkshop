@@ -501,7 +501,10 @@ onMounted(async () => {
         {{ getTelemetryExtraValue(row, 'FileTime') || '-' }}
       </template>
       <template #status="{ row }">
-        <Tag :color="statusColorMap[row.status]">
+        <Tag v-if="row.replacedByTaskId" color="default">
+          {{ $t('TestWorkshop.Telemetry:Replaced') }}
+        </Tag>
+        <Tag v-else :color="statusColorMap[row.status]">
           {{ statusLabelMap[row.status] ?? row.statusName }}
         </Tag>
       </template>

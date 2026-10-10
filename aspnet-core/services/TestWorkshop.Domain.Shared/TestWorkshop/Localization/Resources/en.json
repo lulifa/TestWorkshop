@@ -288,6 +288,7 @@
     "Telemetry:CopyJson": "Copy JSON",
     "Telemetry:CopyJsonSuccess": "JSON copied",
     "Telemetry:NoExtraProperties": "No extra properties",
+    "Telemetry:Replaced": "Replaced",
     "DeviceType:FIVA": "FIVA",
     "DeviceType:PUMP": "Pump",
     "DeviceType:ICU": "ICU",

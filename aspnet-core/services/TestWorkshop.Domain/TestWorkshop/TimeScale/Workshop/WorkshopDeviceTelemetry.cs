@@ -12,7 +12,8 @@ public class WorkshopDeviceTelemetry
     public Guid DeviceId { get; set; }
 
     /// <summary>
-    /// 测试任务ID（关联测试任务表）
+    /// 当前拥有该遥测数据的任务ID。
+    /// 重复上传时更新为最新任务，旧任务通过 ReplacedByTaskId 追踪。
     /// </summary>
     public long TaskId { get; set; }
 

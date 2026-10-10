@@ -1007,6 +1007,10 @@ namespace TestWorkshop.Migrations
                         .HasColumnType("integer")
                         .HasComment("解析的记录数");
 
+                    b.Property<long?>("ReplacedByTaskId")
+                        .HasColumnType("bigint")
+                        .HasComment("被哪个任务替换");
+
                     b.Property<int>("RetryCount")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
@@ -1029,6 +1033,8 @@ namespace TestWorkshop.Migrations
                     b.HasIndex("FileObjectId");
 
                     b.HasIndex("OrderId");
+
+                    b.HasIndex("ReplacedByTaskId");
 
                     b.HasIndex("ExpiresAt", "Status");
 

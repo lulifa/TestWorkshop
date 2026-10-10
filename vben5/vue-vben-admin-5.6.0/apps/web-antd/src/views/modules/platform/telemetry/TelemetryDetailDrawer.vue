@@ -144,7 +144,10 @@ function formatFileSize(size?: number) {
     <div v-if="row" class="flex h-full flex-col">
       <div class="border-b px-6 py-6">
         <div class="flex flex-wrap items-center gap-2">
-          <Tag :color="statusColorMap[row.status]">
+          <Tag v-if="row.replacedByTaskId" color="default">
+            {{ $t('TestWorkshop.Telemetry:Replaced') }}
+          </Tag>
+          <Tag v-else :color="statusColorMap[row.status]">
             {{ statusLabelMap[row.status] ?? row.statusName }}
           </Tag>
           <Tag v-if="getExtraPropertyValue('ChannelType')" color="blue">

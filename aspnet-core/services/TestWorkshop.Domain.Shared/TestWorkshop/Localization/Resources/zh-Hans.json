@@ -288,6 +288,7 @@
     "Telemetry:CopyJson": "复制 JSON",
     "Telemetry:CopyJsonSuccess": "JSON 已复制",
     "Telemetry:NoExtraProperties": "没有扩展参数",
+    "Telemetry:Replaced": "已替换",
     "DeviceType:FIVA": "FIVA",
     "DeviceType:PUMP": "水泵",
     "DeviceType:ICU": "ICU",

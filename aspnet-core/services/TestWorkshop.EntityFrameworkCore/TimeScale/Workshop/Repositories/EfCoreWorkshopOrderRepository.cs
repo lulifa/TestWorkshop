@@ -38,6 +38,7 @@ public class EfCoreWorkshopOrderRepository :
     {
         var dbSet = await GetDbSetAsync();
         return await dbSet
+            .AsNoTracking()
             .Where(x => x.DeviceId == deviceId
                         && (x.Status == WorkshopOrderStatus.Testing
                             || x.Status == WorkshopOrderStatus.Completed)

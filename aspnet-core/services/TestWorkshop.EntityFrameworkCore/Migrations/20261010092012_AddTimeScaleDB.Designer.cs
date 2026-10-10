@@ -13,8 +13,8 @@ using Volo.Abp.EntityFrameworkCore;
 namespace TestWorkshop.Migrations
 {
     [DbContext(typeof(TestWorkshopDbContext))]
-    [Migration("20260924033946_InitialDB")]
-    partial class InitialDB
+    [Migration("20261010092012_AddTimeScaleDB")]
+    partial class AddTimeScaleDB
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -807,6 +807,164 @@ namespace TestWorkshop.Migrations
                     b.ToTable("AppWorkshopDevices", (string)null);
                 });
 
+            modelBuilder.Entity("TestWorkshop.TimeScale.WorkshopDeviceTelemetry", b =>
+                {
+                    b.Property<Guid>("DeviceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ChannelType")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<DateTime?>("EndTime")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("EndTime2")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("PilotSN")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("ShipName")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<DateTime?>("StartTime")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("StartTime2")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<long>("TaskId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("TestBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTime?>("TestDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("TestedDeviceCode")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("TestedDeviceName")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.PrimitiveCollection<double[]>("Value")
+                        .IsRequired()
+                        .HasColumnType("double precision[]");
+
+                    b.HasKey("DeviceId", "Timestamp", "ChannelType");
+
+                    b.HasIndex("TaskId", "Timestamp");
+
+                    b.ToTable("AppWorkshopDeviceTelemetries", (string)null);
+                });
+
+            modelBuilder.Entity("TestWorkshop.TimeScale.WorkshopOrder", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("ConcurrencyStamp");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<Guid?>("DeleterId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("DeleterId");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("DeletionTime");
+
+                    b.Property<Guid>("DeviceId")
+                        .HasColumnType("uuid")
+                        .HasComment("关联设备");
+
+                    b.Property<string>("ExtraProperties")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("ExtraProperties");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("IsDeleted");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("LastModificationTime");
+
+                    b.Property<Guid?>("LastModifierId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("LastModifierId");
+
+                    b.Property<string>("OrderNo")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasComment("订单号");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasComment("测试状态 (0=Draft 1=Testing 2=Completed 3=Cancelled)");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("TenantId")
+                        .HasComment("租户ID");
+
+                    b.Property<DateTime?>("TestEndedAt")
+                        .HasColumnType("timestamp without time zone")
+                        .HasComment("实际测试结束时间（本地时间）");
+
+                    b.Property<DateTime?>("TestStartedAt")
+                        .HasColumnType("timestamp without time zone")
+                        .HasComment("实际测试开始时间（本地时间）");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DeviceId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_AppWorkshopOrders_DeviceId_Testing")
+                        .HasFilter("\"Status\" = 1");
+
+                    b.HasIndex("OrderNo")
+                        .IsUnique()
+                        .HasFilter("\"TenantId\" IS NULL");
+
+                    b.HasIndex("DeviceId", "CreationTime")
+                        .HasDatabaseName("IX_AppWorkshopOrders_DeviceId_CreationTime");
+
+                    b.HasIndex("Status", "TestStartedAt");
+
+                    b.HasIndex("TenantId", "OrderNo")
+                        .IsUnique()
+                        .HasFilter("\"TenantId\" IS NOT NULL");
+
+                    b.ToTable("AppWorkshopOrders", (string)null);
+                });
+
             modelBuilder.Entity("TestWorkshop.TimeScale.WorkshopTelemetryTask", b =>
                 {
                     b.Property<long>("Id")
@@ -836,6 +994,10 @@ namespace TestWorkshop.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasComment("下次重试时间");
 
+                    b.Property<Guid?>("OrderId")
+                        .HasColumnType("uuid")
+                        .HasComment("关联订单ID，历史数据可能为空");
+
                     b.Property<DateTime?>("ProcessedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasComment("处理完成时间");
@@ -847,6 +1009,10 @@ namespace TestWorkshop.Migrations
                     b.Property<int?>("RecordCount")
                         .HasColumnType("integer")
                         .HasComment("解析的记录数");
+
+                    b.Property<long?>("ReplacedByTaskId")
+                        .HasColumnType("bigint")
+                        .HasComment("被哪个任务替换");
 
                     b.Property<int>("RetryCount")
                         .ValueGeneratedOnAdd()
@@ -868,6 +1034,10 @@ namespace TestWorkshop.Migrations
                     b.HasIndex("CreatedAt");
 
                     b.HasIndex("FileObjectId");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("ReplacedByTaskId");
 
                     b.HasIndex("ExpiresAt", "Status");
 
@@ -2777,6 +2947,23 @@ namespace TestWorkshop.Migrations
                         .HasForeignKey("DataId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("TestWorkshop.TimeScale.WorkshopOrder", b =>
+                {
+                    b.HasOne("TestWorkshop.TimeScale.WorkshopDevice", null)
+                        .WithMany()
+                        .HasForeignKey("DeviceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("TestWorkshop.TimeScale.WorkshopTelemetryTask", b =>
+                {
+                    b.HasOne("TestWorkshop.TimeScale.WorkshopOrder", null)
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Volo.Abp.AuditLogging.AuditLogAction", b =>

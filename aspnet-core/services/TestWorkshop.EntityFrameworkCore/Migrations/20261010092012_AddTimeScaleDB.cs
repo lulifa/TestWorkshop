@@ -23,7 +23,7 @@ namespace TestWorkshop.Migrations
                     EndTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     StartTime2 = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     EndTime2 = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    TestDate = table.Column<DateTime>(type: "date", nullable: false),
+                    TestDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     Value = table.Column<double[]>(type: "double precision[]", nullable: false),
                     TestedDeviceCode = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
                     TestedDeviceName = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: true),
@@ -40,6 +40,25 @@ namespace TestWorkshop.Migrations
                 name: "IX_AppWorkshopDeviceTelemetries_TaskId_Timestamp",
                 table: "AppWorkshopDeviceTelemetries",
                 columns: new[] { "TaskId", "Timestamp" });
+
+
+            migrationBuilder.Sql("""
+                CREATE EXTENSION IF NOT EXISTS timescaledb;
+                """);
+                
+                        migrationBuilder.Sql("""
+                SELECT create_hypertable(
+                    '"AppWorkshopDeviceTelemetries"',
+                    'Timestamp',
+                    if_not_exists => TRUE
+                );
+                """);
+                
+                        migrationBuilder.Sql("""
+                CREATE INDEX IF NOT EXISTS idx_device_time
+                ON "AppWorkshopDeviceTelemetries" ("DeviceId", "Timestamp" DESC);
+                """);
+
         }
 
         /// <inheritdoc />

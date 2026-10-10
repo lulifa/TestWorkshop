@@ -13,8 +13,8 @@ using Volo.Abp.EntityFrameworkCore;
 namespace TestWorkshop.Migrations
 {
     [DbContext(typeof(TestWorkshopDbContext))]
-    [Migration("20261009093955_UseLocalTimesForWorkshopOrder")]
-    partial class UseLocalTimesForWorkshopOrder
+    [Migration("20261010091925_InitialDB")]
+    partial class InitialDB
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -807,67 +807,6 @@ namespace TestWorkshop.Migrations
                     b.ToTable("AppWorkshopDevices", (string)null);
                 });
 
-            modelBuilder.Entity("TestWorkshop.TimeScale.WorkshopDeviceTelemetry", b =>
-                {
-                    b.Property<Guid>("DeviceId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("Timestamp")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ChannelType")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.Property<DateTime?>("EndTime")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<DateTime?>("EndTime2")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("PilotSN")
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
-                    b.Property<string>("ShipName")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.Property<DateTime?>("StartTime")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<DateTime?>("StartTime2")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<long>("TaskId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("TestBy")
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
-                    b.Property<DateTime?>("TestDate")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("TestedDeviceCode")
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
-                    b.Property<string>("TestedDeviceName")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.PrimitiveCollection<double[]>("Value")
-                        .IsRequired()
-                        .HasColumnType("double precision[]");
-
-                    b.HasKey("DeviceId", "Timestamp", "ChannelType");
-
-                    b.HasIndex("TaskId", "Timestamp");
-
-                    b.ToTable("AppWorkshopDeviceTelemetries", (string)null);
-                });
-
             modelBuilder.Entity("TestWorkshop.TimeScale.WorkshopOrder", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1010,6 +949,10 @@ namespace TestWorkshop.Migrations
                         .HasColumnType("integer")
                         .HasComment("解析的记录数");
 
+                    b.Property<long?>("ReplacedByTaskId")
+                        .HasColumnType("bigint")
+                        .HasComment("被哪个任务替换");
+
                     b.Property<int>("RetryCount")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
@@ -1032,6 +975,8 @@ namespace TestWorkshop.Migrations
                     b.HasIndex("FileObjectId");
 
                     b.HasIndex("OrderId");
+
+                    b.HasIndex("ReplacedByTaskId");
 
                     b.HasIndex("ExpiresAt", "Status");
 

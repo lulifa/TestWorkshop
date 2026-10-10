@@ -187,7 +187,7 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
             await using var transaction = await db.Database.BeginTransactionAsync(ct);
             try
             {
-                await UpsertTelemetryAsync(
+                var replacedTaskId = await UpsertTelemetryAsync(
                     db,
                     transaction.GetDbTransaction() as NpgsqlTransaction
                     ?? throw new InvalidOperationException("无法获取 NpgsqlTransaction"),
@@ -196,6 +196,13 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
                     metadata,
                     values,
                     ct);
+
+                if (replacedTaskId.HasValue)
+                {
+                    var previousTask = await db.TelemetryTasks
+                        .FirstAsync(x => x.Id == replacedTaskId.Value, ct);
+                    previousTask.MarkAsReplaced(telemetryTask.Id);
+                }
 
                 telemetryTask.MarkAsSuccess(values.Length);
                 await taskRepo.UpdateAsync(telemetryTask);
@@ -271,7 +278,7 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
         return values.ToArray();
     }
 
-    private async Task UpsertTelemetryAsync(
+    private async Task<long?> UpsertTelemetryAsync(
         TestWorkshopDbContext db,
         NpgsqlTransaction transaction,
         Guid deviceId,
@@ -286,6 +293,42 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
         var fullTableName = string.IsNullOrWhiteSpace(schema)
             ? $"\"{rawTableName}\""
             : $"\"{schema}\".\"{rawTableName}\"";
+
+        var existingTaskId = await db.Set<WorkshopDeviceTelemetry>()
+            .AsNoTracking()
+            .Where(x => x.DeviceId == deviceId
+                        && x.Timestamp == metadata.Timestamp
+                        && x.ChannelType == metadata.ChannelType)
+            .Select(x => x.TaskId)
+            .FirstOrDefaultAsync(ct);
+
+        long? replacedTaskId = null;
+        if (existingTaskId > 0 && existingTaskId != taskId)
+        {
+            var previousTask = await db.TelemetryTasks
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == existingTaskId, ct);
+
+            if (previousTask != null)
+            {
+                if (previousTask.Status == 1)
+                {
+                    throw new InvalidDataException(
+                        $"相同遥测数据的上一个任务 {previousTask.Id} 正在处理中，请稍后重试");
+                }
+
+                var currentTask = await db.TelemetryTasks
+                    .AsNoTracking()
+                    .FirstAsync(x => x.Id == taskId, ct);
+                if (previousTask.OrderId != currentTask.OrderId)
+                {
+                    throw new InvalidDataException(
+                        $"相同遥测数据已属于其他订单，不能替换。PreviousTaskId={previousTask.Id}");
+                }
+
+                replacedTaskId = previousTask.Id;
+            }
+        }
 
         await using var command = transaction.Connection.CreateCommand();
         command.Transaction = transaction;
@@ -331,6 +374,7 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
         command.Parameters.Add(new NpgsqlParameter("TestBy", NpgsqlDbType.Text) { Value = metadata.TestBy ?? (object)DBNull.Value });
 
         await command.ExecuteNonQueryAsync(ct);
+        return replacedTaskId;
     }
 
     private static TelemetryFileMetadata ReadMetadata(FileObject fileObject)

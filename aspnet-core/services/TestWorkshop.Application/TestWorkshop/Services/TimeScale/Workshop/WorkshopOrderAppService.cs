@@ -145,6 +145,7 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
                 FileObjectId = task.FileObjectId,
                 OrderId = order.Id,
                 OrderNo = order.OrderNo,
+                ReplacedByTaskId = task.ReplacedByTaskId,
                 FileName = fileObject?.FileName,
                 FileSize = fileObject?.FileSize ?? 0,
                 Status = task.Status,

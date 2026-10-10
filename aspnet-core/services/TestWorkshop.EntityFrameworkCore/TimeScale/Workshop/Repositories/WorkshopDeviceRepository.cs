@@ -10,6 +10,8 @@ public class WorkshopDeviceRepository : EfCoreRepository<TestWorkshopDbContext, 
     public async Task<WorkshopDevice> FindByCodeAsync(string code)
     {
         var dbSet = await GetDbSetAsync();
-        return await dbSet.FirstOrDefaultAsync(x => x.Code == code);
+        return await dbSet
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Code == code);
     }
 }

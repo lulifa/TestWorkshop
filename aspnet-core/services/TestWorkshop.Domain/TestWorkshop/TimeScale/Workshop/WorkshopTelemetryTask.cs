@@ -17,6 +17,11 @@ public class WorkshopTelemetryTask : Entity<long>, IMultiTenant
     public Guid? OrderId { get; private set; }
 
     /// <summary>
+    /// 被哪个任务替换。重复上传同一条遥测数据时回写旧任务。
+    /// </summary>
+    public long? ReplacedByTaskId { get; private set; }
+
+    /// <summary>
     /// 处理状态 (0 = Pending, 1 = Processing, 2 = Success, 3 = Failed)
     /// </summary>
     public int Status { get; private set; }
@@ -131,5 +136,20 @@ public class WorkshopTelemetryTask : Entity<long>, IMultiTenant
         Error = null;
         NextRetryTime = null;
         ProcessingStartedAt = null;
+    }
+
+    public void MarkAsReplaced(long replacementTaskId)
+    {
+        if (replacementTaskId <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(replacementTaskId));
+        }
+
+        if (replacementTaskId == Id)
+        {
+            throw new InvalidOperationException("任务不能替换自身");
+        }
+
+        ReplacedByTaskId = replacementTaskId;
     }
 }

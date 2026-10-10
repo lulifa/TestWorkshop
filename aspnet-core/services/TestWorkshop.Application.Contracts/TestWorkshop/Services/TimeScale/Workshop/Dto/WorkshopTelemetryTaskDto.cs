@@ -21,6 +21,11 @@ public class WorkshopTelemetryTaskDto : ExtensibleEntityDto<long>
     public string OrderNo { get; set; }
 
     /// <summary>
+    /// 被哪个任务替换
+    /// </summary>
+    public long? ReplacedByTaskId { get; set; }
+
+    /// <summary>
     /// 原始文件名（来自 FileObject）
     /// </summary>
     public string FileName { get; set; }

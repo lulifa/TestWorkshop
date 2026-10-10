@@ -107,6 +107,9 @@ public static class TestWorkshopDbContextModelCreatingExtensions
             b.Property(p => p.OrderId)
                 .HasComment("关联订单ID，历史数据可能为空");
 
+            b.Property(p => p.ReplacedByTaskId)
+                .HasComment("被哪个任务替换");
+
             // 业务状态
             b.Property(p => p.Status)
                 .IsRequired()
@@ -161,6 +164,8 @@ public static class TestWorkshopDbContextModelCreatingExtensions
             b.HasIndex(x => x.FileObjectId);
 
             b.HasIndex(x => x.OrderId);
+
+            b.HasIndex(x => x.ReplacedByTaskId);
 
             b.HasIndex(x => new { x.Status, x.CreatedAt });
 
