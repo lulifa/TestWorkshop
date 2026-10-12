@@ -32,9 +32,68 @@ public class WorkshopDataSeedContributor : IDataSeedContributor, ITransientDepen
     private static readonly Guid ProjectSupervisorUserId =
         Guid.Parse("3a243505-1d0e-4f2a-9a11-000000000005");
 
+    private static readonly Guid HuangdaoTesterUserId =
+        Guid.Parse("3a243506-1d0e-4f2a-9a11-000000000006");
+
+    private static readonly Guid NingboTesterUserId =
+        Guid.Parse("3a243507-1d0e-4f2a-9a11-000000000007");
+
+    private static readonly Guid DispatcherUserId =
+        Guid.Parse("3a243508-1d0e-4f2a-9a11-000000000008");
+
+    private static readonly Guid AuditorUserId =
+        Guid.Parse("3a243509-1d0e-4f2a-9a11-000000000009");
+
     // 种子用户统一初始密码，后续再按需要调整
     // 注意：必须满足 Identity 密码策略（至少一个大写、一个小写、一个数字、一个非字母数字）
     private const string DefaultUserPassword = "1q2w3E*";
+
+    /// <summary>
+    /// 车间种子定义：一个车间组织单元 + 它挂载的标准人员。
+    /// 新增车间时，只需在下面的 <see cref="Workshops"/> 里加一条，
+    /// 组织单元、车间主管/大区负责人/测试工程师的账号与角色都会自动创建。
+    /// </summary>
+    private sealed class WorkshopSeedDefinition
+    {
+        /// <summary>账号前缀，例如 hd / nb，用于生成用户名与邮箱</summary>
+        public string AccountPrefix { get; init; }
+
+        public string BusinessCode { get; init; }
+
+        public string DisplayName { get; init; }
+
+        public Guid OrganizationUnitId { get; init; }
+
+        public Guid RegionalManagerUserId { get; init; }
+
+        public Guid SupervisorUserId { get; init; }
+
+        public Guid TesterUserId { get; init; }
+    }
+
+    private static readonly WorkshopSeedDefinition[] Workshops =
+    {
+        new()
+        {
+            OrganizationUnitId = HuangdaoOrganizationUnitId,
+            DisplayName = "黄岛车间",
+            BusinessCode = "HD",
+            AccountPrefix = "hd",
+            SupervisorUserId = HuangdaoSupervisorUserId,
+            RegionalManagerUserId = HuangdaoRegionalManagerUserId,
+            TesterUserId = HuangdaoTesterUserId
+        },
+        new()
+        {
+            OrganizationUnitId = NingboOrganizationUnitId,
+            DisplayName = "宁波车间",
+            BusinessCode = "NB",
+            AccountPrefix = "nb",
+            SupervisorUserId = NingboSupervisorUserId,
+            RegionalManagerUserId = NingboRegionalManagerUserId,
+            TesterUserId = NingboTesterUserId
+        }
+    };
 
     private readonly ICurrentTenant _currentTenant;
     private readonly IOrganizationUnitRepository _organizationUnitRepository;
@@ -84,41 +143,59 @@ public class WorkshopDataSeedContributor : IDataSeedContributor, ITransientDepen
                 businessCode: null,
                 tenantId: context.TenantId);
 
-            var huangdao = await EnsureOrganizationUnitAsync(
-                id: HuangdaoOrganizationUnitId,
-                displayName: "黄岛车间",
-                parentId: company.Id,
-                businessCode: "HD",
-                tenantId: context.TenantId);
+            // 每个车间：建组织单元，并按约定挂上车间主管 / 大区负责人 / 测试工程师
+            foreach (var workshop in Workshops)
+            {
+                await EnsureWorkshopAsync(company.Id, workshop, context.TenantId);
+            }
 
-            var ningbo = await EnsureOrganizationUnitAsync(
-                id: NingboOrganizationUnitId,
-                displayName: "宁波车间",
-                parentId: company.Id,
-                businessCode: "NB",
-                tenantId: context.TenantId);
-
-            await EnsureWorkshopDeviceAsync(huangdao.Id, context.TenantId);
-
-            // 每个车间各挂一个车间主管和一个大区负责人
-            await EnsureUserAsync(
-                HuangdaoSupervisorUserId, "hd.supervisor", "黄岛车间主管",
-                "hd.supervisor@testworkshop.local", RoleConstants.supervisor, huangdao.Id, context.TenantId);
-            await EnsureUserAsync(
-                HuangdaoRegionalManagerUserId, "hd.regional", "黄岛车间大区负责人",
-                "hd.regional@testworkshop.local", RoleConstants.regionalManager, huangdao.Id, context.TenantId);
-            await EnsureUserAsync(
-                NingboSupervisorUserId, "nb.supervisor", "宁波车间主管",
-                "nb.supervisor@testworkshop.local", RoleConstants.supervisor, ningbo.Id, context.TenantId);
-            await EnsureUserAsync(
-                NingboRegionalManagerUserId, "nb.regional", "宁波车间大区负责人",
-                "nb.regional@testworkshop.local", RoleConstants.regionalManager, ningbo.Id, context.TenantId);
+            await EnsureWorkshopDeviceAsync(HuangdaoOrganizationUnitId, context.TenantId);
 
             // 单船项目主管是订单上的必选人员，先给一个默认账号
             await EnsureUserAsync(
                 ProjectSupervisorUserId, "project.supervisor", "单船项目主管",
                 "project.supervisor@testworkshop.local", RoleConstants.projectSupervisor, null, context.TenantId);
+
+            // 调度：全局岗位（订单新建/编辑由调度或管理员负责），不隶属车间
+            await EnsureUserAsync(
+                DispatcherUserId, "dispatcher", "调度员",
+                "dispatcher@testworkshop.local", RoleConstants.dispatcher, null, context.TenantId);
+
+            // 质量审核员：全局岗位，不隶属车间
+            await EnsureUserAsync(
+                AuditorUserId, "auditor", "质量审核员",
+                "auditor@testworkshop.local", RoleConstants.auditor, null, context.TenantId);
         }
+    }
+
+    /// <summary>
+    /// 确保车间组织单元存在，并按命名约定给车间挂上标准人员：
+    /// {前缀}.supervisor 车间主管、{前缀}.regional 大区负责人、{前缀}.tester 测试工程师。
+    /// </summary>
+    private async Task EnsureWorkshopAsync(
+        Guid parentOrganizationUnitId,
+        WorkshopSeedDefinition workshop,
+        Guid? tenantId)
+    {
+        var organizationUnit = await EnsureOrganizationUnitAsync(
+            id: workshop.OrganizationUnitId,
+            displayName: workshop.DisplayName,
+            parentId: parentOrganizationUnitId,
+            businessCode: workshop.BusinessCode,
+            tenantId: tenantId);
+
+        var prefix = workshop.AccountPrefix;
+        var emailDomain = "@testworkshop.local";
+
+        await EnsureUserAsync(
+            workshop.SupervisorUserId, $"{prefix}.supervisor", $"{workshop.DisplayName}主管",
+            $"{prefix}.supervisor{emailDomain}", RoleConstants.supervisor, organizationUnit.Id, tenantId);
+        await EnsureUserAsync(
+            workshop.RegionalManagerUserId, $"{prefix}.regional", $"{workshop.DisplayName}大区负责人",
+            $"{prefix}.regional{emailDomain}", RoleConstants.regionalManager, organizationUnit.Id, tenantId);
+        await EnsureUserAsync(
+            workshop.TesterUserId, $"{prefix}.tester", $"{workshop.DisplayName}测试工程师",
+            $"{prefix}.tester{emailDomain}", RoleConstants.tester, organizationUnit.Id, tenantId);
     }
 
     private async Task EnsureUserAsync(
