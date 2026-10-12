@@ -38,11 +38,35 @@ interface GetWorkshopOrderListInput extends PagedAndSortedResultRequestDto {
   status?: WorkshopOrderStatus;
 }
 
+interface WorkshopTelemetryGraphChannelDto {
+  channelType: string;
+  sampleCount: number;
+  values: number[];
+}
+
+interface WorkshopTelemetryGraphGroupDto {
+  channels: WorkshopTelemetryGraphChannelDto[];
+  timestamp: string;
+}
+
+interface WorkshopOrderTelemetryGraphDto {
+  deviceCode?: string;
+  deviceName?: string;
+  graphs: WorkshopTelemetryGraphGroupDto[];
+  orderId: string;
+  orderNo: string;
+  testedDeviceCode?: string;
+  testedDeviceName?: string;
+}
+
 export { WorkshopOrderStatus };
 
 export type {
   GetWorkshopOrderListInput,
   WorkshopOrderCreateDto,
   WorkshopOrderDto,
+  WorkshopOrderTelemetryGraphDto,
   WorkshopOrderUpdateDto,
+  WorkshopTelemetryGraphChannelDto,
+  WorkshopTelemetryGraphGroupDto,
 };

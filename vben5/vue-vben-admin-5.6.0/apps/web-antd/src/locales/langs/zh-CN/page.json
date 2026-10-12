@@ -22,6 +22,7 @@
       "message": "我的消息"
     },
     "workshoporders": "订单管理",
-    "workshopdevices": "车间设备"
+    "workshopdevices": "车间设备",
+    "orderGraph": "图谱"
   }
 }

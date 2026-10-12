@@ -68,4 +68,10 @@ public class WorkshopOrderController : TestWorkshopController
     {
         return await _service.GetTelemetryTasksAsync(id, input);
     }
+
+    [HttpGet("{id}/telemetry-graphs")]
+    public virtual async Task<WorkshopOrderTelemetryGraphDto> GetTelemetryGraphAsync(Guid id)
+    {
+        return await _service.GetTelemetryGraphAsync(id);
+    }
 }

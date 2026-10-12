@@ -24,9 +24,9 @@ import {
   EditOutlined,
   EllipsisOutlined,
   EyeOutlined,
+  LineChartOutlined,
   PlayCircleOutlined,
   PlusOutlined,
-  ProfileOutlined,
   StopOutlined,
 } from '@ant-design/icons-vue';
 import {
@@ -275,13 +275,11 @@ const [WorkshopOrderTasksDrawer, workshopOrderTasksDrawerApi] = useVbenDrawer({
   ),
 });
 
-const [WorkshopOrderDetailDrawer, workshopOrderDetailDrawerApi] = useVbenDrawer(
-  {
-    connectedComponent: defineAsyncComponent(
-      () => import('./WorkshopOrderDetailDrawer.vue'),
-    ),
-  },
-);
+const [WorkshopOrderGraphDrawer, workshopOrderGraphDrawerApi] = useVbenDrawer({
+  connectedComponent: defineAsyncComponent(
+    () => import('./WorkshopOrderGraphDrawer.vue'),
+  ),
+});
 
 function onCreate() {
   workshopOrderModalApi.setData({});
@@ -298,9 +296,9 @@ function onViewTasks(row: WorkshopOrderDto) {
   workshopOrderTasksDrawerApi.open();
 }
 
-function onViewDetail(row: WorkshopOrderDto) {
-  workshopOrderDetailDrawerApi.setData(row);
-  workshopOrderDetailDrawerApi.open();
+function onViewGraph(row: WorkshopOrderDto) {
+  workshopOrderGraphDrawerApi.setData(row);
+  workshopOrderGraphDrawerApi.open();
 }
 
 function getDeviceLabel(row: WorkshopOrderDto) {
@@ -475,20 +473,20 @@ onMounted(() => {
               {{ $t('TestWorkshop.WorkshopOrder:EndTest') }}
             </Button>
             <Button
-              :icon="h(ProfileOutlined)"
-              size="small"
-              type="text"
-              @click="onViewDetail(row)"
-            >
-              {{ $t('TestWorkshop.WorkshopOrder:Details') }}
-            </Button>
-            <Button
               :icon="h(EyeOutlined)"
               size="small"
               type="text"
               @click="onViewTasks(row)"
             >
               {{ $t('TestWorkshop.WorkshopOrder:TelemetryTasks') }}
+            </Button>
+            <Button
+              :icon="h(LineChartOutlined)"
+              size="small"
+              type="text"
+              @click="onViewGraph(row)"
+            >
+              {{ $t('page.business.orderGraph') }}
             </Button>
             <Dropdown v-if="hasMoreActions(row)" :trigger="['click']">
               <template #overlay>
@@ -525,8 +523,8 @@ onMounted(() => {
     </Grid>
 
     <WorkshopOrderModal @change="() => gridApi.query()" />
-    <WorkshopOrderDetailDrawer />
     <WorkshopOrderTasksDrawer />
+    <WorkshopOrderGraphDrawer />
   </Page>
 </template>
 

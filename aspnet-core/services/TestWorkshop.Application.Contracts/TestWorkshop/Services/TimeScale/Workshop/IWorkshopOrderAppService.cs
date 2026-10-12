@@ -24,4 +24,9 @@ public interface IWorkshopOrderAppService : IApplicationService
     Task<PagedResultDto<WorkshopTelemetryTaskDto>> GetTelemetryTasksAsync(
         Guid id,
         WorkshopTelemetryTaskListInput input);
+
+    /// <summary>
+    /// 获取订单的遥测图谱数据（按采集时间 Timestamp 分组，每组 8 条通道曲线）
+    /// </summary>
+    Task<WorkshopOrderTelemetryGraphDto> GetTelemetryGraphAsync(Guid id);
 }

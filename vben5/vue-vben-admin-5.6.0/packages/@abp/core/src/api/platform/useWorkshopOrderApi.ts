@@ -4,6 +4,7 @@ import type {
   GetWorkshopOrderListInput,
   WorkshopOrderCreateDto,
   WorkshopOrderDto,
+  WorkshopOrderTelemetryGraphDto,
   WorkshopOrderUpdateDto,
   WorkshopTelemetryTaskDto,
   WorkshopTelemetryTaskListInput,
@@ -73,6 +74,17 @@ export function useWorkshopOrderApi() {
     );
   }
 
+  function getTelemetryGraphApi(
+    id: string,
+  ): Promise<WorkshopOrderTelemetryGraphDto> {
+    return request<WorkshopOrderTelemetryGraphDto>(
+      `/api/workshop/orders/${id}/telemetry-graphs`,
+      {
+        method: 'GET',
+      },
+    );
+  }
+
   function updateApi(
     id: string,
     input: WorkshopOrderUpdateDto,
@@ -91,6 +103,7 @@ export function useWorkshopOrderApi() {
     endTestApi,
     getApi,
     getListApi,
+    getTelemetryGraphApi,
     getTelemetryTasksApi,
     startTestApi,
     updateApi,

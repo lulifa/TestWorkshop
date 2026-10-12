@@ -22,6 +22,7 @@
       "message": "My Messages"
     },
     "workshoporders": "Orders",
-    "workshopdevices": "Workshop Devices"
+    "workshopdevices": "Workshop Devices",
+    "orderGraph": "Graphs"
   }
 }

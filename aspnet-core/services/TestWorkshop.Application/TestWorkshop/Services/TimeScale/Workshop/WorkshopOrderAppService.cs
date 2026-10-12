@@ -6,10 +6,14 @@ namespace TestWorkshop;
 [Authorize]
 public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderAppService
 {
+    // 遥测任务状态：0=待处理 1=处理中 2=成功 3=失败
+    private const int TelemetryTaskStatusSuccess = 2;
+
     private readonly IWorkshopOrderManager _orderManager;
     private readonly IWorkshopOrderRepository _orderRepository;
     private readonly IWorkshopDeviceRepository _deviceRepository;
     private readonly IWorkshopTelemetryTaskRepository _taskRepository;
+    private readonly IWorkshopDeviceTelemetryRepository _telemetryRepository;
     private readonly IFileObjectRepository _fileObjectRepository;
     private readonly IAsyncQueryableExecuter _asyncQueryableExecuter;
 
@@ -18,6 +22,7 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
         IWorkshopOrderRepository orderRepository,
         IWorkshopDeviceRepository deviceRepository,
         IWorkshopTelemetryTaskRepository taskRepository,
+        IWorkshopDeviceTelemetryRepository telemetryRepository,
         IFileObjectRepository fileObjectRepository,
         IAsyncQueryableExecuter asyncQueryableExecuter)
     {
@@ -25,6 +30,7 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
         _orderRepository = orderRepository;
         _deviceRepository = deviceRepository;
         _taskRepository = taskRepository;
+        _telemetryRepository = telemetryRepository;
         _fileObjectRepository = fileObjectRepository;
         _asyncQueryableExecuter = asyncQueryableExecuter;
     }
@@ -161,6 +167,58 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
         }
 
         return new PagedResultDto<WorkshopTelemetryTaskDto>(result.TotalCount, items);
+    }
+
+    public virtual async Task<WorkshopOrderTelemetryGraphDto> GetTelemetryGraphAsync(Guid id)
+    {
+        var order = await _orderRepository.GetAsync(id);
+        var device = await _deviceRepository.FindAsync(order.DeviceId);
+
+        // 只取处理成功的任务，失败/待处理的任务没有波形数据。
+        var taskResult = await _taskRepository.GetPagedListAsync(
+            order.Id,
+            null,
+            TelemetryTaskStatusSuccess,
+            null,
+            null,
+            0,
+            int.MaxValue);
+
+        var taskIds = taskResult.Items.Select(x => x.Id).ToList();
+        var telemetries = await _telemetryRepository.GetListByTaskIdsAsync(taskIds);
+
+        // 联合主键是 (DeviceId, Timestamp, ChannelType)：
+        // 一张图谱 = 一个 (DeviceId, Timestamp) 分组，组内每个 ChannelType 一条曲线。
+        var graphs = telemetries
+            .GroupBy(x => new { x.DeviceId, x.Timestamp })
+            .OrderBy(x => x.Key.Timestamp)
+            .Select(group => new WorkshopTelemetryGraphGroupDto
+            {
+                Timestamp = group.Key.Timestamp,
+                Channels = group
+                    .OrderBy(x => x.ChannelType)
+                    .Select(x => new WorkshopTelemetryGraphChannelDto
+                    {
+                        ChannelType = x.ChannelType,
+                        SampleCount = x.Value?.Length ?? 0,
+                        Values = x.Value
+                    })
+                    .ToList()
+            })
+            .ToList();
+
+        var first = telemetries.FirstOrDefault();
+
+        return new WorkshopOrderTelemetryGraphDto
+        {
+            OrderId = order.Id,
+            OrderNo = order.OrderNo,
+            DeviceCode = device?.Code,
+            DeviceName = device?.Name,
+            TestedDeviceCode = first?.TestedDeviceCode,
+            TestedDeviceName = first?.TestedDeviceName,
+            Graphs = graphs
+        };
     }
 
     private static WorkshopOrderDto ToDto(WorkshopOrder order, WorkshopDevice device)
