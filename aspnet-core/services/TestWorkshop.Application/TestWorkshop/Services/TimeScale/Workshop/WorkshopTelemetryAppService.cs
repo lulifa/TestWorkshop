@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Reflection;
 
-using System.Reflection;
+using Volo.Abp.Timing;
 
 namespace TestWorkshop;
 
@@ -17,6 +17,7 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
     private readonly IWorkshopOrderManager _orderManager;
     private readonly IWorkshopOrderRepository _orderRepository;
     private readonly ICurrentTenant _currentTenant;
+    private readonly IClock _clock;
 
     public WorkshopTelemetryAppService(
         IWorkshopTelemetryTaskManager taskManager,
@@ -25,7 +26,8 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
         IWorkshopDeviceRepository workshopDeviceRepository,
         IWorkshopOrderManager orderManager,
         IWorkshopOrderRepository orderRepository,
-        ICurrentTenant currentTenant)
+        ICurrentTenant currentTenant,
+        IClock clock)
     {
         _taskManager = taskManager;
         _taskRepository = taskRepository;
@@ -34,6 +36,25 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
         _orderManager = orderManager;
         _orderRepository = orderRepository;
         _currentTenant = currentTenant;
+        _clock = clock;
+    }
+
+    /// <summary>
+    /// 下位机心跳：只要请求得到响应就说明通信正常。
+    /// 刻意不接收任何参数、不访问数据库，避免把"网络不通"和"参数/业务错误"混在一起。
+    /// 后续若要做"设备在线登记 + 查当前订单"，另开接口，不要污染这个心跳。
+    /// </summary>
+    [AllowAnonymous]
+    public virtual Task<TelemetryOnlineResultDto> OnlineAsync()
+    {
+        var now = _clock.Now;
+
+        return Task.FromResult(new TelemetryOnlineResultDto
+        {
+            Online = true,
+            ServerTime = DateTime.SpecifyKind(now, DateTimeKind.Unspecified),
+            Timestamp = new DateTimeOffset(now.ToUniversalTime()).ToUnixTimeMilliseconds()
+        });
     }
 
     /// <summary>

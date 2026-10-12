@@ -23,6 +23,17 @@ public class WorkshopTelemetryController : TestWorkshopController
     }
 
     /// <summary>
+    /// 下位机心跳：请求成功即代表通信正常
+    /// </summary>
+    [HttpGet("online")]
+    public async Task<TelemetryOnlineResultDto> OnlineAsync()
+    {
+        // 心跳是匿名 GET，禁止任何代理/浏览器缓存，避免出现“假在线”
+        Response.Headers.CacheControl = "no-store";
+        return await Service.OnlineAsync();
+    }
+
+    /// <summary>
     /// 获取任务详情
     /// </summary>
     [HttpGet("{id}")]
