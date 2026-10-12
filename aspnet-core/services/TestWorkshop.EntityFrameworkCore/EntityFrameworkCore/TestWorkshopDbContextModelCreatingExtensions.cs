@@ -65,6 +65,15 @@ public static class TestWorkshopDbContextModelCreatingExtensions
                 .HasColumnType("timestamp without time zone")
                 .HasComment("实际测试结束时间（本地时间）");
 
+            b.Property(p => p.ProjectSupervisorUserId)
+                .IsRequired()
+                .HasComment("单船项目主管用户ID");
+
+            b.Property(p => p.RequiredCompletionTime)
+                .HasColumnType("timestamp without time zone")
+                .IsRequired()
+                .HasComment("要求车间完成测试时间");
+
             b.Property(p => p.TenantId)
                 .HasComment("租户ID");
 

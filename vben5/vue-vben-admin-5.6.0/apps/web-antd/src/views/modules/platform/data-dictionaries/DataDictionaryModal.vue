@@ -79,6 +79,9 @@ const [Form, formApi] = useVbenForm({
   showDefaultActions: false,
 });
 const [Modal, modalApi] = useVbenModal({
+  // 表单弹窗：不允许点遮罩/ESC 关闭，避免误触丢失已填内容
+  closeOnClickModal: false,
+  closeOnPressEscape: false,
   onConfirm: async () => {
     await formApi.validateAndSubmitForm();
   },

@@ -17,6 +17,16 @@ public class WorkshopOrderCreateOrUpdateDto
     /// </summary>
     [Required]
     public Guid DeviceId { get; set; }
+
+    /// <summary>
+    /// 单船项目主管用户ID（必须拥有“单船项目主管”角色）
+    /// </summary>
+    public Guid ProjectSupervisorUserId { get; set; }
+
+    /// <summary>
+    /// 要求车间完成测试时间
+    /// </summary>
+    public DateTime RequiredCompletionTime { get; set; }
 }
 
 public class WorkshopOrderCreateDto : WorkshopOrderCreateOrUpdateDto

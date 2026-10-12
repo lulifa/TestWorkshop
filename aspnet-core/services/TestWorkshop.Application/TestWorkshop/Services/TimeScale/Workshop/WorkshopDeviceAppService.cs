@@ -172,8 +172,10 @@ public class WorkshopDeviceAppService : TestWorkshopAppService, IWorkshopDeviceA
 
         if (accessibleOuIds == null)
         {
+            // 管理员可访问全部；这里也要显式排序，否则仓库不保证顺序，树会飘
+            var allSorted = allOrganizationUnits.OrderBy(x => x.Code).ToList();
             return new ListResultDto<OrganizationUnitDto>(
-                ObjectMapper.Map<List<OrganizationUnit>, List<OrganizationUnitDto>>(allOrganizationUnits));
+                ObjectMapper.Map<List<OrganizationUnit>, List<OrganizationUnitDto>>(allSorted));
         }
 
         var idSet = accessibleOuIds.ToHashSet();

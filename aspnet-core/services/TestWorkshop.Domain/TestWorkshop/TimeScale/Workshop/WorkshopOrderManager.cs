@@ -6,6 +6,8 @@ public class WorkshopOrderManager : DomainService, IWorkshopOrderManager
 {
     private readonly IWorkshopOrderRepository _orderRepository;
     private readonly IWorkshopDeviceRepository _deviceRepository;
+    private readonly IIdentityUserRepository _identityUserRepository;
+    private readonly IdentityUserManager _identityUserManager;
     private readonly IGuidGenerator _guidGenerator;
     private readonly IClock _clock;
     private readonly ILogger<WorkshopOrderManager> _logger;
@@ -14,6 +16,8 @@ public class WorkshopOrderManager : DomainService, IWorkshopOrderManager
     public WorkshopOrderManager(
         IWorkshopOrderRepository orderRepository,
         IWorkshopDeviceRepository deviceRepository,
+        IIdentityUserRepository identityUserRepository,
+        IdentityUserManager identityUserManager,
         IGuidGenerator guidGenerator,
         IClock clock,
         ILogger<WorkshopOrderManager> logger,
@@ -21,6 +25,8 @@ public class WorkshopOrderManager : DomainService, IWorkshopOrderManager
     {
         _orderRepository = orderRepository;
         _deviceRepository = deviceRepository;
+        _identityUserRepository = identityUserRepository;
+        _identityUserManager = identityUserManager;
         _guidGenerator = guidGenerator;
         _clock = clock;
         _logger = logger;
@@ -28,16 +34,24 @@ public class WorkshopOrderManager : DomainService, IWorkshopOrderManager
         _telemetryTimeTolerance = TimeSpan.FromSeconds(options.Value.OrderMatchToleranceSeconds);
     }
 
-    public virtual async Task<WorkshopOrder> CreateAsync(string orderNo, Guid deviceId)
+    public virtual async Task<WorkshopOrder> CreateAsync(
+        string orderNo,
+        Guid deviceId,
+        Guid projectSupervisorUserId,
+        DateTime requiredCompletionTime)
     {
         var normalizedOrderNo = NormalizeOrderNo(orderNo);
         await EnsureOrderNoAvailableAsync(normalizedOrderNo);
         await EnsureDeviceExistsAsync(deviceId);
+        await EnsureProjectSupervisorAsync(projectSupervisorUserId);
+        EnsureRequiredCompletionTime(requiredCompletionTime);
 
         var order = new WorkshopOrder(
             _guidGenerator.Create(),
             normalizedOrderNo,
             deviceId,
+            projectSupervisorUserId,
+            requiredCompletionTime,
             CurrentTenant.Id);
 
         await _orderRepository.InsertAsync(order, autoSave: true);
@@ -45,14 +59,21 @@ public class WorkshopOrderManager : DomainService, IWorkshopOrderManager
         return order;
     }
 
-    public virtual async Task<WorkshopOrder> UpdateAsync(Guid id, string orderNo, Guid deviceId)
+    public virtual async Task<WorkshopOrder> UpdateAsync(
+        Guid id,
+        string orderNo,
+        Guid deviceId,
+        Guid projectSupervisorUserId,
+        DateTime requiredCompletionTime)
     {
         var order = await _orderRepository.GetAsync(id);
         var normalizedOrderNo = NormalizeOrderNo(orderNo);
         await EnsureOrderNoAvailableAsync(normalizedOrderNo, id);
         await EnsureDeviceExistsAsync(deviceId);
+        await EnsureProjectSupervisorAsync(projectSupervisorUserId);
+        EnsureRequiredCompletionTime(requiredCompletionTime);
 
-        order.Update(normalizedOrderNo, deviceId);
+        order.Update(normalizedOrderNo, deviceId, projectSupervisorUserId, requiredCompletionTime);
         await _orderRepository.UpdateAsync(order, autoSave: true);
         return order;
     }
@@ -172,6 +193,36 @@ public class WorkshopOrderManager : DomainService, IWorkshopOrderManager
         if (device == null)
         {
             throw new UserFriendlyException($"设备不存在: {deviceId}");
+        }
+    }
+
+    /// <summary>
+    /// 单船项目主管必须是拥有“单船项目主管”角色的用户
+    /// </summary>
+    private async Task EnsureProjectSupervisorAsync(Guid projectSupervisorUserId)
+    {
+        if (projectSupervisorUserId == Guid.Empty)
+        {
+            throw new UserFriendlyException("单船项目主管不能为空");
+        }
+
+        var user = await _identityUserRepository.FindAsync(projectSupervisorUserId);
+        if (user == null)
+        {
+            throw new UserFriendlyException("单船项目主管不存在");
+        }
+
+        if (!await _identityUserManager.IsInRoleAsync(user, RoleConstants.projectSupervisor))
+        {
+            throw new UserFriendlyException("单船项目主管必须是拥有“单船项目主管”角色的人员");
+        }
+    }
+
+    private static void EnsureRequiredCompletionTime(DateTime requiredCompletionTime)
+    {
+        if (requiredCompletionTime == default)
+        {
+            throw new UserFriendlyException("要求车间完成测试时间不能为空");
         }
     }
 

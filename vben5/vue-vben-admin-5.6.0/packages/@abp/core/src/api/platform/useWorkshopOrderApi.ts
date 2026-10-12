@@ -4,6 +4,7 @@ import type {
   GetWorkshopOrderListInput,
   WorkshopOrderCreateDto,
   WorkshopOrderDto,
+  WorkshopOrderProjectSupervisorDto,
   WorkshopOrderTelemetryGraphDto,
   WorkshopOrderUpdateDto,
   WorkshopTelemetryTaskDto,
@@ -41,6 +42,17 @@ export function useWorkshopOrderApi() {
       method: 'GET',
       params: input,
     });
+  }
+
+  function getProjectSupervisorOptionsApi(): Promise<
+    WorkshopOrderProjectSupervisorDto[]
+  > {
+    return request<WorkshopOrderProjectSupervisorDto[]>(
+      '/api/workshop/orders/project-supervisors',
+      {
+        method: 'GET',
+      },
+    );
   }
 
   function startTestApi(id: string): Promise<WorkshopOrderDto> {
@@ -103,6 +115,7 @@ export function useWorkshopOrderApi() {
     endTestApi,
     getApi,
     getListApi,
+    getProjectSupervisorOptionsApi,
     getTelemetryGraphApi,
     getTelemetryTasksApi,
     startTestApi,

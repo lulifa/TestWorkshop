@@ -32,6 +32,8 @@
     "hasOrderNo": "无订单（非法数据）",
     "taskIdCurrent": "本次任务ID",
     "replacedBy": "替换为",
-    "showReplaced": "显示历史任务（已替换）"
+    "showReplaced": "显示历史任务（已替换）",
+    "projectSupervisor": "单船项目主管",
+    "requiredCompletionTime": "要求完成时间"
   }
 }

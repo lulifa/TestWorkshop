@@ -13,6 +13,21 @@ public class WorkshopOrderDto : EntityDto<Guid>
 
     public string DeviceName { get; set; }
 
+    /// <summary>
+    /// 单船项目主管用户ID
+    /// </summary>
+    public Guid ProjectSupervisorUserId { get; set; }
+
+    /// <summary>
+    /// 单船项目主管姓名
+    /// </summary>
+    public string ProjectSupervisorName { get; set; }
+
+    /// <summary>
+    /// 要求车间完成测试时间
+    /// </summary>
+    public DateTime RequiredCompletionTime { get; set; }
+
     public WorkshopOrderStatus Status { get; set; }
 
     public string StatusName => Status switch

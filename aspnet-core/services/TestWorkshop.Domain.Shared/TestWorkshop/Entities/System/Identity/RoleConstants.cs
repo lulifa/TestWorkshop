@@ -28,11 +28,29 @@ public static class RoleConstants
     public const string guest = nameof(guest);
 
     /// <summary>
+    /// 单船项目主管
+    /// </summary>
+    public const string projectSupervisor = nameof(projectSupervisor);
+
+    /// <summary>
+    /// 调度
+    /// </summary>
+    public const string dispatcher = nameof(dispatcher);
+
+    /// <summary>
+    /// 大区负责人
+    /// </summary>
+    public const string regionalManager = nameof(regionalManager);
+
+    /// <summary>
     /// 所有业务角色（除了管理员）
     /// </summary>
     public static readonly string[] BusinessRoles =
     {
         supervisor,
+        projectSupervisor,
+        dispatcher,
+        regionalManager,
         tester,
         auditor,
         guest
@@ -45,6 +63,9 @@ public static class RoleConstants
     {
         admin,
         supervisor,
+        projectSupervisor,
+        dispatcher,
+        regionalManager,
         tester,
         auditor,
         guest

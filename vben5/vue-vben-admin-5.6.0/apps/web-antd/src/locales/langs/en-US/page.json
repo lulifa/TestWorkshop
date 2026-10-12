@@ -32,6 +32,8 @@
     "hasOrderNo": "Unmatched (invalid data)",
     "taskIdCurrent": "Task ID",
     "replacedBy": "Replaced By",
-    "showReplaced": "Show history (replaced)"
+    "showReplaced": "Show history (replaced)",
+    "projectSupervisor": "Project Supervisor",
+    "requiredCompletionTime": "Required Completion"
   }
 }

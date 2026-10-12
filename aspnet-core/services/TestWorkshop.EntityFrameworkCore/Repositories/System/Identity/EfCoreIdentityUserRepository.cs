@@ -77,6 +77,7 @@ public class EfCoreIdentityUserRepository : Volo.Abp.Identity.EntityFrameworkCor
 
         return await query
             .WhereIf(!filter.IsNullOrWhiteSpace(), ou => ou.Code.Contains(filter) || ou.DisplayName.Contains(filter))
+            .OrderBy(ou => ou.Id)
             .PageBy(skipCount, maxResultCount)
             .ToListAsync(GetCancellationToken(cancellationToken));
     }
@@ -118,6 +119,7 @@ public class EfCoreIdentityUserRepository : Volo.Abp.Identity.EntityFrameworkCor
                 user => user.Name.Contains(filter) || user.UserName.Contains(filter) ||
                     user.Surname.Contains(filter) || user.Email.Contains(filter) ||
                     user.PhoneNumber.Contains(filter))
+            .OrderBy(user => user.UserName)
             .PageBy(skipCount, maxResultCount)
             .ToListAsync(GetCancellationToken(cancellationToken));
     }
@@ -159,6 +161,7 @@ public class EfCoreIdentityUserRepository : Volo.Abp.Identity.EntityFrameworkCor
                 user => user.Name.Contains(filter) || user.UserName.Contains(filter) ||
                     user.Surname.Contains(filter) || user.Email.Contains(filter) ||
                     user.PhoneNumber.Contains(filter))
+            .OrderBy(user => user.UserName)
             .PageBy(skipCount, maxResultCount)
             .ToListAsync(GetCancellationToken(cancellationToken));
     }
@@ -202,6 +205,7 @@ public class EfCoreIdentityUserRepository : Volo.Abp.Identity.EntityFrameworkCor
                 user => user.Name.Contains(filter) || user.UserName.Contains(filter) ||
                     user.Surname.Contains(filter) || user.Email.Contains(filter) ||
                     user.PhoneNumber.Contains(filter))
+            .OrderBy(user => user.UserName)
             .PageBy(skipCount, maxResultCount)
             .ToListAsync(GetCancellationToken(cancellationToken));
     }

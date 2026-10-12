@@ -922,6 +922,14 @@ namespace TestWorkshop.Migrations
                         .HasColumnType("character varying(64)")
                         .HasComment("订单号");
 
+                    b.Property<Guid>("ProjectSupervisorUserId")
+                        .HasColumnType("uuid")
+                        .HasComment("单船项目主管用户ID");
+
+                    b.Property<DateTime>("RequiredCompletionTime")
+                        .HasColumnType("timestamp without time zone")
+                        .HasComment("要求车间完成测试时间");
+
                     b.Property<int>("Status")
                         .HasColumnType("integer")
                         .HasComment("测试状态 (0=Draft 1=Testing 2=Completed 3=Cancelled)");

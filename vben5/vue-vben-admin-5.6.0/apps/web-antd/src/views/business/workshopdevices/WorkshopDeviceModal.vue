@@ -116,6 +116,9 @@ const [Form, formApi] = useVbenForm({
 });
 
 const [Modal, modalApi] = useVbenModal({
+  // 表单弹窗不允许点遮罩关闭，避免误点丢失已填内容
+  closeOnClickModal: false,
+  closeOnPressEscape: false,
   onConfirm: async () => {
     await formApi.validateAndSubmitForm();
   },

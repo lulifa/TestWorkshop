@@ -3,6 +3,7 @@ import type {
   WorkshopDeviceDto,
   WorkshopOrderCreateDto,
   WorkshopOrderDto,
+  WorkshopOrderProjectSupervisorDto,
   WorkshopOrderUpdateDto,
 } from '@abp/core';
 
@@ -16,7 +17,8 @@ const emits = defineEmits<{
   (event: 'change', data: WorkshopOrderDto): void;
 }>();
 
-const { createApi, getApi, updateApi } = useWorkshopOrderApi();
+const { createApi, getApi, getProjectSupervisorOptionsApi, updateApi } =
+  useWorkshopOrderApi();
 const { getListApi: getDeviceListApi } = useWorkshopDeviceApi();
 
 const [Form, formApi] = useVbenForm({
@@ -68,11 +70,45 @@ const [Form, formApi] = useVbenForm({
       label: $t('TestWorkshop.WorkshopOrder:Device'),
       rules: 'selectRequired',
     },
+    {
+      component: 'ApiSelect',
+      componentProps: {
+        afterFetch: (result: WorkshopOrderProjectSupervisorDto[]) => {
+          return (result ?? []).map((item) => ({
+            label: item.name || item.userName,
+            value: item.userId,
+          }));
+        },
+        allowClear: false,
+        api: getProjectSupervisorOptionsApi,
+        labelField: 'label',
+        optionFilterProp: 'label',
+        showSearch: true,
+        valueField: 'value',
+      },
+      fieldName: 'projectSupervisorUserId',
+      label: $t('page.business.projectSupervisor'),
+      rules: 'selectRequired',
+    },
+    {
+      component: 'DatePicker',
+      componentProps: {
+        showTime: true,
+        type: 'datetime',
+        valueFormat: 'YYYY-MM-DD HH:mm:ss',
+      },
+      fieldName: 'requiredCompletionTime',
+      label: $t('page.business.requiredCompletionTime'),
+      rules: 'selectRequired',
+    },
   ],
   showDefaultActions: false,
 });
 
 const [Modal, modalApi] = useVbenModal({
+  // 表单弹窗不允许点遮罩关闭，避免误点丢失已填内容
+  closeOnClickModal: false,
+  closeOnPressEscape: false,
   onConfirm: async () => {
     await formApi.validateAndSubmitForm();
   },

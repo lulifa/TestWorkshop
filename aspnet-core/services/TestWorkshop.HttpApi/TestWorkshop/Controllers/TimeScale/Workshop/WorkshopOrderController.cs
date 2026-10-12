@@ -61,6 +61,12 @@ public class WorkshopOrderController : TestWorkshopController
         return await _service.CancelAsync(id);
     }
 
+    [HttpGet("project-supervisors")]
+    public virtual async Task<List<WorkshopOrderProjectSupervisorDto>> GetProjectSupervisorOptionsAsync()
+    {
+        return await _service.GetProjectSupervisorOptionsAsync();
+    }
+
     [HttpGet("{id}/telemetry-tasks")]
     public virtual async Task<PagedResultDto<WorkshopTelemetryTaskDto>> GetTelemetryTasksAsync(
         Guid id,

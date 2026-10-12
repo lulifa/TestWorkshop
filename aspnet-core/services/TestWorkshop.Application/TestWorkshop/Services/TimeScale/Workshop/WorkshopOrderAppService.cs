@@ -16,6 +16,9 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
     private readonly IWorkshopDeviceTelemetryRepository _telemetryRepository;
     private readonly IFileObjectRepository _fileObjectRepository;
     private readonly IAsyncQueryableExecuter _asyncQueryableExecuter;
+    private readonly IIdentityUserRepository _identityUserRepository;
+    private readonly IdentityUserManager _identityUserManager;
+    private readonly IWorkshopOrderNotificationSender _orderNotificationSender;
 
     public WorkshopOrderAppService(
         IWorkshopOrderManager orderManager,
@@ -24,7 +27,10 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
         IWorkshopTelemetryTaskRepository taskRepository,
         IWorkshopDeviceTelemetryRepository telemetryRepository,
         IFileObjectRepository fileObjectRepository,
-        IAsyncQueryableExecuter asyncQueryableExecuter)
+        IAsyncQueryableExecuter asyncQueryableExecuter,
+        IIdentityUserRepository identityUserRepository,
+        IdentityUserManager identityUserManager,
+        IWorkshopOrderNotificationSender orderNotificationSender)
     {
         _orderManager = orderManager;
         _orderRepository = orderRepository;
@@ -33,6 +39,9 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
         _telemetryRepository = telemetryRepository;
         _fileObjectRepository = fileObjectRepository;
         _asyncQueryableExecuter = asyncQueryableExecuter;
+        _identityUserRepository = identityUserRepository;
+        _identityUserManager = identityUserManager;
+        _orderNotificationSender = orderNotificationSender;
     }
 
     public virtual async Task<PagedResultDto<WorkshopOrderDto>> GetListAsync(WorkshopOrderListInput input)
@@ -58,10 +67,21 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
             deviceQuery.Where(x => deviceIds.Contains(x.Id)));
         var deviceMap = devices.ToDictionary(x => x.Id);
 
+        var supervisorIds = result.Items
+            .Select(x => x.ProjectSupervisorUserId)
+            .Distinct()
+            .ToList();
+        var supervisors = supervisorIds.Count == 0
+            ? new List<IdentityUser>()
+            : await _identityUserRepository.GetListByIdListAsync(supervisorIds);
+        var supervisorMap = supervisors.ToDictionary(x => x.Id);
+
         var items = result.Items
             .Select(order => ToDto(
                 order,
-                deviceMap.GetValueOrDefault(order.DeviceId)))
+                deviceMap.GetValueOrDefault(order.DeviceId),
+                GetUserName(
+                    supervisorMap.GetValueOrDefault(order.ProjectSupervisorUserId))))
             .ToList();
 
         return new PagedResultDto<WorkshopOrderDto>(result.TotalCount, items);
@@ -71,37 +91,69 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
     {
         var order = await _orderRepository.GetAsync(id);
         var device = await _deviceRepository.FindAsync(order.DeviceId);
-        return ToDto(order, device);
+        return ToDto(order, device, await GetProjectSupervisorNameAsync(order.ProjectSupervisorUserId));
     }
 
-    [Authorize(Roles = RoleConstants.admin)]
+    [Authorize(Roles = RoleConstants.admin + "," + RoleConstants.dispatcher)]
     public virtual async Task<WorkshopOrderDto> CreateAsync(WorkshopOrderCreateDto input)
     {
-        var order = await _orderManager.CreateAsync(input.OrderNo, input.DeviceId);
+        var order = await _orderManager.CreateAsync(
+            input.OrderNo,
+            input.DeviceId,
+            input.ProjectSupervisorUserId,
+            input.RequiredCompletionTime);
         var device = await _deviceRepository.FindAsync(order.DeviceId);
-        return ToDto(order, device);
+
+        await _orderNotificationSender.NotifyOrderCreatedAsync(order);
+
+        return ToDto(order, device, await GetProjectSupervisorNameAsync(order.ProjectSupervisorUserId));
     }
 
-    [Authorize(Roles = RoleConstants.admin)]
+    [Authorize(Roles = RoleConstants.admin + "," + RoleConstants.dispatcher)]
     public virtual async Task<WorkshopOrderDto> UpdateAsync(Guid id, WorkshopOrderUpdateDto input)
     {
-        var order = await _orderManager.UpdateAsync(id, input.OrderNo, input.DeviceId);
+        var order = await _orderManager.UpdateAsync(
+            id,
+            input.OrderNo,
+            input.DeviceId,
+            input.ProjectSupervisorUserId,
+            input.RequiredCompletionTime);
         var device = await _deviceRepository.FindAsync(order.DeviceId);
-        return ToDto(order, device);
+        return ToDto(order, device, await GetProjectSupervisorNameAsync(order.ProjectSupervisorUserId));
     }
 
-    [Authorize(Roles = RoleConstants.admin)]
+    [Authorize(Roles = RoleConstants.admin + "," + RoleConstants.dispatcher)]
     public virtual async Task DeleteAsync(Guid id)
     {
         await _orderManager.DeleteAsync(id);
     }
 
+    /// <summary>
+    /// 可选的单船项目主管（拥有“单船项目主管”角色的用户）
+    /// </summary>
+    public virtual async Task<List<WorkshopOrderProjectSupervisorDto>> GetProjectSupervisorOptionsAsync()
+    {
+        var users = await _identityUserManager.GetUsersInRoleAsync(RoleConstants.projectSupervisor);
+
+        return users
+            .OrderBy(x => GetUserName(x))
+            .Select(x => new WorkshopOrderProjectSupervisorDto
+            {
+                UserId = x.Id,
+                UserName = x.UserName,
+                Name = GetUserName(x)
+            })
+            .ToList();
+    }
+
+    // 开始/结束测试：测试工程师、车间主管、管理员
+    // （车间主管是“要求完成测试时间”的责任人，暂定可操作，后续开会再确认）
     [Authorize(Roles = RoleConstants.admin + "," + RoleConstants.supervisor + "," + RoleConstants.tester)]
     public virtual async Task<WorkshopOrderDto> StartTestAsync(Guid id)
     {
         var order = await _orderManager.StartTestAsync(id);
         var device = await _deviceRepository.FindAsync(order.DeviceId);
-        return ToDto(order, device);
+        return ToDto(order, device, await GetProjectSupervisorNameAsync(order.ProjectSupervisorUserId));
     }
 
     [Authorize(Roles = RoleConstants.admin + "," + RoleConstants.supervisor + "," + RoleConstants.tester)]
@@ -109,15 +161,16 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
     {
         var order = await _orderManager.EndTestAsync(id);
         var device = await _deviceRepository.FindAsync(order.DeviceId);
-        return ToDto(order, device);
+        return ToDto(order, device, await GetProjectSupervisorNameAsync(order.ProjectSupervisorUserId));
     }
 
-    [Authorize(Roles = RoleConstants.admin + "," + RoleConstants.supervisor)]
+    // 取消订单同样只有测试工程师和管理员可以操作
+    [Authorize(Roles = RoleConstants.admin + "," + RoleConstants.tester)]
     public virtual async Task<WorkshopOrderDto> CancelAsync(Guid id)
     {
         var order = await _orderManager.CancelAsync(id);
         var device = await _deviceRepository.FindAsync(order.DeviceId);
-        return ToDto(order, device);
+        return ToDto(order, device, await GetProjectSupervisorNameAsync(order.ProjectSupervisorUserId));
     }
 
     public virtual async Task<PagedResultDto<WorkshopTelemetryTaskDto>> GetTelemetryTasksAsync(
@@ -227,7 +280,10 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
         };
     }
 
-    private static WorkshopOrderDto ToDto(WorkshopOrder order, WorkshopDevice device)
+    private static WorkshopOrderDto ToDto(
+        WorkshopOrder order,
+        WorkshopDevice device,
+        string projectSupervisorName = null)
     {
         return new WorkshopOrderDto
         {
@@ -236,12 +292,36 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
             DeviceId = order.DeviceId,
             DeviceCode = device?.Code,
             DeviceName = device?.Name,
+            ProjectSupervisorUserId = order.ProjectSupervisorUserId,
+            ProjectSupervisorName = projectSupervisorName,
+            RequiredCompletionTime = order.RequiredCompletionTime,
             Status = order.Status,
             TestStartedAt = order.TestStartedAt,
             TestEndedAt = order.TestEndedAt,
             CreationTime = order.CreationTime,
             LastModificationTime = order.LastModificationTime
         };
+    }
+
+    private static string GetUserName(IdentityUser user)
+    {
+        if (user == null)
+        {
+            return null;
+        }
+
+        return user.Name.IsNullOrWhiteSpace() ? user.UserName : user.Name;
+    }
+
+    private async Task<string> GetProjectSupervisorNameAsync(Guid userId)
+    {
+        if (userId == Guid.Empty)
+        {
+            return null;
+        }
+
+        var user = await _identityUserRepository.FindAsync(userId);
+        return GetUserName(user);
     }
 
     private static void FillTelemetryExtraProperties(

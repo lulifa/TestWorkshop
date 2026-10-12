@@ -5,9 +5,18 @@ namespace TestWorkshop.TimeScale;
 /// </summary>
 public interface IWorkshopOrderManager
 {
-    Task<WorkshopOrder> CreateAsync(string orderNo, Guid deviceId);
+    Task<WorkshopOrder> CreateAsync(
+        string orderNo,
+        Guid deviceId,
+        Guid projectSupervisorUserId,
+        DateTime requiredCompletionTime);
 
-    Task<WorkshopOrder> UpdateAsync(Guid id, string orderNo, Guid deviceId);
+    Task<WorkshopOrder> UpdateAsync(
+        Guid id,
+        string orderNo,
+        Guid deviceId,
+        Guid projectSupervisorUserId,
+        DateTime requiredCompletionTime);
 
     Task<WorkshopOrder> StartTestAsync(Guid id);
 

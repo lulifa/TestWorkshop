@@ -32,6 +32,16 @@ public class WorkshopOrder : FullAuditedAggregateRoot<Guid>, IMultiTenant
     public DateTime? TestEndedAt { get; private set; }
 
     /// <summary>
+    /// 单船项目主管（拥有“单船项目主管”角色的用户）
+    /// </summary>
+    public Guid ProjectSupervisorUserId { get; private set; }
+
+    /// <summary>
+    /// 要求车间完成测试时间
+    /// </summary>
+    public DateTime RequiredCompletionTime { get; private set; }
+
+    /// <summary>
     /// 租户ID
     /// </summary>
     public Guid? TenantId { get; protected set; }
@@ -44,11 +54,15 @@ public class WorkshopOrder : FullAuditedAggregateRoot<Guid>, IMultiTenant
         Guid id,
         string orderNo,
         Guid deviceId,
+        Guid projectSupervisorUserId,
+        DateTime requiredCompletionTime,
         Guid? tenantId = null)
         : base(id)
     {
         SetOrderNo(orderNo);
         SetDevice(deviceId);
+        SetProjectSupervisor(projectSupervisorUserId);
+        SetRequiredCompletionTime(requiredCompletionTime);
         Status = WorkshopOrderStatus.Draft;
         TenantId = tenantId;
     }
@@ -56,11 +70,17 @@ public class WorkshopOrder : FullAuditedAggregateRoot<Guid>, IMultiTenant
     /// <summary>
     /// 修改未开始订单的业务信息。
     /// </summary>
-    public void Update(string orderNo, Guid deviceId)
+    public void Update(
+        string orderNo,
+        Guid deviceId,
+        Guid projectSupervisorUserId,
+        DateTime requiredCompletionTime)
     {
         EnsureDraft();
         SetOrderNo(orderNo);
         SetDevice(deviceId);
+        SetProjectSupervisor(projectSupervisorUserId);
+        SetRequiredCompletionTime(requiredCompletionTime);
     }
 
     /// <summary>
@@ -155,5 +175,25 @@ public class WorkshopOrder : FullAuditedAggregateRoot<Guid>, IMultiTenant
         }
 
         DeviceId = deviceId;
+    }
+
+    private void SetProjectSupervisor(Guid projectSupervisorUserId)
+    {
+        if (projectSupervisorUserId == Guid.Empty)
+        {
+            throw new UserFriendlyException("单船项目主管不能为空");
+        }
+
+        ProjectSupervisorUserId = projectSupervisorUserId;
+    }
+
+    private void SetRequiredCompletionTime(DateTime requiredCompletionTime)
+    {
+        if (requiredCompletionTime == default)
+        {
+            throw new UserFriendlyException("要求车间完成测试时间不能为空");
+        }
+
+        RequiredCompletionTime = DateTime.SpecifyKind(requiredCompletionTime, DateTimeKind.Unspecified);
     }
 }

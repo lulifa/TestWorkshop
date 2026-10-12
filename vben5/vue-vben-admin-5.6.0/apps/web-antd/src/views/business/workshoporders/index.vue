@@ -51,16 +51,20 @@ const { getListApi: getDeviceListApi } = useWorkshopDeviceApi();
 const MenuItem = Menu.Item;
 const abpStore = useAbpStore();
 
-const isAdmin = computed(
-  () => abpStore.application?.currentUser.roles?.includes('admin') ?? false,
-);
+// 订单只能由调度或管理员新建/编辑
+const canManageOrder = computed(() => {
+  const roles = abpStore.application?.currentUser.roles ?? [];
+  return roles.some((role) => ['admin', 'dispatcher'].includes(role));
+});
 const canOperate = computed(() => {
   const roles = abpStore.application?.currentUser.roles ?? [];
+  // 开始/结束测试：测试工程师、车间主管、管理员（车间主管待开会确认）
   return roles.some((role) => ['admin', 'supervisor', 'tester'].includes(role));
 });
 const canCancel = computed(() => {
   const roles = abpStore.application?.currentUser.roles ?? [];
-  return roles.some((role) => ['admin', 'supervisor'].includes(role));
+  // 取消订单同样只有测试工程师和管理员可以操作
+  return roles.some((role) => ['admin', 'tester'].includes(role));
 });
 
 const statusOptions = [
@@ -176,11 +180,26 @@ const gridOptions: VxeGridProps<WorkshopOrderDto> = {
       title: $t('TestWorkshop.WorkshopOrder:Device'),
     },
     {
+      align: 'left',
+      field: 'projectSupervisorName',
+      formatter: ({ cellValue }) => cellValue || '-',
+      minWidth: 140,
+      title: $t('page.business.projectSupervisor'),
+    },
+    {
       align: 'center',
       field: 'status',
       minWidth: 100,
       slots: { default: 'status' },
       title: $t('TestWorkshop.WorkshopOrder:Status'),
+    },
+    {
+      field: 'requiredCompletionTime',
+      formatter: ({ cellValue }) => {
+        return cellValue ? formatToDateTime(cellValue) : '-';
+      },
+      minWidth: 180,
+      title: $t('page.business.requiredCompletionTime'),
     },
     {
       field: 'testStartedAt',
@@ -364,7 +383,7 @@ function onDelete(row: WorkshopOrderDto) {
 }
 
 function canEdit(row: WorkshopOrderDto) {
-  return isAdmin.value && row.status === WorkshopOrderStatus.Draft;
+  return canManageOrder.value && row.status === WorkshopOrderStatus.Draft;
 }
 
 function canStart(row: WorkshopOrderDto) {
@@ -386,7 +405,7 @@ function canCancelOrder(row: WorkshopOrderDto) {
 
 function canDelete(row: WorkshopOrderDto) {
   return (
-    isAdmin.value &&
+    canManageOrder.value &&
     [WorkshopOrderStatus.Cancelled, WorkshopOrderStatus.Draft].includes(
       row.status,
     )
@@ -424,7 +443,7 @@ onMounted(() => {
     <Grid :table-title="$t('page.business.workshoporders')">
       <template #toolbar-tools>
         <Button
-          v-if="isAdmin"
+          v-if="canManageOrder"
           :icon="h(PlusOutlined)"
           type="primary"
           @click="onCreate"

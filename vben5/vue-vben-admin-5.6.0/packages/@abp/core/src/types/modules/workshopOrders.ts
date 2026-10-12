@@ -14,6 +14,9 @@ interface WorkshopOrderDto extends EntityDto<string> {
   deviceName?: string;
   lastModificationTime?: string;
   orderNo: string;
+  projectSupervisorName?: string;
+  projectSupervisorUserId: string;
+  requiredCompletionTime: string;
   status: WorkshopOrderStatus;
   statusName?: string;
   testEndedAt?: string;
@@ -23,6 +26,14 @@ interface WorkshopOrderDto extends EntityDto<string> {
 interface WorkshopOrderCreateOrUpdateDto {
   deviceId: string;
   orderNo: string;
+  projectSupervisorUserId: string;
+  requiredCompletionTime: string;
+}
+
+interface WorkshopOrderProjectSupervisorDto {
+  name: string;
+  userId: string;
+  userName: string;
 }
 
 type WorkshopOrderCreateDto = WorkshopOrderCreateOrUpdateDto;
@@ -65,6 +76,7 @@ export type {
   GetWorkshopOrderListInput,
   WorkshopOrderCreateDto,
   WorkshopOrderDto,
+  WorkshopOrderProjectSupervisorDto,
   WorkshopOrderTelemetryGraphDto,
   WorkshopOrderUpdateDto,
   WorkshopTelemetryGraphChannelDto,
