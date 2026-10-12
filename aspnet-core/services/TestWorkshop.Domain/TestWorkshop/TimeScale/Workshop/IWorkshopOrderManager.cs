@@ -17,6 +17,11 @@ public interface IWorkshopOrderManager
 
     Task DeleteAsync(Guid id);
 
+    /// <summary>
+    /// 按设备与数据时间区间匹配订单。
+    /// 匹配不到订单、或匹配到多个订单时返回 null，
+    /// 由调用方按“未匹配订单”接收数据，不再拒绝上传。
+    /// </summary>
     Task<WorkshopOrder> ResolveTelemetryOrderAsync(
         Guid deviceId,
         DateTime dataStartTime,

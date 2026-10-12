@@ -16,31 +16,40 @@ interface WorkshopTelemetryTaskDto extends EntityDto<number> {
   fileObjectId: string;
   fileSize: number;
   nextRetryTime?: string;
+  orderId?: string;
+  orderNo?: string;
   processedAt?: string;
   recordCount?: number;
   replacedByTaskId?: number;
   retryCount: number;
   status: WorkshopTelemetryStatus;
   statusName: string;
+  testedDeviceCode?: string;
+  testedDeviceName?: string;
 }
 
 interface WorkshopTelemetryTaskListInput extends PagedAndSortedResultRequestDto {
   endTime?: string;
   fileName?: string;
+  hasOrder?: boolean;
   isPaged?: boolean;
+  orderNo?: string;
   startTime?: string;
   status?: number;
+  testedDeviceCode?: string;
 }
 
 interface WorkshopTelemetryStatisticsDto {
   failedCount: number;
   pendingCount: number;
   processingCount: number;
+  replacedCount: number;
   successCount: number;
   totalFiles: number;
   totalRecords: number;
   totalSize: number;
   totalSizeMB: number;
+  unmatchedOrderCount: number;
 }
 
 interface WorkshopTelemetryFileInput {

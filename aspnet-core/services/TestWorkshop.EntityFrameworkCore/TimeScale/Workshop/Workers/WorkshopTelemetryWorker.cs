@@ -320,7 +320,11 @@ public class WorkshopTelemetryWorker : AsyncPeriodicBackgroundWorkerBase
                 var currentTask = await db.TelemetryTasks
                     .AsNoTracking()
                     .FirstAsync(x => x.Id == taskId, ct);
-                if (previousTask.OrderId != currentTask.OrderId)
+                // 旧任务本来就没有订单（非法数据）时允许被替换，例如先上传、
+                // 之后补建订单再重传同一批数据，此时新任务能匹配到订单。
+                // 只有旧任务已归属订单、且新任务归属不一致时才拒绝。
+                if (previousTask.OrderId.HasValue
+                    && previousTask.OrderId != currentTask.OrderId)
                 {
                     throw new InvalidDataException(
                         $"相同遥测数据已属于其他订单，不能替换。PreviousTaskId={previousTask.Id}");

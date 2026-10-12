@@ -34,7 +34,7 @@ public class WorkshopTelemetryTaskManager : DomainService, IWorkshopTelemetryTas
         Stream stream,
         string fileName,
         string contentType,
-        Guid orderId,
+        Guid? orderId,
         ExtraPropertyDictionary extraProperties = null)
     {
         // 1. 先创建任务并保存，拿到 Task.Id

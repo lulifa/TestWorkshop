@@ -77,7 +77,7 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
             stream: file.OpenReadStream(),
             fileName: file.FileName,
             contentType: file.ContentType,
-            orderId: order.Id,
+            orderId: order?.Id,
             extraProperties: extraProperties
         );
 
@@ -89,8 +89,8 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
         {
             Id = task.Id,
             FileObjectId = task.FileObjectId,
-            OrderId = order.Id,
-            OrderNo = order.OrderNo,
+            OrderId = order?.Id,
+            OrderNo = order?.OrderNo,
             FileName = fileObject?.FileName,
             FileSize = fileObject?.FileSize ?? 0,
             Status = task.Status,
@@ -150,10 +150,13 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
         // ✅ 用 Repository 已有的方法
         var result = await _taskRepository.GetPagedListAsync(
             input.OrderId,
+            input.OrderNo,
             input.FileName,
             input.Status,
             input.StartTime,
             input.EndTime,
+            input.TestedDeviceCode,
+            input.HasOrder,
             input.SkipCount,
             input.MaxResultCount);
 
@@ -203,7 +206,7 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
     /// </summary>
     public async Task<WorkshopTelemetryStatisticsDto> GetStatisticsAsync()
     {
-        var (totalFiles, totalSize, pendingCount, processingCount, successCount, failedCount, totalRecords)
+        var (totalFiles, totalSize, pendingCount, processingCount, successCount, failedCount, replacedCount, unmatchedOrderCount, totalRecords)
             = await _taskRepository.GetStatisticsDataAsync();
 
         return new WorkshopTelemetryStatisticsDto
@@ -214,6 +217,8 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
             ProcessingCount = processingCount,
             SuccessCount = successCount,
             FailedCount = failedCount,
+            ReplacedCount = replacedCount,
+            UnmatchedOrderCount = unmatchedOrderCount,
             TotalRecords = totalRecords
         };
     }
@@ -341,6 +346,11 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
         {
             dto.ExtraProperties[item.Key] = item.Value;
         }
+
+        dto.TestedDeviceCode = fileObject.GetProperty(
+            TestWorkshopConsts.TelemetryInputExtraPropertiesPrefix + "TestInfo.TestedDeviceCode") as string;
+        dto.TestedDeviceName = fileObject.GetProperty(
+            TestWorkshopConsts.TelemetryInputExtraPropertiesPrefix + "TestInfo.TestedDeviceName") as string;
     }
 
     private static void AddTelemetryExtraProperties(

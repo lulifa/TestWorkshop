@@ -21,6 +21,16 @@ public class WorkshopTelemetryTaskDto : ExtensibleEntityDto<long>
     public string OrderNo { get; set; }
 
     /// <summary>
+    /// 被测设备编码（来自上传参数的 TestInfo.TestedDeviceCode）
+    /// </summary>
+    public string TestedDeviceCode { get; set; }
+
+    /// <summary>
+    /// 被测设备名称（来自上传参数的 TestInfo.TestedDeviceName）
+    /// </summary>
+    public string TestedDeviceName { get; set; }
+
+    /// <summary>
     /// 被哪个任务替换
     /// </summary>
     public long? ReplacedByTaskId { get; set; }

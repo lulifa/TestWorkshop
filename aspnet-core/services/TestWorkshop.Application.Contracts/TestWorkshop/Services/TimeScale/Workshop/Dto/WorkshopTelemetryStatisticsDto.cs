@@ -36,6 +36,16 @@ public class WorkshopTelemetryStatisticsDto
     public int FailedCount { get; set; }
 
     /// <summary>
+    /// 未匹配订单数（非法数据）
+    /// </summary>
+    public int UnmatchedOrderCount { get; set; }
+
+    /// <summary>
+    /// 被替换的历史任务数
+    /// </summary>
+    public int ReplacedCount { get; set; }
+
+    /// <summary>
     /// 总解析记录数
     /// </summary>
     public long TotalRecords { get; set; }

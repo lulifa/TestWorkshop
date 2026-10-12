@@ -140,19 +140,21 @@ public class WorkshopOrderManager : DomainService, IWorkshopOrderManager
             .Where(order => IsTelemetryInOrderWindow(order, dataStartTime, dataEndTime))
             .ToList();
 
-        if (matchedOrders.Count == 0)
+        if (matchedOrders.Count == 1)
         {
-            throw new UserFriendlyException(
-                $"未找到匹配订单: DeviceId={deviceId}, Time={dataStartTime:yyyy-MM-dd HH:mm:ss} - {dataEndTime:yyyy-MM-dd HH:mm:ss}");
+            return matchedOrders[0];
         }
 
-        if (matchedOrders.Count > 1)
-        {
-            throw new UserFriendlyException(
-                $"数据匹配到多个订单，无法自动归属: {string.Join(", ", matchedOrders.Select(x => x.OrderNo))}");
-        }
-
-        return matchedOrders[0];
+        // 匹配不到订单、或匹配到多个订单，都不再拒绝上传：
+        // 任务照常接收，OrderId 留空，由前端在遥测任务列表里标记为未匹配。
+        _logger.LogWarning(
+            "遥测数据未唯一匹配订单，按未匹配接收。DeviceId={DeviceId}, Time={StartTime}~{EndTime}, MatchedCount={MatchedCount}, MatchedOrders={MatchedOrders}",
+            deviceId,
+            dataStartTime,
+            dataEndTime,
+            matchedOrders.Count,
+            string.Join(", ", matchedOrders.Select(x => x.OrderNo)));
+        return null;
     }
 
     private async Task EnsureOrderNoAvailableAsync(string orderNo, Guid? excludeId = null)

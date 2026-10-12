@@ -45,6 +45,9 @@ const { getApi: getFileApi } = useFileApi();
 const statistics = ref<WorkshopTelemetryStatisticsDto>();
 const selectedRows = ref<WorkshopTelemetryTaskDto[]>([]);
 
+// 界面上“状态”列的虚拟状态：已替换（被后一次上传顶掉的历史任务，底层状态其实还是成功）
+const ReplacedStatusValue = 4;
+
 const statisticItems = computed(() => [
   {
     label: $t('TestWorkshop.Telemetry:TotalFiles'),
@@ -75,6 +78,16 @@ const statisticItems = computed(() => [
     value: statistics.value?.failedCount ?? 0,
   },
   {
+    color: 'default',
+    label: $t('TestWorkshop.Telemetry:Replaced'),
+    value: statistics.value?.replacedCount ?? 0,
+  },
+  {
+    color: 'volcano',
+    label: $t('page.business.unmatchedOrder'),
+    value: statistics.value?.unmatchedOrderCount ?? 0,
+  },
+  {
     label: $t('TestWorkshop.Telemetry:TotalRecords'),
     value: statistics.value?.totalRecords ?? 0,
   },
@@ -96,6 +109,10 @@ const statusOptions = [
   {
     label: $t('TestWorkshop.Telemetry:Failed'),
     value: WorkshopTelemetryStatus.Failed,
+  },
+  {
+    label: $t('TestWorkshop.Telemetry:Replaced'),
+    value: ReplacedStatusValue,
   },
 ];
 
@@ -134,6 +151,15 @@ const formOptions: VbenFormProps = {
       componentProps: {
         allowClear: true,
       },
+      fieldName: 'orderNo',
+      formItemClass: 'col-span-1 items-baseline',
+      label: $t('TestWorkshop.WorkshopOrder:OrderNo'),
+    },
+    {
+      component: 'Input',
+      componentProps: {
+        allowClear: true,
+      },
       fieldName: 'fileName',
       formItemClass: 'col-span-1 items-baseline',
       label: $t('TestWorkshop.Telemetry:FileName'),
@@ -147,6 +173,34 @@ const formOptions: VbenFormProps = {
       fieldName: 'status',
       formItemClass: 'col-span-1 items-baseline',
       label: $t('TestWorkshop.Telemetry:Status'),
+    },
+    {
+      component: 'Input',
+      componentProps: {
+        allowClear: true,
+      },
+      fieldName: 'testedDeviceCode',
+      formItemClass: 'col-span-1 items-baseline',
+      label: $t('page.business.testedDevice'),
+    },
+    {
+      component: 'Select',
+      componentProps: {
+        allowClear: true,
+        options: [
+          {
+            label: $t('page.business.hasOrderYes'),
+            value: true,
+          },
+          {
+            label: $t('page.business.hasOrderNo'),
+            value: false,
+          },
+        ],
+      },
+      fieldName: 'hasOrder',
+      formItemClass: 'col-span-1 items-baseline',
+      label: $t('page.business.hasOrder'),
     },
     {
       component: 'RangePicker',
@@ -176,6 +230,27 @@ const gridOptions: VxeGridProps<WorkshopTelemetryTaskDto> = {
       width: 50,
     },
     {
+      align: 'center',
+      field: 'orderNo',
+      minWidth: 170,
+      slots: { default: 'orderNo' },
+      title: $t('TestWorkshop.WorkshopOrder:OrderNo'),
+    },
+    {
+      align: 'center',
+      field: 'status',
+      slots: { default: 'status' },
+      title: $t('TestWorkshop.Telemetry:Status'),
+      width: 110,
+    },
+    {
+      align: 'center',
+      field: 'id',
+      minWidth: 100,
+      slots: { default: 'taskId' },
+      title: $t('page.business.taskIdCurrent'),
+    },
+    {
       align: 'left',
       field: 'fileName',
       minWidth: 320,
@@ -187,6 +262,26 @@ const gridOptions: VxeGridProps<WorkshopTelemetryTaskDto> = {
       minWidth: 140,
       slots: { default: 'deviceCode' },
       title: $t('TestWorkshop.Telemetry:DeviceCode'),
+    },
+    {
+      align: 'left',
+      field: 'testedDeviceCode',
+      minWidth: 180,
+      slots: { default: 'testedDevice' },
+      title: $t('page.business.testedDevice'),
+    },
+    {
+      align: 'center',
+      field: 'testBy',
+      minWidth: 110,
+      slots: { default: 'testBy' },
+      title: $t('TestWorkshop.Telemetry:TestBy'),
+    },
+    {
+      field: 'shipName',
+      minWidth: 150,
+      slots: { default: 'shipName' },
+      title: $t('TestWorkshop.Telemetry:ShipName'),
     },
     {
       align: 'center',
@@ -215,13 +310,6 @@ const gridOptions: VxeGridProps<WorkshopTelemetryTaskDto> = {
       title: $t('TestWorkshop.DisplayName:CreatedAt'),
     },
     {
-      align: 'center',
-      field: 'status',
-      slots: { default: 'status' },
-      title: $t('TestWorkshop.Telemetry:Status'),
-      width: 100,
-    },
-    {
       align: 'right',
       field: 'recordCount',
       minWidth: 100,
@@ -244,6 +332,7 @@ const gridOptions: VxeGridProps<WorkshopTelemetryTaskDto> = {
   exportConfig: {},
   height: 'auto',
   keepSource: true,
+  rowClassName: ({ row }) => (row.orderId ? '' : 'unmatched-order-row'),
   proxyConfig: {
     ajax: {
       query: async ({ page, sort }, formValues) => {
@@ -252,11 +341,14 @@ const gridOptions: VxeGridProps<WorkshopTelemetryTaskDto> = {
         return await getListApi({
           endTime: values?.endTime,
           fileName: values?.fileName,
+          hasOrder: values?.hasOrder,
           maxResultCount: page.pageSize,
+          orderNo: values?.orderNo,
           skipCount: (page.currentPage - 1) * page.pageSize,
           sorting,
           startTime: values?.startTime,
           status: values?.status,
+          testedDeviceCode: values?.testedDeviceCode,
         });
       },
       queryAll: async (params) => {
@@ -267,10 +359,13 @@ const gridOptions: VxeGridProps<WorkshopTelemetryTaskDto> = {
         return await getListApi({
           endTime: values?.endTime,
           fileName: values?.fileName,
+          hasOrder: values?.hasOrder,
           isPaged: false,
+          orderNo: values?.orderNo,
           sorting,
           startTime: values?.startTime,
           status: values?.status,
+          testedDeviceCode: values?.testedDeviceCode,
         });
       },
       querySuccess: () => {
@@ -317,6 +412,20 @@ function getTelemetryExtraValue(
   propertyName: string,
 ) {
   return row.extraProperties?.[`TelemetryInput.${propertyName}`] ?? null;
+}
+
+function getTestedDeviceLabel(row: WorkshopTelemetryTaskDto) {
+  const code =
+    row.testedDeviceCode ??
+    getTelemetryExtraValue(row, 'TestInfo.TestedDeviceCode');
+  if (!code) {
+    return undefined;
+  }
+
+  const name =
+    row.testedDeviceName ??
+    getTelemetryExtraValue(row, 'TestInfo.TestedDeviceName');
+  return name ? `${code} · ${name}` : String(code);
 }
 
 const [TelemetryUploadModal, telemetryUploadModalApi] = useVbenModal({
@@ -491,6 +600,31 @@ onMounted(async () => {
       <template #deviceCode="{ row }">
         {{ getTelemetryExtraValue(row, 'DeviceCode') || '-' }}
       </template>
+      <template #testedDevice="{ row }">
+        <span class="block truncate" :title="getTestedDeviceLabel(row)">
+          {{ getTestedDeviceLabel(row) ?? '-' }}
+        </span>
+      </template>
+      <template #orderNo="{ row }">
+        <Tag v-if="row.orderNo" color="blue">{{ row.orderNo }}</Tag>
+        <Tag v-else color="error">
+          {{ $t('page.business.unmatchedOrder') }}
+        </Tag>
+      </template>
+      <template #taskId="{ row }">
+        <span class="font-mono text-xs">{{ row.id }}</span>
+      </template>
+      <template #testBy="{ row }">
+        {{ getTelemetryExtraValue(row, 'TestInfo.TestBy') || '-' }}
+      </template>
+      <template #shipName="{ row }">
+        <span
+          class="block truncate"
+          :title="getTelemetryExtraValue(row, 'TestInfo.ShipName') || ''"
+        >
+          {{ getTelemetryExtraValue(row, 'TestInfo.ShipName') || '-' }}
+        </span>
+      </template>
       <template #channelType="{ row }">
         <Tag v-if="getTelemetryExtraValue(row, 'ChannelType')" color="blue">
           {{ getTelemetryExtraValue(row, 'ChannelType') }}
@@ -559,4 +693,12 @@ onMounted(async () => {
   </Page>
 </template>
 
-<style scoped></style>
+<style scoped>
+:deep(.vxe-body--row.unmatched-order-row > td) {
+  background-color: rgb(254 226 226 / 70%) !important;
+}
+
+:global(html.dark) :deep(.vxe-body--row.unmatched-order-row > td) {
+  background-color: rgb(127 29 29 / 40%) !important;
+}
+</style>

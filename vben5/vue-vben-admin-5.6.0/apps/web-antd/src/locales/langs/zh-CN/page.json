@@ -23,6 +23,15 @@
     },
     "workshoporders": "订单管理",
     "workshopdevices": "车间设备",
-    "orderGraph": "图谱"
+    "orderGraph": "图谱",
+    "unmatchedOrder": "未匹配订单",
+    "testedDevice": "被测产品",
+    "testedDeviceUnset": "未标注被测产品",
+    "hasOrder": "是否有订单",
+    "hasOrderYes": "有订单",
+    "hasOrderNo": "无订单（非法数据）",
+    "taskIdCurrent": "本次任务ID",
+    "replacedBy": "替换为",
+    "showReplaced": "显示历史任务（已替换）"
   }
 }

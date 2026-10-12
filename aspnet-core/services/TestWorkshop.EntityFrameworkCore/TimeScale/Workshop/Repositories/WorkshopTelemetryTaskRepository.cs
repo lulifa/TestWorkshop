@@ -7,6 +7,12 @@ public class WorkshopTelemetryTaskRepository :
     EfCoreRepository<TestWorkshopDbContext, WorkshopTelemetryTask, long>,
     IWorkshopTelemetryTaskRepository
 {
+    // 任务状态：2 = 成功
+    private const int SuccessStatusValue = 2;
+
+    // 界面上“状态”列的虚拟状态：已替换（被后一次上传顶掉的历史任务）
+    private const int ReplacedStatusValue = 4;
+
     public WorkshopTelemetryTaskRepository(
         IDbContextProvider<TestWorkshopDbContext> dbContextProvider)
         : base(dbContextProvider)
@@ -61,10 +67,13 @@ public class WorkshopTelemetryTaskRepository :
     /// </summary>
     public async Task<PagedResultDto<WorkshopTelemetryTask>> GetPagedListAsync(
         Guid? orderId = null,
+        string orderNo = null,
         string fileName = null,
         int? status = null,
         DateTime? startTime = null,
         DateTime? endTime = null,
+        string testedDeviceCode = null,
+        bool? hasOrder = null,
         int skipCount = 0,
         int maxResultCount = 10)
     {
@@ -74,11 +83,20 @@ public class WorkshopTelemetryTaskRepository :
         var query = from task in dbContext.TelemetryTasks
                     join file in dbContext.FileObjects on task.FileObjectId equals file.Id into fileGroup
                     from file in fileGroup.DefaultIfEmpty()
-                    select new { Task = task, File = file };
+                    join order in dbContext.Orders on task.OrderId equals (Guid?)order.Id into orderGroup
+                    from order in orderGroup.DefaultIfEmpty()
+                    select new { Task = task, File = file, Order = order };
 
         if (orderId.HasValue)
         {
             query = query.Where(x => x.Task.OrderId == orderId.Value);
+        }
+
+        // 按订单号模糊匹配（未关联订单的任务不会命中）
+        if (!orderNo.IsNullOrWhiteSpace())
+        {
+            var orderNoFilter = orderNo.Trim();
+            query = query.Where(x => x.Order != null && x.Order.OrderNo.Contains(orderNoFilter));
         }
 
         // 按文件名过滤
@@ -87,10 +105,24 @@ public class WorkshopTelemetryTaskRepository :
             query = query.Where(x => x.File != null && x.File.FileName.Contains(fileName));
         }
 
-        // 按状态过滤
+        // 按状态过滤。口径与界面上“状态”列的显示保持一致：
+        //   ReplacedStatusValue 是界面的虚拟状态“已替换”，对应被后一次上传顶掉的历史任务；
+        //   “成功”需要排除这些历史任务，因为它们显示为“已替换”而不是“成功”。
         if (status.HasValue)
         {
-            query = query.Where(x => x.Task.Status == status.Value);
+            if (status.Value == ReplacedStatusValue)
+            {
+                query = query.Where(x => x.Task.ReplacedByTaskId != null);
+            }
+            else if (status.Value == SuccessStatusValue)
+            {
+                query = query.Where(x => x.Task.Status == SuccessStatusValue
+                                         && x.Task.ReplacedByTaskId == null);
+            }
+            else
+            {
+                query = query.Where(x => x.Task.Status == status.Value);
+            }
         }
 
         if (startTime.HasValue)
@@ -101,6 +133,24 @@ public class WorkshopTelemetryTaskRepository :
         if (endTime.HasValue)
         {
             query = query.Where(x => x.Task.CreatedAt <= endTime.Value);
+        }
+
+        // 是否关联订单：未匹配订单的数据即非法数据
+        if (hasOrder.HasValue)
+        {
+            query = hasOrder.Value
+                ? query.Where(x => x.Task.OrderId != null)
+                : query.Where(x => x.Task.OrderId == null);
+        }
+
+        // 被测设备编码存在 FileObject.ExtraProperties 的 JSON 文本里，用 LIKE 匹配。
+        if (!testedDeviceCode.IsNullOrWhiteSpace())
+        {
+            var pattern = $"%\"{TestWorkshopConsts.TelemetryInputExtraPropertiesPrefix}TestInfo.TestedDeviceCode\":\"{testedDeviceCode.Trim()}%";
+            var fileObjectIds = await GetMatchingFileObjectIdsAsync(dbContext, pattern);
+            query = fileObjectIds.Count == 0
+                ? query.Where(_ => false)
+                : query.Where(x => x.File != null && fileObjectIds.Contains(x.File.Id));
         }
 
         // 统计总数
@@ -132,7 +182,7 @@ public class WorkshopTelemetryTaskRepository :
     /// <summary>
     /// 获取统计信息（JOIN FileObject 表获取文件大小）
     /// </summary>
-    public async Task<(int TotalFiles, long TotalSize, int PendingCount, int ProcessingCount, int SuccessCount, int FailedCount, long TotalRecords)>
+    public async Task<(int TotalFiles, long TotalSize, int PendingCount, int ProcessingCount, int SuccessCount, int FailedCount, int ReplacedCount, int UnmatchedOrderCount, long TotalRecords)>
         GetStatisticsDataAsync()
     {
         var dbContext = await GetDbContextAsync();
@@ -148,13 +198,17 @@ public class WorkshopTelemetryTaskRepository :
         var totalSize = (await query.SumAsync(x => x.File != null ? (long?)x.File.FileSize : null)) ?? 0;
         var pendingCount = await query.CountAsync(x => x.Task.Status == 0);
         var processingCount = await query.CountAsync(x => x.Task.Status == 1);
-        var successCount = await query.CountAsync(x => x.Task.Status == 2);
+        // “成功”与列表口径一致：排除被替换的历史任务（它们显示为“已替换”）
+        var successCount = await query.CountAsync(
+            x => x.Task.Status == SuccessStatusValue && x.Task.ReplacedByTaskId == null);
         var failedCount = await query.CountAsync(x => x.Task.Status == 3);
+        var replacedCount = await query.CountAsync(x => x.Task.ReplacedByTaskId != null);
+        var unmatchedOrderCount = await query.CountAsync(x => x.Task.OrderId == null);
         var totalRecords = await query
             .Where(x => x.Task.Status == 2)
             .SumAsync(x => x.Task.RecordCount ?? 0);
 
-        return (totalFiles, totalSize, pendingCount, processingCount, successCount, failedCount, totalRecords);
+        return (totalFiles, totalSize, pendingCount, processingCount, successCount, failedCount, replacedCount, unmatchedOrderCount, totalRecords);
     }
 
     // ========== 过期任务查询（返回 Task + FileObject，用于级联删除） ==========
@@ -204,6 +258,28 @@ public class WorkshopTelemetryTaskRepository :
         dbSet.Remove(task);
         var dbContext = await GetDbContextAsync();
         await dbContext.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// 按 FileObject.ExtraProperties（JSON 文本）里的关键字找出匹配的文件ID。
+    /// 这里走原生 SQL，返回的是全集，最终结果仍由外层的任务查询做租户过滤。
+    /// </summary>
+    private static async Task<List<Guid>> GetMatchingFileObjectIdsAsync(
+        TestWorkshopDbContext dbContext,
+        string pattern)
+    {
+        var entityType = dbContext.Model.FindEntityType(typeof(FileObject));
+        var rawTableName = entityType?.GetTableName() ?? "AppFileObjects";
+        var schema = entityType?.GetSchema();
+        var fullTableName = string.IsNullOrWhiteSpace(schema)
+            ? $@"""{rawTableName}"""
+            : $@"""{schema}"".""{rawTableName}""";
+
+        return await dbContext.Database
+            .SqlQueryRaw<Guid>(
+                $@"SELECT ""Id"" AS ""Value"" FROM {fullTableName} WHERE ""ExtraProperties"" LIKE {{0}}",
+                pattern)
+            .ToListAsync();
     }
 
 }

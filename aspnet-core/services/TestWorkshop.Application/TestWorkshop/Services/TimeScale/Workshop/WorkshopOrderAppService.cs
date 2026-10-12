@@ -134,10 +134,13 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
 
         var result = await _taskRepository.GetPagedListAsync(
             order.Id,
+            input.OrderNo,
             input.FileName,
             input.Status,
             input.StartTime,
             input.EndTime,
+            input.TestedDeviceCode,
+            input.HasOrder,
             input.SkipCount,
             input.MaxResultCount);
 
@@ -178,7 +181,10 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
         var taskResult = await _taskRepository.GetPagedListAsync(
             order.Id,
             null,
+            null,
             TelemetryTaskStatusSuccess,
+            null,
+            null,
             null,
             null,
             0,
@@ -252,5 +258,10 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
         {
             dto.ExtraProperties[item.Key] = item.Value;
         }
+
+        dto.TestedDeviceCode = fileObject.GetProperty(
+            TestWorkshopConsts.TelemetryInputExtraPropertiesPrefix + "TestInfo.TestedDeviceCode") as string;
+        dto.TestedDeviceName = fileObject.GetProperty(
+            TestWorkshopConsts.TelemetryInputExtraPropertiesPrefix + "TestInfo.TestedDeviceName") as string;
     }
 }

@@ -23,6 +23,15 @@
     },
     "workshoporders": "Orders",
     "workshopdevices": "Workshop Devices",
-    "orderGraph": "Graphs"
+    "orderGraph": "Graphs",
+    "unmatchedOrder": "Unmatched",
+    "testedDevice": "Tested Device",
+    "testedDeviceUnset": "Unspecified",
+    "hasOrder": "Has Order",
+    "hasOrderYes": "Matched",
+    "hasOrderNo": "Unmatched (invalid data)",
+    "taskIdCurrent": "Task ID",
+    "replacedBy": "Replaced By",
+    "showReplaced": "Show history (replaced)"
   }
 }
