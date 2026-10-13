@@ -125,7 +125,7 @@ const gridOptions: VxeGridProps<IdentityUserDto> = {
     {
       align: 'left',
       field: 'roleNames',
-      minWidth: '160px',
+      minWidth: '150px',
       slots: { default: 'roleNames' },
       title: $t('AbpIdentity.Roles'),
     },
@@ -137,14 +137,14 @@ const gridOptions: VxeGridProps<IdentityUserDto> = {
     },
     {
       field: 'name',
-      minWidth: '90px',
+      minWidth: '120px',
       sortable: true,
       title: $t('AbpIdentity.DisplayName:Name'),
     },
     {
       align: 'left',
       field: 'phoneNumber',
-      minWidth: '170px',
+      minWidth: '150px',
       slots: { default: 'phoneNumber' },
       sortable: true,
       title: $t('AbpIdentity.DisplayName:PhoneNumber'),

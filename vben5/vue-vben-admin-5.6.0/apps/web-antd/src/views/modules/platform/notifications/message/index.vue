@@ -161,7 +161,7 @@ const gridOptions: VxeGridProps<NotificationOutput> = {
     },
     {
       field: 'content',
-      minWidth: 200,
+      minWidth: 260,
       slots: { default: 'content' },
       title: $t('TestWorkshop.DisplayName:Content'),
     },
