@@ -73,10 +73,12 @@ public class WorkshopDeviceHeartbeatMonitorWorker : AsyncPeriodicBackgroundWorke
                 }
                 else if (targetLevel == 0 && heartbeat.AlarmLevel > 0)
                 {
+                    // 先按恢复前所处的级别发送"通信已恢复"，再复位级别。
+                    await notifier.NotifyCommunicationRecoveredAsync(heartbeat, heartbeat.AlarmLevel);
                     heartbeat.ResetAlarm();
                     await heartbeatRepository.UpdateAsync(heartbeat, autoSave: true, ct);
                     _logger.LogInformation(
-                        "设备 {DeviceCode} 心跳恢复，已复位报警级别",
+                        "设备 {DeviceCode} 心跳恢复，已发送恢复通知并复位报警级别",
                         heartbeat.DeviceCode);
                 }
             }

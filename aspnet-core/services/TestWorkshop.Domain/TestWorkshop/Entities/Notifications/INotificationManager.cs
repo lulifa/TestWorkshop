@@ -45,9 +45,20 @@ public interface INotificationManager
     /// <param name="content">消息内容</param>
     /// <param name="messageType">消息类型</param>
     /// <param name="level">消息等级</param>
+    /// <param name="senderUserId">发送人ID，后台任务用系统身份（Guid.Empty）</param>
+    /// <param name="senderUserName">发送人用户名，后台任务用 system</param>
     /// <param name="receiveUserId">接受人，发送给谁。</param>
     /// <param name="receiveUserName">接受人用户名</param>
-    Task CreateAsync(Guid id, string title, string content, MessageType messageType, MessageLevel level, Guid? receiveUserId, string receiveUserName);
+    Task CreateAsync(
+        Guid id,
+        string title,
+        string content,
+        MessageType messageType,
+        MessageLevel level,
+        Guid senderUserId,
+        string senderUserName,
+        Guid? receiveUserId,
+        string receiveUserName);
 
     /// <summary>
     /// 消息设置为已读

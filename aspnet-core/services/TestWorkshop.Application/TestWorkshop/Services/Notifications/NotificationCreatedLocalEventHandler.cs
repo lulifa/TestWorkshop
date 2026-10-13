@@ -18,6 +18,8 @@ public class NotificationCreatedLocalEventHandler : ILocalEventHandler<CreatedNo
             eventData.Content,
             eventData.MessageType,
             eventData.MessageLevel,
+            eventData.SenderUserId,
+            eventData.SenderUserName,
             eventData.ReceiveUserId,
             eventData.ReceiveUserName);
     }

@@ -10,4 +10,10 @@ public interface IWorkshopDeviceHeartbeatNotificationSender
     /// level: 1=测试工程师，2=+车间主管，3=+系统管理员。
     /// </summary>
     Task NotifyCommunicationAlarmAsync(WorkshopDeviceHeartbeat heartbeat, int level);
+
+    /// <summary>
+    /// 发送"通信已恢复"消息，收件人范围与恢复前的报警级别一致。
+    /// level 传恢复前所处的报警级别。
+    /// </summary>
+    Task NotifyCommunicationRecoveredAsync(WorkshopDeviceHeartbeat heartbeat, int level);
 }

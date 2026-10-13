@@ -53,14 +53,16 @@ public class NotificationManager : DomainService, INotificationManager
         return await _notificationRepository.GetCountAsync(title, content, senderUserId, senderUserName, receiverUserId, receiverUserName, read, startReadTime, endReadTime, messageType, messageLevel);
     }
 
-    public async Task CreateAsync(Guid id, string title, string content, MessageType messageType, MessageLevel level, Guid? receiveUserId, string receiveUserName)
+    public async Task CreateAsync(Guid id, string title, string content, MessageType messageType, MessageLevel level, Guid senderUserId, string senderUserName, Guid? receiveUserId, string receiveUserName)
     {
-        if (!_currentUser.Id.HasValue)
+        // 发送人由调用方传入（事件里带过来）。这里保留校验：
+        // 没有有效发送人的请求（例如匿名调用）依旧不允许创建消息。
+        if (senderUserName.IsNullOrWhiteSpace())
         {
             throw new AbpAuthorizationException();
         }
 
-        var entity = new Notification(id, title, content, messageType, level, _currentUser.Id.Value, _currentUser.UserName, receiveUserId, receiveUserName, tenantId: CurrentTenant?.Id);
+        var entity = new Notification(id, title, content, messageType, level, senderUserId, senderUserName, receiveUserId, receiveUserName, tenantId: CurrentTenant?.Id);
 
         await _notificationRepository.InsertAsync(entity);
     }
