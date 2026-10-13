@@ -23,14 +23,14 @@ public class WorkshopTelemetryController : TestWorkshopController
     }
 
     /// <summary>
-    /// 下位机心跳：请求成功即代表通信正常
+    /// 下位机心跳：按设备编码登记在线状态；设备编码未知则请求失败
     /// </summary>
     [HttpGet("online")]
-    public async Task<TelemetryOnlineResultDto> OnlineAsync()
+    public async Task<TelemetryOnlineResultDto> OnlineAsync([Required] string deviceCode)
     {
         // 心跳是匿名 GET，禁止任何代理/浏览器缓存，避免出现“假在线”
         Response.Headers.CacheControl = "no-store";
-        return await Service.OnlineAsync();
+        return await Service.OnlineAsync(deviceCode);
     }
 
     /// <summary>

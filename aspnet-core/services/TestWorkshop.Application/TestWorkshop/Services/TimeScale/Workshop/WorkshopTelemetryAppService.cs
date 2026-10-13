@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 
+using Volo.Abp.Guids;
 using Volo.Abp.Timing;
 
 namespace TestWorkshop;
@@ -14,47 +15,76 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
     private readonly IWorkshopTelemetryTaskRepository _taskRepository;
     private readonly IFileObjectRepository _fileObjectRepository;
     private readonly IWorkshopDeviceRepository _workshopDeviceRepository;
+    private readonly IWorkshopDeviceHeartbeatRepository _heartbeatRepository;
     private readonly IWorkshopOrderManager _orderManager;
     private readonly IWorkshopOrderRepository _orderRepository;
     private readonly ICurrentTenant _currentTenant;
     private readonly IClock _clock;
+    private readonly IGuidGenerator _guidGenerator;
 
     public WorkshopTelemetryAppService(
         IWorkshopTelemetryTaskManager taskManager,
         IWorkshopTelemetryTaskRepository taskRepository,
         IFileObjectRepository fileObjectRepository,
         IWorkshopDeviceRepository workshopDeviceRepository,
+        IWorkshopDeviceHeartbeatRepository heartbeatRepository,
         IWorkshopOrderManager orderManager,
         IWorkshopOrderRepository orderRepository,
         ICurrentTenant currentTenant,
-        IClock clock)
+        IClock clock,
+        IGuidGenerator guidGenerator)
     {
         _taskManager = taskManager;
         _taskRepository = taskRepository;
         _fileObjectRepository = fileObjectRepository;
         _workshopDeviceRepository = workshopDeviceRepository;
+        _heartbeatRepository = heartbeatRepository;
         _orderManager = orderManager;
         _orderRepository = orderRepository;
         _currentTenant = currentTenant;
         _clock = clock;
+        _guidGenerator = guidGenerator;
     }
 
     /// <summary>
-    /// 下位机心跳：只要请求得到响应就说明通信正常。
-    /// 刻意不接收任何参数、不访问数据库，避免把"网络不通"和"参数/业务错误"混在一起。
-    /// 后续若要做"设备在线登记 + 查当前订单"，另开接口，不要污染这个心跳。
+    /// 下位机心跳：按设备编码登记在线状态（刷新最近心跳时间），并返回服务器时间供校时。
+    /// 设备编码未知时直接报错，避免把非法请求也算作"在线"。
     /// </summary>
     [AllowAnonymous]
-    public virtual Task<TelemetryOnlineResultDto> OnlineAsync()
+    public virtual async Task<TelemetryOnlineResultDto> OnlineAsync(string deviceCode)
     {
+        if (deviceCode.IsNullOrWhiteSpace())
+        {
+            throw new UserFriendlyException("设备编码不能为空");
+        }
+
+        var device = await _workshopDeviceRepository.FindByCodeAsync(deviceCode.Trim());
+        if (device == null)
+        {
+            throw new UserFriendlyException($"未知设备编码：{deviceCode}");
+        }
+
         var now = _clock.Now;
 
-        return Task.FromResult(new TelemetryOnlineResultDto
+        // 设备编码以 WorkshopDevice.Code 为准，避免大小写/空格不一致导致重复行。
+        var heartbeat = await _heartbeatRepository.FindByDeviceCodeAsync(device.Code);
+        if (heartbeat == null)
+        {
+            heartbeat = new WorkshopDeviceHeartbeat(_guidGenerator.Create(), device.Id, device.Code, now);
+            await _heartbeatRepository.InsertAsync(heartbeat);
+        }
+        else
+        {
+            heartbeat.RecordHeartbeat(now);
+            await _heartbeatRepository.UpdateAsync(heartbeat);
+        }
+
+        return new TelemetryOnlineResultDto
         {
             Online = true,
             ServerTime = DateTime.SpecifyKind(now, DateTimeKind.Unspecified),
             Timestamp = new DateTimeOffset(now.ToUniversalTime()).ToUnixTimeMilliseconds()
-        });
+        };
     }
 
     /// <summary>

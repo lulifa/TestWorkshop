@@ -804,6 +804,45 @@ namespace TestWorkshop.Migrations
                     b.ToTable("AppWorkshopDevices", (string)null);
                 });
 
+            modelBuilder.Entity("TestWorkshop.TimeScale.WorkshopDeviceHeartbeat", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("AlarmLevel")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("已通知报警级别 0=正常 1=5分钟 2=10分钟 3=20分钟");
+
+                    b.Property<string>("DeviceCode")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasComment("设备编码（下位机上报）");
+
+                    b.Property<Guid>("DeviceId")
+                        .HasColumnType("uuid")
+                        .HasComment("关联设备ID");
+
+                    b.Property<DateTime?>("LastAlarmAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("最近一次发送报警的时间");
+
+                    b.Property<DateTime>("LastHeartbeatAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("最近一次心跳时间");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DeviceCode")
+                        .IsUnique();
+
+                    b.HasIndex("DeviceId");
+
+                    b.ToTable("AppWorkshopDeviceHeartbeats", (string)null);
+                });
+
             modelBuilder.Entity("TestWorkshop.TimeScale.WorkshopDeviceTelemetry", b =>
                 {
                     b.Property<Guid>("DeviceId")
@@ -2950,6 +2989,15 @@ namespace TestWorkshop.Migrations
                     b.HasOne("TestWorkshop.Data", null)
                         .WithMany("Items")
                         .HasForeignKey("DataId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("TestWorkshop.TimeScale.WorkshopDeviceHeartbeat", b =>
+                {
+                    b.HasOne("TestWorkshop.TimeScale.WorkshopDevice", null)
+                        .WithMany()
+                        .HasForeignKey("DeviceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

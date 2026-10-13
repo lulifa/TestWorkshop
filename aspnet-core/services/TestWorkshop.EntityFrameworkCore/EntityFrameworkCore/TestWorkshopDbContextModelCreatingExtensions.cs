@@ -183,6 +183,46 @@ public static class TestWorkshopDbContextModelCreatingExtensions
             b.HasIndex(x => x.CreatedAt);
 
         });
+
+        builder.Entity<WorkshopDeviceHeartbeat>(b =>
+        {
+            b.ToTable(TestWorkshopDbProperties.DbTablePrefix + "WorkshopDeviceHeartbeats", TestWorkshopDbProperties.DbSchema);
+
+            b.HasKey(x => x.Id);
+
+            b.Property(p => p.DeviceId)
+                .IsRequired()
+                .HasComment("关联设备ID");
+
+            b.Property(p => p.DeviceCode)
+                .HasMaxLength(TestWorkshopConsts.MaxLength64)
+                .IsRequired()
+                .HasComment("设备编码（下位机上报）");
+
+            b.Property(p => p.LastHeartbeatAt)
+                .HasColumnType("timestamp with time zone")
+                .IsRequired()
+                .HasComment("最近一次心跳时间");
+
+            b.Property(p => p.AlarmLevel)
+                .IsRequired()
+                .HasDefaultValue(0)
+                .HasComment("已通知报警级别 0=正常 1=5分钟 2=10分钟 3=20分钟");
+
+            b.Property(p => p.LastAlarmAt)
+                .HasColumnType("timestamp with time zone")
+                .HasComment("最近一次发送报警的时间");
+
+            b.ConfigureByConvention();
+
+            b.HasOne<WorkshopDevice>()
+                .WithMany()
+                .HasForeignKey(x => x.DeviceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasIndex(x => x.DeviceCode)
+                .IsUnique();
+        });
     }
 
     public static void ConfigureTimeScale(this ModelBuilder builder)

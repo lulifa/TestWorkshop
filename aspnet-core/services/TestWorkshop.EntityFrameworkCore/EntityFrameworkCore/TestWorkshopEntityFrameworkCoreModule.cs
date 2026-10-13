@@ -26,6 +26,7 @@ public class TestWorkshopEntityFrameworkCoreModule : AbpModule
     {
         var configuration = context.Services.GetConfiguration();
         Configure<WorkshopTelemetryOptions>(configuration.GetSection("WorkshopTelemetry"));
+        Configure<WorkshopHeartbeatOptions>(configuration.GetSection("WorkshopHeartbeat"));
 
         context.Services.AddAbpDbContext<TestWorkshopDbContext>(options =>
         {
@@ -36,6 +37,7 @@ public class TestWorkshopEntityFrameworkCoreModule : AbpModule
             options.AddRepository<WorkshopDevice, WorkshopDeviceRepository>();
             options.AddRepository<WorkshopTelemetryTask, WorkshopTelemetryTaskRepository>();
             options.AddRepository<WorkshopOrder, EfCoreWorkshopOrderRepository>();
+            options.AddRepository<WorkshopDeviceHeartbeat, WorkshopDeviceHeartbeatRepository>();
 
             options.AddRepository<Menu, EfCoreMenuRepository>();
             options.AddRepository<UserMenu, EfCoreUserMenuRepository>();
@@ -71,6 +73,7 @@ public class TestWorkshopEntityFrameworkCoreModule : AbpModule
         context.AddBackgroundWorkerAsync<LogCleanupBackgroundWorker>();
         context.AddBackgroundWorkerAsync<WorkshopTelemetryWorker>();
         context.AddBackgroundWorkerAsync<WorkshopTelemetryFileCleanupWorker>();
+        context.AddBackgroundWorkerAsync<WorkshopDeviceHeartbeatMonitorWorker>();
     }
 
 }

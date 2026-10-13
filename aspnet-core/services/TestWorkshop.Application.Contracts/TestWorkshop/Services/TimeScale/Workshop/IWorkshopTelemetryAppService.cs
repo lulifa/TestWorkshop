@@ -8,9 +8,9 @@ public interface IWorkshopTelemetryAppService : IApplicationService
     Task<WorkshopTelemetryTaskDto> UploadAsync(IFormFile file, WorkshopTelemetryFileInput input);
 
     /// <summary>
-    /// 下位机心跳：仅用于连通性探测，无参数、无副作用、不落库
+    /// 下位机心跳：按设备编码登记/刷新在线状态，并返回服务器时间供校时
     /// </summary>
-    Task<TelemetryOnlineResultDto> OnlineAsync();
+    Task<TelemetryOnlineResultDto> OnlineAsync(string deviceCode);
 
     /// <summary>
     /// 获取任务详情
