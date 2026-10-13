@@ -8,3 +8,4 @@ export * from './platform/routes';
 export * from './workshopDevices';
 export * from './workshopOrders';
 export * from './workshopTelemetry';
+export * from './workshopThresholds';

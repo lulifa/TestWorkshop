@@ -223,6 +223,47 @@ public static class TestWorkshopDbContextModelCreatingExtensions
             b.HasIndex(x => x.DeviceCode)
                 .IsUnique();
         });
+
+        builder.Entity<WorkshopThresholdRule>(b =>
+        {
+            b.ToTable(TestWorkshopDbProperties.DbTablePrefix + "WorkshopThresholdRules", TestWorkshopDbProperties.DbSchema);
+
+            b.HasKey(x => x.Id);
+
+            b.Property(p => p.DeviceType)
+                .IsRequired()
+                .HasComment("设备类型 (1=FIVA 2=PUMP 3=ICU 4=SENSOR)");
+
+            b.Property(p => p.DataItemType)
+                .HasMaxLength(TestWorkshopConsts.MaxLength64)
+                .IsRequired()
+                .HasComment("数据类型/物理量编码");
+
+            b.Property(p => p.UpperLimit)
+                .HasColumnType("numeric(18,4)")
+                .HasComment("上限阈值，超过视为偏高");
+
+            b.Property(p => p.LowerLimit)
+                .HasColumnType("numeric(18,4)")
+                .HasComment("下限阈值，低于视为偏低");
+
+            b.Property(p => p.AlarmContent)
+                .HasMaxLength(256)
+                .HasComment("报警内容");
+
+            b.Property(p => p.Enabled)
+                .IsRequired()
+                .HasDefaultValue(true)
+                .HasComment("是否启用");
+
+            b.ConfigureByConvention();
+
+            // 同一设备类型下，每个数据类型最多一条规则。
+            // 规则是软删除，这里必须只对未删除的行做唯一约束，否则删除后重新配置会冲突。
+            b.HasIndex(x => new { x.DeviceType, x.DataItemType })
+                .IsUnique()
+                .HasFilter("\"IsDeleted\" = false");
+        });
     }
 
     public static void ConfigureTimeScale(this ModelBuilder builder)

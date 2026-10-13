@@ -1090,6 +1090,91 @@ namespace TestWorkshop.Migrations
                     b.ToTable("AppWorkshopTelemetryTasks", (string)null);
                 });
 
+            modelBuilder.Entity("TestWorkshop.TimeScale.WorkshopThresholdRule", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AlarmContent")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasComment("报警内容");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("ConcurrencyStamp");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<string>("DataItemType")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasComment("数据类型/物理量编码");
+
+                    b.Property<Guid?>("DeleterId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("DeleterId");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("DeletionTime");
+
+                    b.Property<int>("DeviceType")
+                        .HasColumnType("integer")
+                        .HasComment("设备类型 (1=FIVA 2=PUMP 3=ICU 4=SENSOR)");
+
+                    b.Property<bool>("Enabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasComment("是否启用");
+
+                    b.Property<string>("ExtraProperties")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("ExtraProperties");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("IsDeleted");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("LastModificationTime");
+
+                    b.Property<Guid?>("LastModifierId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("LastModifierId");
+
+                    b.Property<decimal?>("LowerLimit")
+                        .HasColumnType("numeric(18,4)")
+                        .HasComment("下限阈值，低于视为偏低");
+
+                    b.Property<decimal?>("UpperLimit")
+                        .HasColumnType("numeric(18,4)")
+                        .HasComment("上限阈值，超过视为偏高");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DeviceType", "DataItemType")
+                        .IsUnique()
+                        .HasFilter("\"IsDeleted\" = false");
+
+                    b.ToTable("AppWorkshopThresholdRules", (string)null);
+                });
+
             modelBuilder.Entity("TestWorkshop.UserFavoriteMenu", b =>
                 {
                     b.Property<Guid>("Id")

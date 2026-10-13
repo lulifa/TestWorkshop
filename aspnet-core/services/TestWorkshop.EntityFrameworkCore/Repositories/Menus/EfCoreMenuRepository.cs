@@ -121,12 +121,14 @@ public class EfCoreMenuRepository : EfCoreRepository<TestWorkshopDbContext, Menu
                 .Union(roleMenuQuery)
                 .Union(menuQuery.Where(x => x.IsPublic))
                 .Distinct()
+                .OrderBy(menu => menu.Code)
                 .ToListAsync(GetCancellationToken(cancellationToken));
         }
 
         return await userMenuQuery
                 .Union(menuQuery.Where(x => x.IsPublic))
                 .Distinct()
+                .OrderBy(menu => menu.Code)
                 .ToListAsync(GetCancellationToken(cancellationToken));
     }
 

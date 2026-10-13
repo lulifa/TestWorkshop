@@ -10,3 +10,4 @@ export * from './useUserMenusApi';
 export * from './useWorkshopDeviceApi';
 export * from './useWorkshopOrderApi';
 export * from './useWorkshopTelemetryApi';
+export * from './useWorkshopThresholdApi';

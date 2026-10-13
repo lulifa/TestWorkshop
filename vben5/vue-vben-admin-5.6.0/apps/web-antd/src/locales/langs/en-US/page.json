@@ -23,6 +23,7 @@
     },
     "workshoporders": "Orders",
     "workshopdevices": "Workshop Devices",
+    "thresholds": "Thresholds",
     "orderGraph": "Graphs",
     "unmatchedOrder": "Unmatched",
     "testedDevice": "Tested Device",

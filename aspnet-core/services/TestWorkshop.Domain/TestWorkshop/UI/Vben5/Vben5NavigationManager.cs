@@ -77,7 +77,6 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
               icon: "lucide:mail-open",
               description: "我的消息")
             .SetProperty("title", "page.business.notifications.message"));
-
         return
         [
             new NavigationDefinition(business),
@@ -168,6 +167,15 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
               icon: "mdi:file-cloud",
               description: "遥测任务")
             .SetProperty("title", "TestWorkshop.Telemetry:Title"));
+        modules.AddItem(
+          new ApplicationMenu(
+              name: "Vben5ModulesPlatformThresholds",
+              displayName: "阈值管理",
+              url: "/modules/platform/thresholds",
+              component: "/modules/platform/thresholds/index",
+              icon: "lucide:sliders-horizontal",
+              description: "阈值管理")
+            .SetProperty("title", "page.business.thresholds"));
         modules.AddItem(
           new ApplicationMenu(
               name: "Vben5ModulesPlatformFiles",
