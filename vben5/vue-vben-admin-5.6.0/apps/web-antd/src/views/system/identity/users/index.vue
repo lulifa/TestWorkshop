@@ -117,7 +117,7 @@ const gridOptions: VxeGridProps<IdentityUserDto> = {
     {
       align: 'left',
       field: 'email',
-      minWidth: '210px',
+      minWidth: '320px',
       slots: { default: 'email' },
       sortable: true,
       title: $t('AbpIdentity.DisplayName:Email'),
