@@ -41,16 +41,6 @@ public class WorkshopAlarmDto : EntityDto<Guid>
     public string Content { get; set; }
 
     /// <summary>
-    /// 被测设备编码（上下文）
-    /// </summary>
-    public string TestedDeviceCode { get; set; }
-
-    /// <summary>
-    /// 被测设备名称（上下文）
-    /// </summary>
-    public string TestedDeviceName { get; set; }
-
-    /// <summary>
     /// 报警成立时间
     /// </summary>
     public DateTime StartedAt { get; set; }

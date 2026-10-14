@@ -33,9 +33,7 @@ public class WorkshopAlarmManager : DomainService, IWorkshopAlarmManager
         Guid organizationUnitId,
         string dataItemType,
         string content,
-        DateTime startedAt,
-        string testedDeviceCode = null,
-        string testedDeviceName = null)
+        DateTime startedAt)
     {
         var normalizedItem = dataItemType ?? string.Empty;
         var alarm = await _alarmRepository.FindActiveAsync(alarmType, deviceId, normalizedItem);
@@ -50,16 +48,14 @@ public class WorkshopAlarmManager : DomainService, IWorkshopAlarmManager
                 organizationUnitId,
                 normalizedItem,
                 content,
-                startedAt,
-                testedDeviceCode,
-                testedDeviceName);
+                startedAt);
 
             await _alarmRepository.InsertAsync(alarm, autoSave: true);
             return;
         }
 
         // 只有内容真的变了才落库，避免每分钟无意义的 UPDATE（它会刷新并发戳，跟升级流程打架）
-        if (alarm.RefreshContent(content, testedDeviceCode, testedDeviceName))
+        if (alarm.RefreshContent(content))
         {
             await _alarmRepository.UpdateAsync(alarm, autoSave: true);
         }

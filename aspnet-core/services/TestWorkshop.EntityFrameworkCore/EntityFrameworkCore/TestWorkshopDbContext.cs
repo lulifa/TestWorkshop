@@ -14,6 +14,7 @@ public class TestWorkshopDbContext : AbpDbContext<TestWorkshopDbContext>, ITenan
     public DbSet<WorkshopDeviceHeartbeat> DeviceHeartbeats { get; set; }
     public DbSet<WorkshopThresholdRule> ThresholdRules { get; set; }
     public DbSet<WorkshopAlarm> Alarms { get; set; }
+    public DbSet<WorkshopRealtimeData> RealtimeData { get; set; }
 
     #region 内置相关表
 

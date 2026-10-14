@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { NotificationOutput } from '@abp/core';
+import type { IdentityUserDto, NotificationOutput } from '@abp/core';
 
 import type { VbenFormProps } from '@vben/common-ui';
 
@@ -17,6 +17,7 @@ import {
   NotificationPermissions,
   useAuthorization,
   useNotificationsApi,
+  useUsersApi,
 } from '@abp/core';
 import {
   DeleteOutlined,
@@ -34,6 +35,7 @@ defineOptions({
 const { isGranted } = useAuthorization();
 const { deleteApi, getNotificationListApi, setBatchReadApi, setReadApi } =
   useNotificationsApi();
+const { getPagedListApi: getUsersApi } = useUsersApi();
 
 const selectedRows = ref<NotificationOutput[]>([]);
 
@@ -122,6 +124,32 @@ const formOptions: VbenFormProps = {
       },
       fieldName: 'read',
       label: $t('TestWorkshop.Notification:ReadState'),
+    },
+    {
+      component: 'ApiSelect',
+      componentProps: {
+        afterFetch: (result: { items: IdentityUserDto[] }) => {
+          return result.items.map((item) => ({
+            label: item.name
+              ? `${item.name}（${item.userName}）`
+              : item.userName,
+            value: item.id,
+          }));
+        },
+        allowClear: true,
+        api: () => getUsersApi({ maxResultCount: 200, sorting: 'userName' }),
+        filterOption: (input: string, option: any) => {
+          return String(option?.label ?? '')
+            .toLowerCase()
+            .includes(input.toLowerCase());
+        },
+        labelField: 'label',
+        showSearch: true,
+        valueField: 'value',
+      },
+      fieldName: 'receiverUserId',
+      formItemClass: 'col-span-1 items-baseline',
+      label: $t('TestWorkshop.Notification:Receiver'),
     },
   ],
   showCollapseButton: false,

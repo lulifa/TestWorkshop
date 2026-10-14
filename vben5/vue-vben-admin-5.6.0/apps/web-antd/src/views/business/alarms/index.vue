@@ -121,12 +121,6 @@ const gridOptions: VxeGridProps<WorkshopAlarmDto> = {
       title: '报警内容',
     },
     {
-      field: 'testedDeviceName',
-      minWidth: 150,
-      slots: { default: 'testedDevice' },
-      title: '被测设备',
-    },
-    {
       field: 'startedAt',
       formatter: ({ cellValue }) =>
         cellValue ? formatToDateTime(cellValue) : '',
@@ -200,9 +194,6 @@ const [Grid] = useVbenVxeGrid({
         <Tag color="blue">
           {{ alarmTypeLabels[row.alarmType] ?? row.alarmTypeName }}
         </Tag>
-      </template>
-      <template #testedDevice="{ row }">
-        {{ row.testedDeviceName || row.testedDeviceCode || '-' }}
       </template>
       <template #level="{ row }">
         {{ levelLabels[row.level] ?? row.level }}

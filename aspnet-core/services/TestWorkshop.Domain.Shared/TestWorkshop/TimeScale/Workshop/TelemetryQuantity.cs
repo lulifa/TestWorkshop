@@ -28,7 +28,8 @@ public static class TelemetryQuantity
     public static IReadOnlyList<TelemetryQuantityDefinition> All => Definitions;
 
     /// <summary>
-    /// 按编码查找定义（忽略大小写、自动去空格），找不到返回 null
+    /// 按编码或中文名查找定义（忽略大小写、自动去空格），找不到返回 null。
+    /// 下位机上报的字符串在数据入口走这里归一化。
     /// </summary>
     public static TelemetryQuantityDefinition Find(string code)
     {
@@ -39,7 +40,8 @@ public static class TelemetryQuantity
 
         var normalized = code.Trim();
         return Definitions.FirstOrDefault(
-            x => string.Equals(x.Code, normalized, StringComparison.OrdinalIgnoreCase));
+            x => string.Equals(x.Code, normalized, StringComparison.OrdinalIgnoreCase)
+                 || string.Equals(x.Name, normalized, StringComparison.Ordinal));
     }
 
     public static bool IsDefined(string code)

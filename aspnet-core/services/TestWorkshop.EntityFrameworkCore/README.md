@@ -118,6 +118,49 @@ DeviceId + Timestamp + ChannelType
 - `TestDate` 虽然名字叫 Date，但接口可能传 `06/13/2025 00:00:00`，因此不使用 `date` 类型，也不使用 `DateOnly`。
 - 当前 `FileTime` 如果未携带时区，会按 UTC 解析。若下位机传的是北京时间，建议传递 `+08:00` 偏移，或后续在 Worker 中明确配置业务时区进行转换。
 
+### WorkshopRealtimeData
+
+测试台**实时数据**超级表。一行 = 一台测试台一次推送，多个物理量是同一行的多列。
+
+注意：这是"测试台"的数据，跟图谱数据（`WorkshopDeviceTelemetry`，属于被测设备）不是一回事，所以这里没有被测设备字段。
+
+主键：
+
+```text
+DeviceId + Timestamp
+```
+
+字段说明：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `DeviceId` | `uuid` | 测试台，关联 `WorkshopDevice` |
+| `Timestamp` | `timestamp with time zone` | 采集时间（下位机给），同时是 hypertable 时间分区列 |
+| `DeviceCode` | `varchar(64)` | 测试台编码（冗余，便于看数据） |
+| `Pressure` | `numeric(18,4)`，可空 | 压力 |
+| `Flow` | `numeric(18,4)`，可空 | 流量 |
+| `Temperature` | `numeric(18,4)`，可空 | 温度 |
+| `Torque` | `numeric(18,4)`，可空 | 扭矩 |
+| `Vibration` | `numeric(18,4)`，可空 | 振动 |
+| `EmergencyStop` | `boolean`，可空 | 测试台急停，`true` = 急停 |
+| `ReceivedAt` | `timestamp with time zone` | 服务器接收时间 |
+
+- 采集不到的物理量存 `NULL`；单位不落库（物理量固定，单位在 `TelemetryQuantity` 常量里）。
+- 写入按 `(DeviceId, Timestamp)` 冲突覆盖（`ON CONFLICT DO UPDATE`）。
+- 接收接口：`POST /api/workshop/realtime-data`（匿名，下位机调用）
+
+  ```json
+  {
+    "deviceCode": "HD-FIVA-001",
+    "timestamp": "2026-10-14T10:40:00",
+    "values": { "Pressure": 12.5, "Flow": 30 },
+    "emergencyStop": false
+  }
+  ```
+
+  物理量类型字符串在入口按 `TelemetryQuantity` 归一化（规范编码任意大小写、中文名都认）；认不出的类型记日志并忽略，不影响同一帧里其它物理量入库。
+- 报警判定：`WorkshopThresholdAlarmWorker` 每分钟取每台设备最新一帧，按该设备类型的阈值规则判定；超上下限时同时产生阈值报警和设备报警两条，由 `WorkshopAlarmEscalationWorker` 统一按 5/10/20 分钟升级通知。
+
 ## 三、EF Core 配置
 
 超级表配置位于 `TestWorkshopDbContextModelCreatingExtensions.ConfigureTimeScale`：
@@ -164,7 +207,24 @@ builder.Entity<WorkshopDeviceTelemetry>(b =>
 
 ## 四、TimescaleDB 初始化
 
-在生成的迁移文件中，确保 `AppWorkshopDeviceTelemetries` 表已经创建，然后在 `Up` 方法末尾直接复制下面代码：
+### 4.1 需要重建迁移时的流程
+
+需要把迁移全部删掉重来时（只保留 `InitialDB` 和 `AddTimeScaleDB` 两个），按下面两步生成：
+
+1. **注释掉** `ConfigureTestWorkshop()` 里的 `builder.ConfigureTimeScale();`，执行
+   `dotnet ef migrations add InitialDB`
+   → 生成全部**普通表**。
+2. **放开** `builder.ConfigureTimeScale();`，执行
+   `dotnet ef migrations add AddTimeScaleDB`
+   → 生成两张超级表：`AppWorkshopDeviceTelemetries` 和 `AppWorkshopRealtimeData`。
+
+注意：数据库要么重建，要么先清空 `__EFMigrationsHistory`，否则重新生成的 `InitialDB` 会因为表已存在而失败。
+
+### 4.2 在迁移里手工补超级表 SQL
+
+EF 不认识 TimescaleDB，只会生成 `CreateTable`，**超级表那段 SQL 必须手工补**。
+
+在生成的 `AddTimeScaleDB` 迁移里，确保两张表都已创建，然后在 `Up` 方法末尾直接复制下面代码：
 
 ```csharp
 migrationBuilder.Sql("""
@@ -180,12 +240,24 @@ migrationBuilder.Sql("""
     """);
 
 migrationBuilder.Sql("""
+    SELECT create_hypertable(
+        '"AppWorkshopRealtimeData"',
+        'Timestamp',
+        if_not_exists => TRUE
+    );
+    """);
+
+migrationBuilder.Sql("""
     CREATE INDEX IF NOT EXISTS idx_device_time
     ON "AppWorkshopDeviceTelemetries" ("DeviceId", "Timestamp" DESC);
     """);
 ```
 
-注意：`CREATE EXTENSION` 通常需要数据库管理员权限。如果扩展由 DBA 预装，可以删除第一条 `migrationBuilder.Sql`。
+说明：
+
+- `AppWorkshopRealtimeData` **不需要**上面那条 `(DeviceId, Timestamp DESC)` 索引：它的主键就是 `(DeviceId, Timestamp)`，"按设备取最新一条"直接走主键。
+- `create_hypertable` 会自动给分区列建索引（例如 `AppWorkshopRealtimeData_Timestamp_idx`）。
+- `CREATE EXTENSION` 通常需要数据库管理员权限。如果扩展由 DBA 预装，可以删除第一条 `migrationBuilder.Sql`。
 
 ## 五、Worker 策略
 

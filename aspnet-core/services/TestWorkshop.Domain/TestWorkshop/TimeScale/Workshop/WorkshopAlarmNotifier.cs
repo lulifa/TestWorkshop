@@ -103,13 +103,9 @@ public class WorkshopAlarmNotifier : DomainService, IWorkshopAlarmNotifier
 
     private static string BuildContent(WorkshopAlarm alarm, double elapsedMinutes, bool recovered)
     {
-        var testedDevice = alarm.TestedDeviceName.IsNullOrWhiteSpace()
-            ? string.Empty
-            : $"（被测设备：{alarm.TestedDeviceName}）";
-
         return recovered
-            ? $"测试台 {alarm.DeviceCode} 的{alarm.Content}已恢复{testedDevice}。"
-            : $"测试台 {alarm.DeviceCode} 出现{alarm.Content}，已持续 {elapsedMinutes:F0} 分钟{testedDevice}，请及时处理。";
+            ? $"测试台 {alarm.DeviceCode} 的{alarm.Content}已恢复。"
+            : $"测试台 {alarm.DeviceCode} 出现{alarm.Content}，已持续 {elapsedMinutes:F0} 分钟，请及时处理。";
     }
 
     /// <summary>

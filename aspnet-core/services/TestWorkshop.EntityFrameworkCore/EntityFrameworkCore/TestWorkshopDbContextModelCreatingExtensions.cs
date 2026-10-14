@@ -288,14 +288,6 @@ public static class TestWorkshopDbContextModelCreatingExtensions
                 .HasMaxLength(256)
                 .HasComment("报警内容");
 
-            b.Property(p => p.TestedDeviceCode)
-                .HasMaxLength(TestWorkshopConsts.MaxLength64)
-                .HasComment("被测设备编码（上下文）");
-
-            b.Property(p => p.TestedDeviceName)
-                .HasMaxLength(TestWorkshopConsts.MaxLength128)
-                .HasComment("被测设备名称（上下文）");
-
             b.Property(p => p.StartedAt)
                 .HasColumnType("timestamp with time zone")
                 .IsRequired()
@@ -362,6 +354,28 @@ public static class TestWorkshopDbContextModelCreatingExtensions
             b.ConfigureByConvention();
 
             b.HasIndex(x => new { x.TaskId, x.Timestamp });
+        });
+
+        builder.Entity<WorkshopRealtimeData>(b =>
+        {
+            b.ToTable(TestWorkshopDbProperties.DbTablePrefix + "WorkshopRealtimeData", TestWorkshopDbProperties.DbSchema);
+
+            b.HasKey(x => new { x.DeviceId, x.Timestamp });
+
+            b.Property(p => p.Timestamp).HasColumnType("timestamp with time zone").IsRequired();
+            b.Property(p => p.DeviceCode)
+                .HasMaxLength(TestWorkshopConsts.MaxLength64)
+                .IsRequired();
+
+            b.Property(p => p.Pressure).HasColumnType("numeric(18,4)");
+            b.Property(p => p.Flow).HasColumnType("numeric(18,4)");
+            b.Property(p => p.Temperature).HasColumnType("numeric(18,4)");
+            b.Property(p => p.Torque).HasColumnType("numeric(18,4)");
+            b.Property(p => p.Vibration).HasColumnType("numeric(18,4)");
+            b.Property(p => p.EmergencyStop);
+            b.Property(p => p.ReceivedAt).HasColumnType("timestamp with time zone").IsRequired();
+
+            b.ConfigureByConvention();
         });
     }
 

@@ -37,16 +37,6 @@ public class WorkshopAlarm : FullAuditedAggregateRoot<Guid>
     public string Content { get; private set; }
 
     /// <summary>
-    /// 被测设备编码（上下文，可空）
-    /// </summary>
-    public string TestedDeviceCode { get; private set; }
-
-    /// <summary>
-    /// 被测设备名称（上下文，可空）
-    /// </summary>
-    public string TestedDeviceName { get; private set; }
-
-    /// <summary>
     /// 报警成立时间（条件开始满足的时刻，升级时长从这里算）
     /// </summary>
     public DateTime StartedAt { get; private set; }
@@ -83,9 +73,7 @@ public class WorkshopAlarm : FullAuditedAggregateRoot<Guid>
         Guid organizationUnitId,
         string dataItemType,
         string content,
-        DateTime startedAt,
-        string testedDeviceCode = null,
-        string testedDeviceName = null)
+        DateTime startedAt)
         : base(id)
     {
         AlarmType = alarmType;
@@ -95,38 +83,22 @@ public class WorkshopAlarm : FullAuditedAggregateRoot<Guid>
         DataItemType = dataItemType ?? string.Empty;
         Content = content;
         StartedAt = startedAt;
-        TestedDeviceCode = testedDeviceCode;
-        TestedDeviceName = testedDeviceName;
         Level = 0;
         Status = WorkshopAlarmStatus.Active;
     }
 
     /// <summary>
-    /// 刷新报警内容/被测设备上下文，返回是否真的发生了变化。
+    /// 刷新报警内容，返回是否真的发生了变化。
     /// 没变化就不要落库——否则每次无意义的 UPDATE 都会刷新并发戳，跟升级流程打架。
     /// </summary>
-    public bool RefreshContent(string content, string testedDeviceCode, string testedDeviceName)
+    public bool RefreshContent(string content)
     {
-        var changed = false;
-
         if (!content.IsNullOrWhiteSpace() && Content != content)
         {
             Content = content;
-            changed = true;
+            return true;
         }
 
-        if (testedDeviceCode != null && TestedDeviceCode != testedDeviceCode)
-        {
-            TestedDeviceCode = testedDeviceCode;
-            changed = true;
-        }
-
-        if (testedDeviceName != null && TestedDeviceName != testedDeviceName)
-        {
-            TestedDeviceName = testedDeviceName;
-            changed = true;
-        }
-
-        return changed;
+        return false;
     }
 }

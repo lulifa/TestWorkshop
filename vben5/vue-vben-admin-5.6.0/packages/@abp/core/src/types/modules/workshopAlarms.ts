@@ -25,8 +25,6 @@ interface WorkshopAlarmDto extends EntityDto<string> {
   organizationUnitId: string;
   startedAt: string;
   status: WorkshopAlarmStatus;
-  testedDeviceCode?: string;
-  testedDeviceName?: string;
 }
 
 interface GetWorkshopAlarmListInput extends PagedAndSortedResultRequestDto {

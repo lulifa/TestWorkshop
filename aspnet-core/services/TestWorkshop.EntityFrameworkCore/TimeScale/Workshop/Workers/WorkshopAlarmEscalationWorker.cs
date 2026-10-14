@@ -1,6 +1,7 @@
 namespace TestWorkshop.EntityFrameworkCore;
 
 using Microsoft.Extensions.Options;
+using Volo.Abp.Uow;
 
 /// <summary>
 /// 后台任务：扫描进行中的报警，按持续时间（5/10/20 分钟）逐级升级并发送通知。
@@ -33,10 +34,16 @@ public class WorkshopAlarmEscalationWorker : AsyncPeriodicBackgroundWorkerBase
         try
         {
             using var scope = _scopeFactory.CreateScope();
+            // 后台 Worker 不会自动开工作单元；仓储/DbContext 需要它
+            var unitOfWorkManager = scope.ServiceProvider.GetRequiredService<IUnitOfWorkManager>();
+            using var uow = unitOfWorkManager.Begin(requiresNew: true, isTransactional: false);
+
             var clock = scope.ServiceProvider.GetRequiredService<IClock>();
             var alarmManager = scope.ServiceProvider.GetRequiredService<IWorkshopAlarmManager>();
 
             await alarmManager.EvaluateEscalationAsync(clock.Now);
+
+            await uow.CompleteAsync(ct);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {

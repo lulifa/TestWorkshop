@@ -823,16 +823,6 @@ namespace TestWorkshop.Migrations
                         .HasColumnType("integer")
                         .HasComment("状态 (1=进行中 2=已恢复)");
 
-                    b.Property<string>("TestedDeviceCode")
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)")
-                        .HasComment("被测设备编码（上下文）");
-
-                    b.Property<string>("TestedDeviceName")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)")
-                        .HasComment("被测设备名称（上下文）");
-
                     b.HasKey("Id");
 
                     b.HasIndex("AlarmType", "DeviceId", "DataItemType")
@@ -1117,6 +1107,45 @@ namespace TestWorkshop.Migrations
                         .HasFilter("\"TenantId\" IS NOT NULL");
 
                     b.ToTable("AppWorkshopOrders", (string)null);
+                });
+
+            modelBuilder.Entity("TestWorkshop.TimeScale.WorkshopRealtimeData", b =>
+                {
+                    b.Property<Guid>("DeviceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DeviceCode")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<bool?>("EmergencyStop")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal?>("Flow")
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<decimal?>("Pressure")
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<DateTime>("ReceivedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal?>("Temperature")
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<decimal?>("Torque")
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<decimal?>("Vibration")
+                        .HasColumnType("numeric(18,4)");
+
+                    b.HasKey("DeviceId", "Timestamp");
+
+                    b.ToTable("AppWorkshopRealtimeData", (string)null);
                 });
 
             modelBuilder.Entity("TestWorkshop.TimeScale.WorkshopTelemetryTask", b =>

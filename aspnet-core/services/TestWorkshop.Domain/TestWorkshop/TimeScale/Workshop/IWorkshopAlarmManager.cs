@@ -16,9 +16,7 @@ public interface IWorkshopAlarmManager
         Guid organizationUnitId,
         string dataItemType,
         string content,
-        DateTime startedAt,
-        string testedDeviceCode = null,
-        string testedDeviceName = null);
+        DateTime startedAt);
 
     /// <summary>
     /// 报警恢复（条件不再满足时调用）
