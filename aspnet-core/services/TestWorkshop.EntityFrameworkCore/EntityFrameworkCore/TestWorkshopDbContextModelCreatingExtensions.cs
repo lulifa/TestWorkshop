@@ -204,15 +204,6 @@ public static class TestWorkshopDbContextModelCreatingExtensions
                 .IsRequired()
                 .HasComment("最近一次心跳时间");
 
-            b.Property(p => p.AlarmLevel)
-                .IsRequired()
-                .HasDefaultValue(0)
-                .HasComment("已通知报警级别 0=正常 1=5分钟 2=10分钟 3=20分钟");
-
-            b.Property(p => p.LastAlarmAt)
-                .HasColumnType("timestamp with time zone")
-                .HasComment("最近一次发送报警的时间");
-
             b.ConfigureByConvention();
 
             b.HasOne<WorkshopDevice>()
@@ -263,6 +254,80 @@ public static class TestWorkshopDbContextModelCreatingExtensions
             b.HasIndex(x => new { x.DeviceType, x.DataItemType })
                 .IsUnique()
                 .HasFilter("\"IsDeleted\" = false");
+        });
+
+        builder.Entity<WorkshopAlarm>(b =>
+        {
+            b.ToTable(TestWorkshopDbProperties.DbTablePrefix + "WorkshopAlarms", TestWorkshopDbProperties.DbSchema);
+
+            b.HasKey(x => x.Id);
+
+            b.Property(p => p.AlarmType)
+                .IsRequired()
+                .HasComment("报警类型 (1=阈值 2=关联 3=设备 4=通信)");
+
+            b.Property(p => p.DeviceId)
+                .IsRequired()
+                .HasComment("测试台设备ID");
+
+            b.Property(p => p.DeviceCode)
+                .HasMaxLength(TestWorkshopConsts.MaxLength64)
+                .IsRequired()
+                .HasComment("测试台设备编码");
+
+            b.Property(p => p.OrganizationUnitId)
+                .IsRequired()
+                .HasComment("所属车间，报警可见性按此过滤");
+
+            b.Property(p => p.DataItemType)
+                .HasMaxLength(TestWorkshopConsts.MaxLength64)
+                .IsRequired()
+                .HasComment("数据类型/物理量编码，空字符串表示不区分");
+
+            b.Property(p => p.Content)
+                .HasMaxLength(256)
+                .HasComment("报警内容");
+
+            b.Property(p => p.TestedDeviceCode)
+                .HasMaxLength(TestWorkshopConsts.MaxLength64)
+                .HasComment("被测设备编码（上下文）");
+
+            b.Property(p => p.TestedDeviceName)
+                .HasMaxLength(TestWorkshopConsts.MaxLength128)
+                .HasComment("被测设备名称（上下文）");
+
+            b.Property(p => p.StartedAt)
+                .HasColumnType("timestamp with time zone")
+                .IsRequired()
+                .HasComment("报警成立时间，升级时长从这里算");
+
+            b.Property(p => p.Level)
+                .IsRequired()
+                .HasDefaultValue(0)
+                .HasComment("已通知级别 0=未通知 1/2/3");
+
+            b.Property(p => p.LastNotifiedAt)
+                .HasColumnType("timestamp with time zone")
+                .HasComment("最近一次通知时间");
+
+            b.Property(p => p.Status)
+                .IsRequired()
+                .HasComment("状态 (1=进行中 2=已恢复)");
+
+            b.Property(p => p.ClearedAt)
+                .HasColumnType("timestamp with time zone")
+                .HasComment("恢复时间");
+
+            b.ConfigureByConvention();
+
+            // 同一条报警（类型 + 测试台 + 数据类型）同时只允许一条进行中的记录
+            b.HasIndex(x => new { x.AlarmType, x.DeviceId, x.DataItemType })
+                .IsUnique()
+                .HasFilter("\"Status\" = 1 AND \"IsDeleted\" = false")
+                .HasDatabaseName("UX_AppWorkshopAlarms_Active");
+
+            // 列表页：按车间 + 状态 + 时间查询
+            b.HasIndex(x => new { x.OrganizationUnitId, x.Status, x.StartedAt });
         });
     }
 

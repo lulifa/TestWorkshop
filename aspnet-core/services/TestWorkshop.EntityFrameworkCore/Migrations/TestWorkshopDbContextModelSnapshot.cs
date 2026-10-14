@@ -725,6 +725,126 @@ namespace TestWorkshop.Migrations
                     b.ToTable("AppRoleMenus", (string)null);
                 });
 
+            modelBuilder.Entity("TestWorkshop.TimeScale.WorkshopAlarm", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("AlarmType")
+                        .HasColumnType("integer")
+                        .HasComment("报警类型 (1=阈值 2=关联 3=设备 4=通信)");
+
+                    b.Property<DateTime?>("ClearedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("恢复时间");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("ConcurrencyStamp");
+
+                    b.Property<string>("Content")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasComment("报警内容");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<string>("DataItemType")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasComment("数据类型/物理量编码，空字符串表示不区分");
+
+                    b.Property<Guid?>("DeleterId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("DeleterId");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("DeletionTime");
+
+                    b.Property<string>("DeviceCode")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasComment("测试台设备编码");
+
+                    b.Property<Guid>("DeviceId")
+                        .HasColumnType("uuid")
+                        .HasComment("测试台设备ID");
+
+                    b.Property<string>("ExtraProperties")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("ExtraProperties");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("IsDeleted");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("LastModificationTime");
+
+                    b.Property<Guid?>("LastModifierId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("LastModifierId");
+
+                    b.Property<DateTime?>("LastNotifiedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("最近一次通知时间");
+
+                    b.Property<int>("Level")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("已通知级别 0=未通知 1/2/3");
+
+                    b.Property<Guid>("OrganizationUnitId")
+                        .HasColumnType("uuid")
+                        .HasComment("所属车间，报警可见性按此过滤");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("报警成立时间，升级时长从这里算");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasComment("状态 (1=进行中 2=已恢复)");
+
+                    b.Property<string>("TestedDeviceCode")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasComment("被测设备编码（上下文）");
+
+                    b.Property<string>("TestedDeviceName")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasComment("被测设备名称（上下文）");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AlarmType", "DeviceId", "DataItemType")
+                        .IsUnique()
+                        .HasDatabaseName("UX_AppWorkshopAlarms_Active")
+                        .HasFilter("\"Status\" = 1 AND \"IsDeleted\" = false");
+
+                    b.HasIndex("OrganizationUnitId", "Status", "StartedAt");
+
+                    b.ToTable("AppWorkshopAlarms", (string)null);
+                });
+
             modelBuilder.Entity("TestWorkshop.TimeScale.WorkshopDevice", b =>
                 {
                     b.Property<Guid>("Id")
@@ -809,12 +929,6 @@ namespace TestWorkshop.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("AlarmLevel")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0)
-                        .HasComment("已通知报警级别 0=正常 1=5分钟 2=10分钟 3=20分钟");
-
                     b.Property<string>("DeviceCode")
                         .IsRequired()
                         .HasMaxLength(64)
@@ -824,10 +938,6 @@ namespace TestWorkshop.Migrations
                     b.Property<Guid>("DeviceId")
                         .HasColumnType("uuid")
                         .HasComment("关联设备ID");
-
-                    b.Property<DateTime?>("LastAlarmAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasComment("最近一次发送报警的时间");
 
                     b.Property<DateTime>("LastHeartbeatAt")
                         .HasColumnType("timestamp with time zone")

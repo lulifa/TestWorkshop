@@ -23,17 +23,6 @@ public class WorkshopDeviceHeartbeat : Entity<Guid>
     /// </summary>
     public DateTime LastHeartbeatAt { get; private set; }
 
-    /// <summary>
-    /// 已通知到的报警级别：0=正常，1/2/3 对应 5/10/20 分钟三级阈值。
-    /// 用于避免同一条离线被每分钟重复通知，并保证只向上升级。
-    /// </summary>
-    public int AlarmLevel { get; private set; }
-
-    /// <summary>
-    /// 最近一次发送报警消息的时间
-    /// </summary>
-    public DateTime? LastAlarmAt { get; private set; }
-
     protected WorkshopDeviceHeartbeat()
     {
     }
@@ -44,7 +33,6 @@ public class WorkshopDeviceHeartbeat : Entity<Guid>
         DeviceId = deviceId;
         DeviceCode = deviceCode;
         LastHeartbeatAt = lastHeartbeatAt;
-        AlarmLevel = 0;
     }
 
     /// <summary>
@@ -53,22 +41,5 @@ public class WorkshopDeviceHeartbeat : Entity<Guid>
     public void RecordHeartbeat(DateTime heartbeatAt)
     {
         LastHeartbeatAt = heartbeatAt;
-    }
-
-    /// <summary>
-    /// 提升已通知的报警级别
-    /// </summary>
-    public void RaiseAlarmLevel(int level, DateTime alarmAt)
-    {
-        AlarmLevel = level;
-        LastAlarmAt = alarmAt;
-    }
-
-    /// <summary>
-    /// 心跳恢复，复位报警级别，便于下一轮断线能重新报警
-    /// </summary>
-    public void ResetAlarm()
-    {
-        AlarmLevel = 0;
     }
 }

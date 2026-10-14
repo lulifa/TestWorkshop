@@ -13,6 +13,7 @@ public class TestWorkshopDbContext : AbpDbContext<TestWorkshopDbContext>, ITenan
     public DbSet<WorkshopTelemetryTask> TelemetryTasks { get; set; }
     public DbSet<WorkshopDeviceHeartbeat> DeviceHeartbeats { get; set; }
     public DbSet<WorkshopThresholdRule> ThresholdRules { get; set; }
+    public DbSet<WorkshopAlarm> Alarms { get; set; }
 
     #region 内置相关表
 

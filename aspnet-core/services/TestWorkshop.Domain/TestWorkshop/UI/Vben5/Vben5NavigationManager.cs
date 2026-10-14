@@ -43,6 +43,15 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
             .SetProperty("title", "page.business.title");
         business.AddItem(
           new ApplicationMenu(
+              name: "Vben5BusinessAlarms",
+              displayName: "报警管理",
+              url: "/business/alarms",
+              component: "/business/alarms/index",
+              icon: "lucide:bell-ring",
+              description: "报警管理")
+            .SetProperty("title", "page.business.alarms"));
+        business.AddItem(
+          new ApplicationMenu(
               name: "Vben5BusinessWorkDevices",
               displayName: "车间设备",
               url: "/business/workshopdevices",

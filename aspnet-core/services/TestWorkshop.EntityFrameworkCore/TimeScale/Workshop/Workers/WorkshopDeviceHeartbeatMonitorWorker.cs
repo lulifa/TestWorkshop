@@ -3,22 +3,25 @@ namespace TestWorkshop.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 /// <summary>
-/// 后台任务：定期扫描设备心跳状态，按断线时长判定通信报警并逐级升级通知。
-/// 断线时长 = 当前时间 - 最近一次心跳时间；超过阈值即认为通信异常。
+/// 后台任务：扫描设备心跳，把"断线 / 恢复"同步给统一的报警管理。
+/// 报警的 5/10/20 逐级升级由 <see cref="WorkshopAlarmEscalationWorker"/> 统一处理。
 /// </summary>
 public class WorkshopDeviceHeartbeatMonitorWorker : AsyncPeriodicBackgroundWorkerBase
 {
+    /// <summary>
+    /// 通信报警的"数据类型"为空字符串（不区分物理量）
+    /// </summary>
+    private const string NoDataItem = "";
+
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<WorkshopDeviceHeartbeatMonitorWorker> _logger;
-    private readonly int _level1Minutes;
-    private readonly int _level2Minutes;
-    private readonly int _level3Minutes;
+    private readonly int _timeoutMinutes;
 
     public WorkshopDeviceHeartbeatMonitorWorker(
         AbpAsyncTimer timer,
         IServiceScopeFactory scopeFactory,
         ILogger<WorkshopDeviceHeartbeatMonitorWorker> logger,
-        IOptions<WorkshopHeartbeatOptions> options)
+        IOptions<WorkshopAlarmOptions> options)
         : base(timer, scopeFactory)
     {
         _scopeFactory = scopeFactory;
@@ -26,10 +29,8 @@ public class WorkshopDeviceHeartbeatMonitorWorker : AsyncPeriodicBackgroundWorke
 
         var value = options.Value;
         value.Validate();
-        _level1Minutes = value.Level1Minutes;
-        _level2Minutes = value.Level2Minutes;
-        _level3Minutes = value.Level3Minutes;
-
+        // 心跳间隔超过一级阈值即视为通信报警成立
+        _timeoutMinutes = value.Level1Minutes;
         Timer.Period = (int)TimeSpan.FromMinutes(value.CheckIntervalMinutes).TotalMilliseconds;
     }
 
@@ -43,43 +44,55 @@ public class WorkshopDeviceHeartbeatMonitorWorker : AsyncPeriodicBackgroundWorke
             var clock = scope.ServiceProvider.GetRequiredService<IClock>();
             var heartbeatRepository =
                 scope.ServiceProvider.GetRequiredService<IWorkshopDeviceHeartbeatRepository>();
-            var notifier =
-                scope.ServiceProvider.GetRequiredService<IWorkshopDeviceHeartbeatNotificationSender>();
+            var deviceRepository =
+                scope.ServiceProvider.GetRequiredService<IWorkshopDeviceRepository>();
+            var alarmManager =
+                scope.ServiceProvider.GetRequiredService<IWorkshopAlarmManager>();
 
-            var heartbeats = await heartbeatRepository.GetListAsync(includeDetails: false, cancellationToken: ct);
+            var heartbeats = await heartbeatRepository.GetListAsync(
+                includeDetails: false,
+                cancellationToken: ct);
             if (heartbeats.Count == 0)
             {
                 return;
             }
 
+            var devices = await deviceRepository.GetListAsync(
+                includeDetails: false,
+                cancellationToken: ct);
+            var deviceMap = devices.ToDictionary(x => x.Id);
+
             var now = clock.Now;
             foreach (var heartbeat in heartbeats)
             {
-                var elapsedMinutes = (now - heartbeat.LastHeartbeatAt).TotalMinutes;
-                var targetLevel = elapsedMinutes >= _level3Minutes
-                    ? 3
-                    : elapsedMinutes >= _level2Minutes
-                        ? 2
-                        : elapsedMinutes >= _level1Minutes
-                            ? 1
-                            : 0;
-
-                if (targetLevel > heartbeat.AlarmLevel)
+                if (!deviceMap.TryGetValue(heartbeat.DeviceId, out var device))
                 {
-                    // 只在级别上升时发一次，避免同一条离线每分钟重复通知。
-                    await notifier.NotifyCommunicationAlarmAsync(heartbeat, targetLevel);
-                    heartbeat.RaiseAlarmLevel(targetLevel, now);
-                    await heartbeatRepository.UpdateAsync(heartbeat, autoSave: true, ct);
-                }
-                else if (targetLevel == 0 && heartbeat.AlarmLevel > 0)
-                {
-                    // 先按恢复前所处的级别发送"通信已恢复"，再复位级别。
-                    await notifier.NotifyCommunicationRecoveredAsync(heartbeat, heartbeat.AlarmLevel);
-                    heartbeat.ResetAlarm();
-                    await heartbeatRepository.UpdateAsync(heartbeat, autoSave: true, ct);
-                    _logger.LogInformation(
-                        "设备 {DeviceCode} 心跳恢复，已发送恢复通知并复位报警级别",
+                    _logger.LogWarning(
+                        "心跳记录 {DeviceCode} 找不到对应设备，已跳过",
                         heartbeat.DeviceCode);
+                    continue;
+                }
+
+                var elapsedMinutes = (now - heartbeat.LastHeartbeatAt).TotalMinutes;
+                if (elapsedMinutes >= _timeoutMinutes)
+                {
+                    // 条件（无心跳）从最后一次心跳那刻开始算，升级时长也从它算起
+                    await alarmManager.RaiseAsync(
+                        WorkshopAlarmType.Communication,
+                        device.Id,
+                        device.Code,
+                        device.OrganizationUnitId,
+                        NoDataItem,
+                        "通信中断",
+                        heartbeat.LastHeartbeatAt);
+                }
+                else
+                {
+                    await alarmManager.ClearAsync(
+                        WorkshopAlarmType.Communication,
+                        device.Id,
+                        NoDataItem,
+                        now);
                 }
             }
         }

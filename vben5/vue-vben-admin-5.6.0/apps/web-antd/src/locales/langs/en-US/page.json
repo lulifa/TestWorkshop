@@ -24,6 +24,7 @@
     "workshoporders": "Orders",
     "workshopdevices": "Workshop Devices",
     "thresholds": "Thresholds",
+    "alarms": "Alarms",
     "orderGraph": "Graphs",
     "unmatchedOrder": "Unmatched",
     "testedDevice": "Tested Device",

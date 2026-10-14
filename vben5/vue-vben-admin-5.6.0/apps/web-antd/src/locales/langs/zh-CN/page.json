@@ -24,6 +24,7 @@
     "workshoporders": "订单管理",
     "workshopdevices": "车间设备",
     "thresholds": "阈值管理",
+    "alarms": "报警管理",
     "orderGraph": "图谱",
     "unmatchedOrder": "未匹配订单",
     "testedDevice": "被测产品",

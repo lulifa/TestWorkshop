@@ -8,6 +8,7 @@ export * from './useNotificationsApi';
 export * from './useRoleMenusApi';
 export * from './useUserMenusApi';
 export * from './useWorkshopDeviceApi';
+export * from './useWorkshopAlarmApi';
 export * from './useWorkshopOrderApi';
 export * from './useWorkshopTelemetryApi';
 export * from './useWorkshopThresholdApi';
