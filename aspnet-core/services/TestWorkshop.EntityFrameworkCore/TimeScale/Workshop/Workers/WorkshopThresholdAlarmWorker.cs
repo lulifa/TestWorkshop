@@ -102,7 +102,7 @@ public class WorkshopThresholdAlarmWorker : AsyncPeriodicBackgroundWorkerBase
 
                     if (exceeded)
                     {
-                        // 同一条件同时产生两条报警：阈值报警 + 设备报警
+                        // 阈值报警：所有设备类型都判（测试台与传感器设备都适用）
                         await alarmManager.RaiseAsync(
                             WorkshopAlarmType.Threshold,
                             device.Id,
@@ -112,14 +112,19 @@ public class WorkshopThresholdAlarmWorker : AsyncPeriodicBackgroundWorkerBase
                             thresholdContent,
                             frame.Timestamp);
 
-                        await alarmManager.RaiseAsync(
-                            WorkshopAlarmType.Device,
-                            device.Id,
-                            device.Code,
-                            device.OrganizationUnitId,
-                            rule.DataItemType,
-                            $"{quantityName}数值异常",
-                            frame.Timestamp);
+                        // 设备报警里的“传感器数值异常”只对传感器类型的设备成立；
+                        // 测试台超限已经由阈值报警表达，不再重复出一条设备报警。
+                        if (device.Type == DeviceTypeEnum.SENSOR)
+                        {
+                            await alarmManager.RaiseAsync(
+                                WorkshopAlarmType.Device,
+                                device.Id,
+                                device.Code,
+                                device.OrganizationUnitId,
+                                rule.DataItemType,
+                                $"{quantityName}数值异常",
+                                frame.Timestamp);
+                        }
                     }
                     else
                     {
@@ -129,6 +134,8 @@ public class WorkshopThresholdAlarmWorker : AsyncPeriodicBackgroundWorkerBase
                             rule.DataItemType,
                             now);
 
+                        // 恢复不判类型：不论哪类设备，数值回到范围内就把该物理量的设备报警恢复掉。
+                        // 这样历史版本为非传感器设备产生的那条报警也能被清掉，不会一直挂着继续升级。
                         await alarmManager.ClearAsync(
                             WorkshopAlarmType.Device,
                             device.Id,
