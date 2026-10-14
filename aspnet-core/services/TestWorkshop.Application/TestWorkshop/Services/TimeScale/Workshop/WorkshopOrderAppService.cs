@@ -65,8 +65,8 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
             input.MaxResultCount = int.MaxValue;
         }
 
-        // 车间可见性：全局岗位不限，其他角色只看自己所属车间的订单
-        var organizationUnitIds = await GetVisibleOrganizationUnitIdsAsync();
+        // 可见性：管理员/调度不限；其他角色看"自己所属车间的订单" + "自己作为单船项目主管的订单"
+        var (organizationUnitIds, projectSupervisorUserId) = await GetOrderVisibilityAsync();
 
         var result = await _orderRepository.GetPagedListAsync(
             input.OrderNo,
@@ -75,6 +75,7 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
             input.StartTime,
             input.EndTime,
             organizationUnitIds,
+            projectSupervisorUserId,
             input.SkipCount,
             input.MaxResultCount);
 
@@ -113,24 +114,38 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
     }
 
     /// <summary>
-    /// 当前用户可见的车间范围：全局岗位返回 null（不限制），其他角色返回所属组织单元
+    /// 当前用户的订单可见范围：
+    /// 管理员 / 调度 → 不限（两个都返回 null）；
+    /// 其他角色 → 自己所属车间的订单，外加"自己作为单船项目主管"的订单。
     /// </summary>
-    private async Task<ICollection<Guid>> GetVisibleOrganizationUnitIdsAsync()
+    private async Task<(ICollection<Guid> OrganizationUnitIds, Guid? ProjectSupervisorUserId)> GetOrderVisibilityAsync()
     {
         if (OrganizationUnitUnrestrictedRoles.Any(CurrentUser.IsInRole))
         {
-            return null;
+            return (null, null);
         }
 
-        return await _organizationUnitAccessChecker.GetAccessibleOrganizationUnitIdsAsync();
+        var organizationUnitIds = await _organizationUnitAccessChecker.GetAccessibleOrganizationUnitIdsAsync();
+        var projectSupervisorUserId = CurrentUser.IsInRole(RoleConstants.projectSupervisor)
+            ? CurrentUser.GetId()
+            : (Guid?)null;
+
+        return (organizationUnitIds, projectSupervisorUserId);
     }
 
     /// <summary>
-    /// 校验订单所属车间对当前用户可见
+    /// 校验订单对当前用户可见
     /// </summary>
     private async Task EnsureOrderAccessibleAsync(WorkshopOrder order)
     {
         if (OrganizationUnitUnrestrictedRoles.Any(CurrentUser.IsInRole))
+        {
+            return;
+        }
+
+        // 自己是这单的单船项目主管
+        if (CurrentUser.IsInRole(RoleConstants.projectSupervisor)
+            && order.ProjectSupervisorUserId == CurrentUser.GetId())
         {
             return;
         }

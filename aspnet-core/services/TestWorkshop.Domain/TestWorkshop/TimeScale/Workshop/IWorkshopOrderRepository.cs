@@ -23,6 +23,7 @@ public interface IWorkshopOrderRepository : IRepository<WorkshopOrder, Guid>
         DateTime? startTime = null,
         DateTime? endTime = null,
         ICollection<Guid> organizationUnitIds = null,
+        Guid? projectSupervisorUserId = null,
         int skipCount = 0,
         int maxResultCount = 10);
 }

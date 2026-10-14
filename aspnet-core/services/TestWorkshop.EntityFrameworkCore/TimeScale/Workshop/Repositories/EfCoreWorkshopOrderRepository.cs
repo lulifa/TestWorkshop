@@ -56,6 +56,7 @@ public class EfCoreWorkshopOrderRepository :
         DateTime? startTime = null,
         DateTime? endTime = null,
         ICollection<Guid> organizationUnitIds = null,
+        Guid? projectSupervisorUserId = null,
         int skipCount = 0,
         int maxResultCount = 10)
     {
@@ -90,14 +91,32 @@ public class EfCoreWorkshopOrderRepository :
                 x => x.TestStartedAt.HasValue && x.TestStartedAt.Value <= endTime.Value);
         }
 
-        if (organizationUnitIds != null)
+        // 可见性：订单没存车间，通过设备归属过滤；另外单船项目主管能看到"自己负责"的订单。
+        // 两个条件之间是"或"的关系，所以分三种情况拼，避免传 null 进表达式。
+        if (organizationUnitIds != null && projectSupervisorUserId.HasValue)
         {
-            // 订单本身没存车间，通过设备归属过滤；传空集合表示无权查看任何订单
             var deviceSet = (await GetDbContextAsync()).Set<WorkshopDevice>();
+            var organizationUnitIdList = organizationUnitIds;
+            var supervisorUserId = projectSupervisorUserId.Value;
             query = query.Where(order =>
                 deviceSet.Any(device =>
                     device.Id == order.DeviceId
-                    && organizationUnitIds.Contains(device.OrganizationUnitId)));
+                    && organizationUnitIdList.Contains(device.OrganizationUnitId))
+                || order.ProjectSupervisorUserId == supervisorUserId);
+        }
+        else if (organizationUnitIds != null)
+        {
+            var deviceSet = (await GetDbContextAsync()).Set<WorkshopDevice>();
+            var organizationUnitIdList = organizationUnitIds;
+            query = query.Where(order =>
+                deviceSet.Any(device =>
+                    device.Id == order.DeviceId
+                    && organizationUnitIdList.Contains(device.OrganizationUnitId)));
+        }
+        else if (projectSupervisorUserId.HasValue)
+        {
+            var supervisorUserId = projectSupervisorUserId.Value;
+            query = query.Where(order => order.ProjectSupervisorUserId == supervisorUserId);
         }
 
         var totalCount = await query.CountAsync();
