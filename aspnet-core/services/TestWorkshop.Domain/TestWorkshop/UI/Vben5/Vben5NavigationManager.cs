@@ -70,15 +70,6 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
             .SetProperty("title", "page.business.workshoporders"));
         business.AddItem(
           new ApplicationMenu(
-              name: "Vben5BusinessMyBroadcast",
-              displayName: "我的通告",
-              url: "/business/notifications/my-broadcast",
-              component: "/business/notifications/my-broadcast/index",
-              icon: "lucide:megaphone",
-              description: "我的通告")
-            .SetProperty("title", "page.business.notifications.broadcast"));
-        business.AddItem(
-          new ApplicationMenu(
               name: "Vben5BusinessMyMessage",
               displayName: "我的消息",
               url: "/business/notifications/my-message",
@@ -86,6 +77,15 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
               icon: "lucide:mail-open",
               description: "我的消息")
             .SetProperty("title", "page.business.notifications.message"));
+        business.AddItem(
+          new ApplicationMenu(
+              name: "Vben5BusinessMyBroadcast",
+              displayName: "我的通告",
+              url: "/business/notifications/my-broadcast",
+              component: "/business/notifications/my-broadcast/index",
+              icon: "lucide:megaphone",
+              description: "我的通告")
+            .SetProperty("title", "page.business.notifications.broadcast"));
         return
         [
             new NavigationDefinition(business),
@@ -196,15 +196,6 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
             .SetProperty("title", "abp.modules.platform.files"));
         modules.AddItem(
           new ApplicationMenu(
-              name: "Vben5ModulesPlatformBroadcast",
-              displayName: "通告管理",
-              url: "/modules/platform/notifications/broadcast",
-              component: "/modules/platform/notifications/broadcast/index",
-              icon: "lucide:megaphone",
-              description: "通告管理")
-            .SetProperty("title", "abp.modules.platform.notifications.broadcast"));
-        modules.AddItem(
-          new ApplicationMenu(
               name: "Vben5ModulesPlatformMessage",
               displayName: "消息管理",
               url: "/modules/platform/notifications/message",
@@ -212,6 +203,15 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
               icon: "lucide:mail-open",
               description: "消息管理")
             .SetProperty("title", "abp.modules.platform.notifications.message"));
+        modules.AddItem(
+          new ApplicationMenu(
+              name: "Vben5ModulesPlatformBroadcast",
+              displayName: "通告管理",
+              url: "/modules/platform/notifications/broadcast",
+              component: "/modules/platform/notifications/broadcast/index",
+              icon: "lucide:megaphone",
+              description: "通告管理")
+            .SetProperty("title", "abp.modules.platform.notifications.broadcast"));
         modules.AddItem(
           new ApplicationMenu(
               name: "Vben5ModulesPlatformMenus",

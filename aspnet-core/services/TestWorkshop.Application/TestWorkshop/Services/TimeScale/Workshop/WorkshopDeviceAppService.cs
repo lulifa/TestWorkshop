@@ -8,18 +8,18 @@ public class WorkshopDeviceAppService : TestWorkshopAppService, IWorkshopDeviceA
 {
     protected IWorkshopDeviceRepository WorkshopDeviceRepository { get; }
     protected IOrganizationUnitRepository OrganizationUnitRepository { get; }
-    protected IdentityUserManager UserManager { get; }
+    protected IWorkshopOrganizationUnitAccessChecker OrganizationUnitAccessChecker { get; }
     protected IAsyncQueryableExecuter AsyncQueryableExecuter { get; }
 
     public WorkshopDeviceAppService(
         IWorkshopDeviceRepository workshopDeviceRepository,
         IOrganizationUnitRepository organizationUnitRepository,
-        IdentityUserManager userManager,
+        IWorkshopOrganizationUnitAccessChecker organizationUnitAccessChecker,
         IAsyncQueryableExecuter asyncQueryableExecuter)
     {
         WorkshopDeviceRepository = workshopDeviceRepository;
         OrganizationUnitRepository = organizationUnitRepository;
-        UserManager = userManager;
+        OrganizationUnitAccessChecker = organizationUnitAccessChecker;
         AsyncQueryableExecuter = asyncQueryableExecuter;
     }
 
@@ -219,30 +219,17 @@ public class WorkshopDeviceAppService : TestWorkshopAppService, IWorkshopDeviceA
         return Task.FromResult(new ListResultDto<WorkshopDeviceTypeDto>(types));
     }
 
+    // 车间可见性统一走共享的 OrganizationUnitAccessChecker，这里只保留设备自己的提示文案
     private async Task<HashSet<Guid>> GetAccessibleOrganizationUnitIdsAsync()
     {
-        if (CurrentUser.IsInRole(RoleConstants.admin))
-        {
-            return null;
-        }
-
-        if (CurrentUser.Id == null)
-        {
-            return new HashSet<Guid>();
-        }
-
-        var user = await UserManager.GetByIdAsync(CurrentUser.GetId());
-        var organizationUnits = await UserManager.GetOrganizationUnitsAsync(user);
-        return organizationUnits.Select(x => x.Id).ToHashSet();
+        return await OrganizationUnitAccessChecker.GetAccessibleOrganizationUnitIdsAsync();
     }
 
     private async Task EnsureOrganizationUnitAccessibleAsync(Guid organizationUnitId)
     {
-        var accessibleOuIds = await GetAccessibleOrganizationUnitIdsAsync();
-        if (accessibleOuIds != null && !accessibleOuIds.Contains(organizationUnitId))
-        {
-            throw new UserFriendlyException(L["WorkshopDevice:NotAuthorized"]);
-        }
+        await OrganizationUnitAccessChecker.EnsureAccessibleAsync(
+            organizationUnitId,
+            L["WorkshopDevice:NotAuthorized"]);
     }
 
     private async Task<List<Guid>> GetDescendantOrganizationUnitIdsAsync(Guid organizationUnitId)

@@ -22,7 +22,7 @@ import { Tag } from 'ant-design-vue';
 const row = ref<NotificationOutput>();
 
 const [Drawer, drawerApi] = useVbenDrawer({
-  class: 'w-[620px]',
+  class: 'w-[900px] max-w-[96vw]',
   contentClass: 'p-0',
   onOpenChange: (isOpen: boolean) => {
     if (isOpen) {

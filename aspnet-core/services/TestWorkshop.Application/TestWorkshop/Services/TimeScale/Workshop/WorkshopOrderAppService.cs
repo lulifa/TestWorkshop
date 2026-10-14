@@ -9,6 +9,16 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
     // 遥测任务状态：0=待处理 1=处理中 2=成功 3=失败
     private const int TelemetryTaskStatusSuccess = 2;
 
+    /// <summary>
+    /// 不按车间限制、可查看全部订单的岗位：管理员 + 调度。
+    /// 其他角色（车间主管 / 测试工程师 / 大区负责人等）只看自己所属车间的订单。
+    /// </summary>
+    private static readonly string[] OrganizationUnitUnrestrictedRoles =
+    {
+        RoleConstants.admin,
+        RoleConstants.dispatcher
+    };
+
     private readonly IWorkshopOrderManager _orderManager;
     private readonly IWorkshopOrderRepository _orderRepository;
     private readonly IWorkshopDeviceRepository _deviceRepository;
@@ -19,6 +29,7 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
     private readonly IIdentityUserRepository _identityUserRepository;
     private readonly IdentityUserManager _identityUserManager;
     private readonly IWorkshopOrderNotificationSender _orderNotificationSender;
+    private readonly IWorkshopOrganizationUnitAccessChecker _organizationUnitAccessChecker;
 
     public WorkshopOrderAppService(
         IWorkshopOrderManager orderManager,
@@ -30,7 +41,8 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
         IAsyncQueryableExecuter asyncQueryableExecuter,
         IIdentityUserRepository identityUserRepository,
         IdentityUserManager identityUserManager,
-        IWorkshopOrderNotificationSender orderNotificationSender)
+        IWorkshopOrderNotificationSender orderNotificationSender,
+        IWorkshopOrganizationUnitAccessChecker organizationUnitAccessChecker)
     {
         _orderManager = orderManager;
         _orderRepository = orderRepository;
@@ -42,6 +54,7 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
         _identityUserRepository = identityUserRepository;
         _identityUserManager = identityUserManager;
         _orderNotificationSender = orderNotificationSender;
+        _organizationUnitAccessChecker = organizationUnitAccessChecker;
     }
 
     public virtual async Task<PagedResultDto<WorkshopOrderDto>> GetListAsync(WorkshopOrderListInput input)
@@ -52,12 +65,16 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
             input.MaxResultCount = int.MaxValue;
         }
 
+        // 车间可见性：全局岗位不限，其他角色只看自己所属车间的订单
+        var organizationUnitIds = await GetVisibleOrganizationUnitIdsAsync();
+
         var result = await _orderRepository.GetPagedListAsync(
             input.OrderNo,
             input.DeviceId,
             input.Status,
             input.StartTime,
             input.EndTime,
+            organizationUnitIds,
             input.SkipCount,
             input.MaxResultCount);
 
@@ -90,8 +107,41 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
     public virtual async Task<WorkshopOrderDto> GetAsync(Guid id)
     {
         var order = await _orderRepository.GetAsync(id);
+        await EnsureOrderAccessibleAsync(order);
         var device = await _deviceRepository.FindAsync(order.DeviceId);
         return ToDto(order, device, await GetProjectSupervisorNameAsync(order.ProjectSupervisorUserId));
+    }
+
+    /// <summary>
+    /// 当前用户可见的车间范围：全局岗位返回 null（不限制），其他角色返回所属组织单元
+    /// </summary>
+    private async Task<ICollection<Guid>> GetVisibleOrganizationUnitIdsAsync()
+    {
+        if (OrganizationUnitUnrestrictedRoles.Any(CurrentUser.IsInRole))
+        {
+            return null;
+        }
+
+        return await _organizationUnitAccessChecker.GetAccessibleOrganizationUnitIdsAsync();
+    }
+
+    /// <summary>
+    /// 校验订单所属车间对当前用户可见
+    /// </summary>
+    private async Task EnsureOrderAccessibleAsync(WorkshopOrder order)
+    {
+        if (OrganizationUnitUnrestrictedRoles.Any(CurrentUser.IsInRole))
+        {
+            return;
+        }
+
+        var device = await _deviceRepository.FindAsync(order.DeviceId);
+        if (device == null)
+        {
+            return;
+        }
+
+        await _organizationUnitAccessChecker.EnsureAccessibleAsync(device.OrganizationUnitId);
     }
 
     [Authorize(Roles = RoleConstants.admin + "," + RoleConstants.dispatcher)]
@@ -151,6 +201,7 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
     [Authorize(Roles = RoleConstants.admin + "," + RoleConstants.supervisor + "," + RoleConstants.tester)]
     public virtual async Task<WorkshopOrderDto> StartTestAsync(Guid id)
     {
+        await EnsureOrderAccessibleAsync(await _orderRepository.GetAsync(id));
         var order = await _orderManager.StartTestAsync(id);
         var device = await _deviceRepository.FindAsync(order.DeviceId);
         return ToDto(order, device, await GetProjectSupervisorNameAsync(order.ProjectSupervisorUserId));
@@ -159,6 +210,7 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
     [Authorize(Roles = RoleConstants.admin + "," + RoleConstants.supervisor + "," + RoleConstants.tester)]
     public virtual async Task<WorkshopOrderDto> EndTestAsync(Guid id)
     {
+        await EnsureOrderAccessibleAsync(await _orderRepository.GetAsync(id));
         var order = await _orderManager.EndTestAsync(id);
         var device = await _deviceRepository.FindAsync(order.DeviceId);
         return ToDto(order, device, await GetProjectSupervisorNameAsync(order.ProjectSupervisorUserId));
@@ -168,6 +220,7 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
     [Authorize(Roles = RoleConstants.admin + "," + RoleConstants.tester)]
     public virtual async Task<WorkshopOrderDto> CancelAsync(Guid id)
     {
+        await EnsureOrderAccessibleAsync(await _orderRepository.GetAsync(id));
         var order = await _orderManager.CancelAsync(id);
         var device = await _deviceRepository.FindAsync(order.DeviceId);
         return ToDto(order, device, await GetProjectSupervisorNameAsync(order.ProjectSupervisorUserId));
@@ -178,6 +231,7 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
         WorkshopTelemetryTaskListInput input)
     {
         var order = await _orderRepository.GetAsync(id);
+        await EnsureOrderAccessibleAsync(order);
 
         if (!input.IsPaged)
         {
@@ -228,6 +282,7 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
     public virtual async Task<WorkshopOrderTelemetryGraphDto> GetTelemetryGraphAsync(Guid id)
     {
         var order = await _orderRepository.GetAsync(id);
+        await EnsureOrderAccessibleAsync(order);
         var device = await _deviceRepository.FindAsync(order.DeviceId);
 
         // 只取处理成功的任务，失败/待处理的任务没有波形数据。

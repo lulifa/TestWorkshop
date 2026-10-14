@@ -55,6 +55,7 @@ public class EfCoreWorkshopOrderRepository :
         WorkshopOrderStatus? status = null,
         DateTime? startTime = null,
         DateTime? endTime = null,
+        ICollection<Guid> organizationUnitIds = null,
         int skipCount = 0,
         int maxResultCount = 10)
     {
@@ -87,6 +88,16 @@ public class EfCoreWorkshopOrderRepository :
         {
             query = query.Where(
                 x => x.TestStartedAt.HasValue && x.TestStartedAt.Value <= endTime.Value);
+        }
+
+        if (organizationUnitIds != null)
+        {
+            // 订单本身没存车间，通过设备归属过滤；传空集合表示无权查看任何订单
+            var deviceSet = (await GetDbContextAsync()).Set<WorkshopDevice>();
+            query = query.Where(order =>
+                deviceSet.Any(device =>
+                    device.Id == order.DeviceId
+                    && organizationUnitIds.Contains(device.OrganizationUnitId)));
         }
 
         var totalCount = await query.CountAsync();

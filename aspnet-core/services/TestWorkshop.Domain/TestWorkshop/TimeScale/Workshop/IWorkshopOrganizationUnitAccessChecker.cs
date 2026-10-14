@@ -11,7 +11,7 @@ public interface IWorkshopOrganizationUnitAccessChecker
     Task<HashSet<Guid>> GetAccessibleOrganizationUnitIdsAsync();
 
     /// <summary>
-    /// 校验当前用户是否可以访问指定组织单元
+    /// 校验当前用户是否可以访问指定组织单元；message 为空时使用默认提示
     /// </summary>
-    Task EnsureAccessibleAsync(Guid organizationUnitId);
+    Task EnsureAccessibleAsync(Guid organizationUnitId, string message = null);
 }

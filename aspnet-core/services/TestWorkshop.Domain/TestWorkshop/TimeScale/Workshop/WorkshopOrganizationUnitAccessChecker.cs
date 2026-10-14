@@ -35,12 +35,12 @@ public class WorkshopOrganizationUnitAccessChecker :
         return organizationUnits.Select(x => x.Id).ToHashSet();
     }
 
-    public virtual async Task EnsureAccessibleAsync(Guid organizationUnitId)
+    public virtual async Task EnsureAccessibleAsync(Guid organizationUnitId, string message = null)
     {
         var accessibleIds = await GetAccessibleOrganizationUnitIdsAsync();
         if (accessibleIds != null && !accessibleIds.Contains(organizationUnitId))
         {
-            throw new UserFriendlyException("无权访问该车间的数据");
+            throw new UserFriendlyException(message ?? "无权访问该车间的数据");
         }
     }
 }
