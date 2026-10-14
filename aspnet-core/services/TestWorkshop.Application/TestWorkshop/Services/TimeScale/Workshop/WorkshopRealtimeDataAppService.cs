@@ -46,7 +46,8 @@ public class WorkshopRealtimeDataAppService : TestWorkshopAppService, IWorkshopR
             DeviceCode = device.Code,
             Timestamp = ToUtc(input.Timestamp),
             EmergencyStop = input.EmergencyStop,
-            ReceivedAt = input.ReceivedAt.HasValue ? ToUtc(input.ReceivedAt.Value) : _clock.Now
+            // 接收时间由平台自己记，不由下位机上报
+            ReceivedAt = _clock.Now
         };
 
         foreach (var (rawType, value) in input.Values)

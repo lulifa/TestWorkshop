@@ -28,9 +28,4 @@ public class WorkshopRealtimeDataPushInput
     /// 测试台急停：true=急停，不传/false=正常
     /// </summary>
     public bool? EmergencyStop { get; set; }
-
-    /// <summary>
-    /// 下位机侧发送时间（可选）；不给则用服务器接收时间
-    /// </summary>
-    public DateTime? ReceivedAt { get; set; }
 }
