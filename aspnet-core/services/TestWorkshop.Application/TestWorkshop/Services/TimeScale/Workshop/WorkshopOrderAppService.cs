@@ -211,8 +211,8 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
             .ToList();
     }
 
-    // 开始/结束测试：测试工程师、车间主管、管理员
-    // （车间主管是“要求完成测试时间”的责任人，暂定可操作，后续开会再确认）
+    // 开始/结束测试：管理员、车间主管、测试工程师
+    // （车间主管是“要求完成测试时间”的责任人，且权限覆盖测试工程师）
     [Authorize(Roles = RoleConstants.admin + "," + RoleConstants.supervisor + "," + RoleConstants.tester)]
     public virtual async Task<WorkshopOrderDto> StartTestAsync(Guid id)
     {
@@ -231,8 +231,8 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
         return ToDto(order, device, await GetProjectSupervisorNameAsync(order.ProjectSupervisorUserId));
     }
 
-    // 取消订单同样只有测试工程师和管理员可以操作
-    [Authorize(Roles = RoleConstants.admin + "," + RoleConstants.tester)]
+    // 取消订单与开始/结束测试同一套角色：管理员、车间主管、测试工程师
+    [Authorize(Roles = RoleConstants.admin + "," + RoleConstants.supervisor + "," + RoleConstants.tester)]
     public virtual async Task<WorkshopOrderDto> CancelAsync(Guid id)
     {
         await EnsureOrderAccessibleAsync(await _orderRepository.GetAsync(id));

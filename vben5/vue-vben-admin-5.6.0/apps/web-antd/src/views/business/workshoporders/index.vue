@@ -58,13 +58,13 @@ const canManageOrder = computed(() => {
 });
 const canOperate = computed(() => {
   const roles = abpStore.application?.currentUser.roles ?? [];
-  // 开始/结束测试：测试工程师、车间主管、管理员（车间主管待开会确认）
+  // 开始/结束测试：管理员、车间主管、测试工程师
   return roles.some((role) => ['admin', 'supervisor', 'tester'].includes(role));
 });
 const canCancel = computed(() => {
   const roles = abpStore.application?.currentUser.roles ?? [];
-  // 取消订单同样只有测试工程师和管理员可以操作
-  return roles.some((role) => ['admin', 'tester'].includes(role));
+  // 取消订单与开始/结束测试同一套角色：管理员、车间主管、测试工程师
+  return roles.some((role) => ['admin', 'supervisor', 'tester'].includes(role));
 });
 
 const statusOptions = [
