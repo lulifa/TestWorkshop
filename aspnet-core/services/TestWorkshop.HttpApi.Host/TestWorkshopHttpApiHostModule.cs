@@ -41,6 +41,8 @@ public partial class TestWorkshopHttpApiHostModule : AbpModule
 
         ConfigureAuthentication(context);
 
+        ConfigureDeviceApi(context);
+
         ConfigureUrls(configuration);
 
         ConfigureBundles();
@@ -86,6 +88,9 @@ public partial class TestWorkshopHttpApiHostModule : AbpModule
         app.UseRouting();
 
         app.UseCors();
+
+        // 下位机接口共享密钥校验（下位机没有登录态，走匿名接口）
+        app.UseMiddleware<DeviceApiKeyMiddleware>();
 
         app.UseAuthentication();
 

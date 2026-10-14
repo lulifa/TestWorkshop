@@ -82,6 +82,15 @@ public partial class TestWorkshopHttpApiHostModule
 
     }
 
+    /// <summary>
+    /// 下位机匿名接口的共享密钥校验（见 DeviceApiKeyMiddleware）。
+    /// </summary>
+    private void ConfigureDeviceApi(ServiceConfigurationContext context)
+    {
+        Configure<DeviceApiOptions>(context.Services.GetConfiguration().GetSection(DeviceApiOptions.SectionName));
+        context.Services.AddTransient<DeviceApiKeyMiddleware>();
+    }
+
     private void ConfigureUrls(IConfiguration configuration)
     {
         Configure<AppUrlOptions>(options =>
