@@ -43,24 +43,6 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
             .SetProperty("title", "page.business.title");
         business.AddItem(
           new ApplicationMenu(
-              name: "Vben5BusinessAlarms",
-              displayName: "报警管理",
-              url: "/business/alarms",
-              component: "/business/alarms/index",
-              icon: "lucide:bell-ring",
-              description: "报警管理")
-            .SetProperty("title", "page.business.alarms"));
-        business.AddItem(
-          new ApplicationMenu(
-              name: "Vben5BusinessWorkDevices",
-              displayName: "车间设备",
-              url: "/business/workshopdevices",
-              component: "/business/workshopdevices/index",
-              icon: "mdi:factory",
-              description: "车间设备")
-            .SetProperty("title", "page.business.workshopdevices"));
-        business.AddItem(
-          new ApplicationMenu(
               name: "Vben5BusinessWorkshopOrders",
               displayName: "订单管理",
               url: "/business/workshoporders",
@@ -70,6 +52,15 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
             .SetProperty("title", "page.business.workshoporders"));
         business.AddItem(
           new ApplicationMenu(
+              name: "Vben5BusinessAlarms",
+              displayName: "报警管理",
+              url: "/business/alarms",
+              component: "/business/alarms/index",
+              icon: "lucide:bell-ring",
+              description: "报警管理")
+            .SetProperty("title", "page.business.alarms"));
+        business.AddItem(
+          new ApplicationMenu(
               name: "Vben5BusinessMyMessage",
               displayName: "我的消息",
               url: "/business/notifications/my-message",
@@ -77,6 +68,15 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
               icon: "lucide:mail-open",
               description: "我的消息")
             .SetProperty("title", "page.business.notifications.message"));
+        business.AddItem(
+          new ApplicationMenu(
+              name: "Vben5BusinessWorkDevices",
+              displayName: "车间设备",
+              url: "/business/workshopdevices",
+              component: "/business/workshopdevices/index",
+              icon: "mdi:factory",
+              description: "车间设备")
+            .SetProperty("title", "page.business.workshopdevices"));
         business.AddItem(
           new ApplicationMenu(
               name: "Vben5BusinessMyBroadcast",
