@@ -53,4 +53,17 @@ public class WorkshopAlarmRepository
 
         return rows > 0;
     }
+
+    public async Task<int> ClearActiveDataAlarmsAsync(Guid deviceId, DateTime clearedAt)
+    {
+        var dbSet = await GetDbSetAsync();
+        return await dbSet
+            .Where(x => x.DeviceId == deviceId
+                        && x.Status == WorkshopAlarmStatus.Active
+                        && (x.AlarmType == WorkshopAlarmType.Threshold
+                            || x.AlarmType == WorkshopAlarmType.Device))
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(x => x.Status, WorkshopAlarmStatus.Cleared)
+                .SetProperty(x => x.ClearedAt, (DateTime?)clearedAt));
+    }
 }

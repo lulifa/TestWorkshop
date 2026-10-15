@@ -27,4 +27,10 @@ public interface IWorkshopAlarmRepository : IBasicRepository<WorkshopAlarm, Guid
     /// 原子地标记恢复：只有进行中的报警才能被标记，返回是否成功。
     /// </summary>
     Task<bool> ClaimClearAsync(Guid alarmId, DateTime clearedAt);
+
+    /// <summary>
+    /// 把某台设备所有进行中的数据类报警（阈值/设备）批量置为已恢复，返回影响行数。
+    /// 设备数据停发时使用：没有新数据可判，报警不该继续挂着升级。
+    /// </summary>
+    Task<int> ClearActiveDataAlarmsAsync(Guid deviceId, DateTime clearedAt);
 }

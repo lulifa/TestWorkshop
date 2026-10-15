@@ -26,6 +26,14 @@ public class WorkshopAlarmOptions
     /// </summary>
     public int Level3Minutes { get; set; } = 20;
 
+    /// <summary>
+    /// 数据停发判定（分钟）：设备超过这么久没有新的实时数据帧，就把它仍在进行中的
+    /// 数据类报警（阈值报警、设备报警）自动恢复。
+    /// 用于避免“测试结束后最后一帧超限，报警一直挂着并一路升级到三级”这种情况。
+    /// 注意：这个值必须明显大于下位机的上报间隔（当前约 2 秒），否则会把正常上报的设备误判成停发。
+    /// </summary>
+    public int StaleDataMinutes { get; set; } = 4;
+
     public void Validate()
     {
         if (CheckIntervalMinutes <= 0)
@@ -46,6 +54,11 @@ public class WorkshopAlarmOptions
         if (Level3Minutes <= Level2Minutes)
         {
             throw new ArgumentException("WorkshopAlarm:Level3Minutes 必须大于 Level2Minutes");
+        }
+
+        if (StaleDataMinutes <= 0)
+        {
+            throw new ArgumentException("WorkshopAlarm:StaleDataMinutes 必须大于 0");
         }
     }
 }

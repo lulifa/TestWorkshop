@@ -92,6 +92,22 @@ public class WorkshopAlarmManager : DomainService, IWorkshopAlarmManager
             alarm.DataItemType);
     }
 
+    /// <summary>
+    /// 设备数据停发兜底：没有新数据可判了，就不能让报警继续挂着升级。
+    /// 只处理数据类报警（阈值/设备），通信报警要等心跳回来才恢复。
+    /// </summary>
+    public virtual async Task ClearStaleDataAlarmsAsync(Guid deviceId, DateTime clearedAt)
+    {
+        var count = await _alarmRepository.ClearActiveDataAlarmsAsync(deviceId, clearedAt);
+        if (count > 0)
+        {
+            _logger.LogInformation(
+                "设备 {DeviceId} 实时数据已停发，自动恢复 {Count} 条数据类报警",
+                deviceId,
+                count);
+        }
+    }
+
     public virtual async Task EvaluateEscalationAsync(DateTime now)
     {
         var alarms = await _alarmRepository.GetActiveListAsync();

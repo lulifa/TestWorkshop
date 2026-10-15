@@ -24,6 +24,12 @@ public interface IWorkshopAlarmManager
     Task ClearAsync(WorkshopAlarmType alarmType, Guid deviceId, string dataItemType, DateTime clearedAt);
 
     /// <summary>
+    /// 设备实时数据停发时，把它仍在进行中的数据类报警（阈值/设备）全部恢复。
+    /// 这类报警没有恢复消息，所以这里只改状态、不发通知；通信报警不受影响。
+    /// </summary>
+    Task ClearStaleDataAlarmsAsync(Guid deviceId, DateTime clearedAt);
+
+    /// <summary>
     /// 扫描全部进行中的报警，按持续时间逐级升级并发送通知
     /// </summary>
     Task EvaluateEscalationAsync(DateTime now);
