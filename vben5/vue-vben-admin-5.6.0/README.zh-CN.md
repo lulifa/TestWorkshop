@@ -14,6 +14,8 @@
 
 **中文** | [English](./README.md) | [日本語](./README.ja-JP.md)
 
+> 本项目相关记录：[认证令牌（access_token / refresh_token）有效期记录](./auth-token-lifetime.md)
+
 ## 简介
 
 Vue Vben Admin 是 Vue Vben Admin 的升级版本。作为一个免费开源的中后台模板，它采用了最新的 Vue 3、Vite、TypeScript 等主流技术开发，开箱即用，可用于中后台前端开发，也适合学习参考。
