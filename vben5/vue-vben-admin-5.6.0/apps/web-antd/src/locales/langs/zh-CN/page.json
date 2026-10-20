@@ -29,13 +29,15 @@
     "unmatchedOrder": "未匹配订单",
     "testedDevice": "被测产品",
     "testedDeviceUnset": "未标注被测产品",
-    "hasOrder": "是否有订单",
-    "hasOrderYes": "有订单",
-    "hasOrderNo": "无订单（非法数据）",
+    "hasOrder": "订单关联",
+    "hasOrderYes": "已关联订单",
+    "hasOrderNo": "未关联订单",
     "taskIdCurrent": "本次任务ID",
     "replacedBy": "替换为",
     "showReplaced": "显示历史任务（已替换）",
     "projectSupervisor": "单船项目主管",
-    "requiredCompletionTime": "要求完成时间"
+    "requiredCompletionTime": "要求完成时间",
+    "lastHeartbeat": "最后心跳",
+    "totalRuntime": "运行总时长"
   }
 }

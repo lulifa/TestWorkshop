@@ -167,6 +167,20 @@ const gridOptions: VxeGridProps<WorkshopDeviceDto> = {
       title: $t('TestWorkshop.DisplayName:Model'),
     },
     {
+      field: 'lastHeartbeatAt',
+      formatter: ({ cellValue }) => {
+        return cellValue ? formatToDateTime(cellValue) : '-';
+      },
+      minWidth: 170,
+      title: $t('page.business.lastHeartbeat'),
+    },
+    {
+      field: 'totalRuntimeSeconds',
+      formatter: ({ cellValue }) => formatDuration(cellValue),
+      minWidth: 160,
+      title: $t('page.business.totalRuntime'),
+    },
+    {
       field: 'organizationUnitId',
       minWidth: 140,
       slots: { default: 'organizationUnit' },
@@ -340,6 +354,23 @@ function typeLabel(type: DeviceType, typeName?: string) {
   return (
     typeLabelMap.value.get(type) ?? typeName ?? DeviceType[type] ?? String(type)
   );
+}
+
+function formatDuration(totalSeconds?: number) {
+  if (!totalSeconds || totalSeconds <= 0) {
+    return '0 秒';
+  }
+
+  const days = Math.floor(totalSeconds / 86_400);
+  const hours = Math.floor((totalSeconds % 86_400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = Math.floor(totalSeconds % 60);
+  const parts: string[] = [];
+  if (days > 0) parts.push(`${days} 天`);
+  if (hours > 0) parts.push(`${hours} 小时`);
+  if (minutes > 0) parts.push(`${minutes} 分`);
+  if (seconds > 0 || parts.length === 0) parts.push(`${seconds} 秒`);
+  return parts.join(' ');
 }
 
 onMounted(async () => {

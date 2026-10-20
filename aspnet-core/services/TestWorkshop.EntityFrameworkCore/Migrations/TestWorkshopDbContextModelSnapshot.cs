@@ -919,9 +919,19 @@ namespace TestWorkshop.Migrations
                         .HasColumnType("uuid")
                         .HasComment("关联设备ID");
 
+                    b.Property<DateTime>("FirstHeartbeatAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasComment("第一次心跳时间");
+
                     b.Property<DateTime>("LastHeartbeatAt")
                         .HasColumnType("timestamp with time zone")
                         .HasComment("最近一次心跳时间");
+
+                    b.Property<long>("TotalRuntimeSeconds")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(0L)
+                        .HasComment("累计运行秒数");
 
                     b.HasKey("Id");
 

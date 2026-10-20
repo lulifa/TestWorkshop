@@ -44,4 +44,14 @@ public class WorkshopDeviceDto : EntityDto<Guid>
     /// 最后修改时间
     /// </summary>
     public DateTime? LastModificationTime { get; set; }
+
+    /// <summary>
+    /// 最近一次心跳时间
+    /// </summary>
+    public DateTime? LastHeartbeatAt { get; set; }
+
+    /// <summary>
+    /// 累计运行秒数
+    /// </summary>
+    public long TotalRuntimeSeconds { get; set; }
 }

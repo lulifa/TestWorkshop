@@ -269,6 +269,16 @@ public static class TestWorkshopDbContextModelCreatingExtensions
                 .IsRequired()
                 .HasComment("最近一次心跳时间");
 
+            b.Property(p => p.FirstHeartbeatAt)
+                .HasColumnType("timestamp with time zone")
+                .IsRequired()
+                .HasComment("第一次心跳时间");
+
+            b.Property(p => p.TotalRuntimeSeconds)
+                .IsRequired()
+                .HasDefaultValue(0L)
+                .HasComment("累计运行秒数");
+
             b.ConfigureByConvention();
 
             b.HasOne<WorkshopDevice>()

@@ -21,6 +21,7 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
     private readonly ICurrentTenant _currentTenant;
     private readonly IClock _clock;
     private readonly IGuidGenerator _guidGenerator;
+    private readonly WorkshopAlarmOptions _alarmOptions;
 
     public WorkshopTelemetryAppService(
         IWorkshopTelemetryTaskManager taskManager,
@@ -32,7 +33,8 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
         IWorkshopOrderRepository orderRepository,
         ICurrentTenant currentTenant,
         IClock clock,
-        IGuidGenerator guidGenerator)
+        IGuidGenerator guidGenerator,
+        IOptions<WorkshopAlarmOptions> alarmOptions)
     {
         _taskManager = taskManager;
         _taskRepository = taskRepository;
@@ -44,11 +46,12 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
         _currentTenant = currentTenant;
         _clock = clock;
         _guidGenerator = guidGenerator;
+        _alarmOptions = alarmOptions.Value;
     }
 
     /// <summary>
     /// 下位机心跳：按设备编码登记在线状态（刷新最近心跳时间），并返回服务器时间供校时。
-    /// 设备编码未知时直接报错，避免把非法请求也算作"在线"。
+    /// 设备编码未知时直接报错，避免把无效请求登记为在线。
     /// </summary>
     [AllowAnonymous]
     public virtual async Task<TelemetryOnlineResultDto> OnlineAsync(string deviceCode)
@@ -75,7 +78,9 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
         }
         else
         {
-            heartbeat.RecordHeartbeat(now);
+            heartbeat.RecordHeartbeat(
+                now,
+                TimeSpan.FromSeconds(_alarmOptions.RuntimeGapToleranceSeconds));
             await _heartbeatRepository.UpdateAsync(heartbeat);
         }
 

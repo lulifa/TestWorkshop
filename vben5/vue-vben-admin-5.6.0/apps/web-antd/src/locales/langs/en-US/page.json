@@ -29,13 +29,15 @@
     "unmatchedOrder": "Unmatched",
     "testedDevice": "Tested Device",
     "testedDeviceUnset": "Unspecified",
-    "hasOrder": "Has Order",
-    "hasOrderYes": "Matched",
-    "hasOrderNo": "Unmatched (invalid data)",
+    "hasOrder": "Order Link",
+    "hasOrderYes": "Linked",
+    "hasOrderNo": "Not Linked",
     "taskIdCurrent": "Task ID",
     "replacedBy": "Replaced By",
     "showReplaced": "Show history (replaced)",
     "projectSupervisor": "Project Supervisor",
-    "requiredCompletionTime": "Required Completion"
+    "requiredCompletionTime": "Required Completion",
+    "lastHeartbeat": "Last Heartbeat",
+    "totalRuntime": "Total Runtime"
   }
 }

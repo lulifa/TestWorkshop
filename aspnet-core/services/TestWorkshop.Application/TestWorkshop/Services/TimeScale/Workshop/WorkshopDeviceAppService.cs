@@ -8,17 +8,20 @@ public class WorkshopDeviceAppService : TestWorkshopAppService, IWorkshopDeviceA
 {
     protected IWorkshopDeviceRepository WorkshopDeviceRepository { get; }
     protected IOrganizationUnitRepository OrganizationUnitRepository { get; }
+    protected IWorkshopDeviceHeartbeatRepository HeartbeatRepository { get; }
     protected IWorkshopOrganizationUnitAccessChecker OrganizationUnitAccessChecker { get; }
     protected IAsyncQueryableExecuter AsyncQueryableExecuter { get; }
 
     public WorkshopDeviceAppService(
         IWorkshopDeviceRepository workshopDeviceRepository,
         IOrganizationUnitRepository organizationUnitRepository,
+        IWorkshopDeviceHeartbeatRepository heartbeatRepository,
         IWorkshopOrganizationUnitAccessChecker organizationUnitAccessChecker,
         IAsyncQueryableExecuter asyncQueryableExecuter)
     {
         WorkshopDeviceRepository = workshopDeviceRepository;
         OrganizationUnitRepository = organizationUnitRepository;
+        HeartbeatRepository = heartbeatRepository;
         OrganizationUnitAccessChecker = organizationUnitAccessChecker;
         AsyncQueryableExecuter = asyncQueryableExecuter;
     }
@@ -71,9 +74,10 @@ public class WorkshopDeviceAppService : TestWorkshopAppService, IWorkshopDeviceA
                 .Skip(input.SkipCount)
                 .Take(input.MaxResultCount));
 
-        return new PagedResultDto<WorkshopDeviceDto>(
-            totalCount,
-            ObjectMapper.Map<List<WorkshopDevice>, List<WorkshopDeviceDto>>(items));
+        var dtos = ObjectMapper.Map<List<WorkshopDevice>, List<WorkshopDeviceDto>>(items);
+        await FillHeartbeatInfoAsync(items, dtos);
+
+        return new PagedResultDto<WorkshopDeviceDto>(totalCount, dtos);
     }
 
     /// <summary>
@@ -83,7 +87,15 @@ public class WorkshopDeviceAppService : TestWorkshopAppService, IWorkshopDeviceA
     {
         var device = await WorkshopDeviceRepository.GetAsync(id);
         await EnsureOrganizationUnitAccessibleAsync(device.OrganizationUnitId);
-        return ObjectMapper.Map<WorkshopDevice, WorkshopDeviceDto>(device);
+        var dto = ObjectMapper.Map<WorkshopDevice, WorkshopDeviceDto>(device);
+        var heartbeat = await HeartbeatRepository.FindByDeviceCodeAsync(device.Code);
+        if (heartbeat != null)
+        {
+            dto.LastHeartbeatAt = heartbeat.LastHeartbeatAt;
+            dto.TotalRuntimeSeconds = heartbeat.TotalRuntimeSeconds;
+        }
+
+        return dto;
     }
 
     /// <summary>
@@ -248,5 +260,33 @@ public class WorkshopDeviceAppService : TestWorkshopAppService, IWorkshopDeviceA
 
         AddDescendants(organizationUnitId);
         return result.ToList();
+    }
+
+    private async Task FillHeartbeatInfoAsync(
+        List<WorkshopDevice> devices,
+        List<WorkshopDeviceDto> dtos)
+    {
+        if (devices.Count == 0)
+        {
+            return;
+        }
+
+        var deviceIds = devices.Select(x => x.Id).ToList();
+        var heartbeats = (await HeartbeatRepository.GetListAsync(
+                includeDetails: false))
+            .Where(x => deviceIds.Contains(x.DeviceId))
+            .ToList();
+        var heartbeatMap = heartbeats.ToDictionary(x => x.DeviceId);
+
+        foreach (var dto in dtos)
+        {
+            if (!heartbeatMap.TryGetValue(dto.Id, out var heartbeat))
+            {
+                continue;
+            }
+
+            dto.LastHeartbeatAt = heartbeat.LastHeartbeatAt;
+            dto.TotalRuntimeSeconds = heartbeat.TotalRuntimeSeconds;
+        }
     }
 }

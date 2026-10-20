@@ -23,7 +23,7 @@ public class WorkshopTelemetryTaskListInput : PagedAndSortedResultRequestDto, IE
     public string TestedDeviceCode { get; set; }
 
     /// <summary>
-    /// 是否关联订单过滤。true：只看已匹配订单；false：只看未匹配订单（非法数据）；null：全部
+    /// 是否关联订单过滤。true：只看已关联订单；false：只看未关联订单；null：全部
     /// </summary>
     public bool? HasOrder { get; set; }
 

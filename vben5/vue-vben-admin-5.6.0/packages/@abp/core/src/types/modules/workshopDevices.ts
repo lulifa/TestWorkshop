@@ -10,9 +10,11 @@ enum DeviceType {
 interface WorkshopDeviceDto extends EntityDto<string> {
   code: string;
   creationTime?: string;
+  lastHeartbeatAt?: string;
   lastModificationTime?: string;
   name: string;
   organizationUnitId: string;
+  totalRuntimeSeconds: number;
   type: DeviceType;
   typeName?: string;
 }

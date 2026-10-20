@@ -36,7 +36,7 @@ public class WorkshopTelemetryStatisticsDto
     public int FailedCount { get; set; }
 
     /// <summary>
-    /// 未匹配订单数（非法数据）
+    /// 未关联订单数
     /// </summary>
     public int UnmatchedOrderCount { get; set; }
 
