@@ -61,6 +61,32 @@ public class WorkshopOrderController : TestWorkshopController
         return await _service.CancelAsync(id);
     }
 
+    [HttpPost("{id}/audits")]
+    public virtual async Task<WorkshopOrderDto> AuditAsync(
+        Guid id,
+        WorkshopOrderAuditInput input)
+    {
+        return await _service.AuditAsync(id, input);
+    }
+
+    [HttpGet("{id}/audits")]
+    public virtual async Task<List<WorkshopOrderAuditRecordDto>> GetAuditRecordsAsync(Guid id)
+    {
+        return await _service.GetAuditRecordsAsync(id);
+    }
+
+    [HttpGet("{id}/test-report/download")]
+    public virtual async Task<IRemoteStreamContent> DownloadTestReportAsync(Guid id)
+    {
+        return await _service.DownloadTestReportAsync(id);
+    }
+
+    [HttpGet("{id}/test-report/preview")]
+    public virtual async Task<IRemoteStreamContent> PreviewTestReportAsync(Guid id)
+    {
+        return await _service.PreviewTestReportAsync(id);
+    }
+
     [HttpGet("project-supervisors")]
     public virtual async Task<List<WorkshopOrderProjectSupervisorDto>> GetProjectSupervisorOptionsAsync()
     {

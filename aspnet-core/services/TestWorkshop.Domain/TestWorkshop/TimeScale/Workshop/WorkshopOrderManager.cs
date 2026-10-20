@@ -5,6 +5,7 @@ namespace TestWorkshop.TimeScale;
 public class WorkshopOrderManager : DomainService, IWorkshopOrderManager
 {
     private readonly IWorkshopOrderRepository _orderRepository;
+    private readonly IRepository<WorkshopOrderAuditRecord, Guid> _auditRecordRepository;
     private readonly IWorkshopDeviceRepository _deviceRepository;
     private readonly IIdentityUserRepository _identityUserRepository;
     private readonly IdentityUserManager _identityUserManager;
@@ -15,6 +16,7 @@ public class WorkshopOrderManager : DomainService, IWorkshopOrderManager
 
     public WorkshopOrderManager(
         IWorkshopOrderRepository orderRepository,
+        IRepository<WorkshopOrderAuditRecord, Guid> auditRecordRepository,
         IWorkshopDeviceRepository deviceRepository,
         IIdentityUserRepository identityUserRepository,
         IdentityUserManager identityUserManager,
@@ -24,6 +26,7 @@ public class WorkshopOrderManager : DomainService, IWorkshopOrderManager
         IOptions<WorkshopTelemetryOptions> options)
     {
         _orderRepository = orderRepository;
+        _auditRecordRepository = auditRecordRepository;
         _deviceRepository = deviceRepository;
         _identityUserRepository = identityUserRepository;
         _identityUserManager = identityUserManager;
@@ -121,6 +124,68 @@ public class WorkshopOrderManager : DomainService, IWorkshopOrderManager
         return order;
     }
 
+    public virtual async Task<WorkshopOrder> AuditAsync(
+        Guid id,
+        WorkshopOrderAuditResult result,
+        string maintenanceSuggestion,
+        Guid auditorUserId,
+        string auditorName)
+    {
+        var order = await _orderRepository.GetAsync(id);
+        order.Audit(result);
+
+        var auditRecord = new WorkshopOrderAuditRecord(
+            _guidGenerator.Create(),
+            order.Id,
+            result,
+            maintenanceSuggestion,
+            auditorUserId,
+            auditorName,
+            GetLocalNow(),
+            order.TestReportFileId,
+            CurrentTenant.Id);
+
+        await _auditRecordRepository.InsertAsync(auditRecord, autoSave: true);
+        await _orderRepository.UpdateAsync(order, autoSave: true);
+
+        _logger.LogInformation(
+            "订单报告审核完成: OrderId={OrderId}, OrderNo={OrderNo}, Result={Result}",
+            order.Id,
+            order.OrderNo,
+            result);
+        return order;
+    }
+
+    public virtual async Task<WorkshopOrder> MarkTestReportFetchingAsync(Guid id)
+    {
+        var order = await _orderRepository.GetAsync(id);
+        order.MarkTestReportFetching();
+        await _orderRepository.UpdateAsync(order, autoSave: true);
+        return order;
+    }
+
+    public virtual async Task<WorkshopOrder> SetTestReportAsync(Guid id, Guid fileId, string fileName)
+    {
+        var order = await _orderRepository.GetAsync(id);
+        order.SetTestReport(fileId, fileName, GetLocalNow());
+        await _orderRepository.UpdateAsync(order, autoSave: true);
+
+        _logger.LogInformation(
+            "订单测试报告已就绪: OrderId={OrderId}, OrderNo={OrderNo}, FileId={FileId}",
+            order.Id,
+            order.OrderNo,
+            fileId);
+        return order;
+    }
+
+    public virtual async Task<WorkshopOrder> MarkTestReportFetchFailedAsync(Guid id, string error)
+    {
+        var order = await _orderRepository.GetAsync(id);
+        order.MarkTestReportFetchFailed(error);
+        await _orderRepository.UpdateAsync(order, autoSave: true);
+        return order;
+    }
+
     public virtual async Task DeleteAsync(Guid id)
     {
         var order = await _orderRepository.GetAsync(id);
@@ -129,9 +194,11 @@ public class WorkshopOrderManager : DomainService, IWorkshopOrderManager
             throw new UserFriendlyException("测试中的订单不能删除");
         }
 
-        if (order.Status == WorkshopOrderStatus.Completed)
+        if (order.Status == WorkshopOrderStatus.PendingReview
+            || order.Status == WorkshopOrderStatus.ReviewApproved
+            || order.Status == WorkshopOrderStatus.ReviewRejected)
         {
-            throw new UserFriendlyException("已完成的订单不能删除");
+            throw new UserFriendlyException("测试已完成或已进入审核流程的订单不能删除");
         }
 
         await _orderRepository.DeleteAsync(order, autoSave: true);

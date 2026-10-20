@@ -10,6 +10,7 @@ import { computed, defineAsyncComponent, h, onMounted } from 'vue';
 
 import { Page, useVbenDrawer, useVbenModal } from '@vben/common-ui';
 import { $t } from '@vben/locales';
+import { downloadFileFromBlob } from '@vben/utils';
 
 import {
   formatToDateTime,
@@ -19,8 +20,10 @@ import {
   WorkshopOrderStatus,
 } from '@abp/core';
 import {
+  AuditOutlined,
   CloseCircleOutlined,
   DeleteOutlined,
+  DownloadOutlined,
   EditOutlined,
   EllipsisOutlined,
   EyeOutlined,
@@ -45,26 +48,50 @@ defineOptions({
   name: 'WorkshopOrderManagement',
 });
 
-const { cancelApi, deleteApi, endTestApi, getListApi, startTestApi } =
-  useWorkshopOrderApi();
+const {
+  cancelApi,
+  deleteApi,
+  downloadTestReportApi,
+  endTestApi,
+  getListApi,
+  startTestApi,
+} = useWorkshopOrderApi();
 const { getListApi: getDeviceListApi } = useWorkshopDeviceApi();
 const MenuItem = Menu.Item;
 const abpStore = useAbpStore();
 
+const currentRoles = computed(() => {
+  return abpStore.application?.currentUser.roles ?? [];
+});
+
 // 订单只能由调度或管理员新建/编辑
 const canManageOrder = computed(() => {
-  const roles = abpStore.application?.currentUser.roles ?? [];
-  return roles.some((role) => ['admin', 'dispatcher'].includes(role));
+  return currentRoles.value.some((role) =>
+    ['admin', 'dispatcher'].includes(role),
+  );
 });
 const canOperate = computed(() => {
-  const roles = abpStore.application?.currentUser.roles ?? [];
   // 开始/结束测试：管理员、车间主管、测试工程师
-  return roles.some((role) => ['admin', 'supervisor', 'tester'].includes(role));
+  return currentRoles.value.some((role) =>
+    ['admin', 'supervisor', 'tester'].includes(role),
+  );
 });
 const canCancel = computed(() => {
-  const roles = abpStore.application?.currentUser.roles ?? [];
   // 取消订单与开始/结束测试同一套角色：管理员、车间主管、测试工程师
-  return roles.some((role) => ['admin', 'supervisor', 'tester'].includes(role));
+  return currentRoles.value.some((role) =>
+    ['admin', 'supervisor', 'tester'].includes(role),
+  );
+});
+const canAudit = computed(() => {
+  return currentRoles.value.some((role) => ['admin', 'auditor'].includes(role));
+});
+const canDownloadAllReports = computed(() => {
+  return currentRoles.value.some((role) =>
+    ['admin', 'auditor', 'dispatcher'].includes(role),
+  );
+});
+const isProjectSupervisor = computed(() => {
+  return currentRoles.value.includes('projectSupervisor');
 });
 
 const statusOptions = [
@@ -77,8 +104,16 @@ const statusOptions = [
     value: WorkshopOrderStatus.Testing,
   },
   {
-    label: $t('TestWorkshop.WorkshopOrder:Completed'),
-    value: WorkshopOrderStatus.Completed,
+    label: $t('TestWorkshop.WorkshopOrder:PendingReview'),
+    value: WorkshopOrderStatus.PendingReview,
+  },
+  {
+    label: $t('TestWorkshop.WorkshopOrder:ReviewApproved'),
+    value: WorkshopOrderStatus.ReviewApproved,
+  },
+  {
+    label: $t('TestWorkshop.WorkshopOrder:ReviewRejected'),
+    value: WorkshopOrderStatus.ReviewRejected,
   },
   {
     label: $t('TestWorkshop.WorkshopOrder:Cancelled'),
@@ -89,14 +124,24 @@ const statusOptions = [
 const statusColorMap: Record<WorkshopOrderStatus, string> = {
   [WorkshopOrderStatus.Draft]: 'default',
   [WorkshopOrderStatus.Testing]: 'processing',
-  [WorkshopOrderStatus.Completed]: 'success',
+  [WorkshopOrderStatus.PendingReview]: 'warning',
+  [WorkshopOrderStatus.ReviewApproved]: 'success',
+  [WorkshopOrderStatus.ReviewRejected]: 'error',
   [WorkshopOrderStatus.Cancelled]: 'error',
 };
 
 const statusLabelMap: Record<WorkshopOrderStatus, string> = {
   [WorkshopOrderStatus.Draft]: $t('TestWorkshop.WorkshopOrder:Draft'),
   [WorkshopOrderStatus.Testing]: $t('TestWorkshop.WorkshopOrder:Testing'),
-  [WorkshopOrderStatus.Completed]: $t('TestWorkshop.WorkshopOrder:Completed'),
+  [WorkshopOrderStatus.PendingReview]: $t(
+    'TestWorkshop.WorkshopOrder:PendingReview',
+  ),
+  [WorkshopOrderStatus.ReviewApproved]: $t(
+    'TestWorkshop.WorkshopOrder:ReviewApproved',
+  ),
+  [WorkshopOrderStatus.ReviewRejected]: $t(
+    'TestWorkshop.WorkshopOrder:ReviewRejected',
+  ),
   [WorkshopOrderStatus.Cancelled]: $t('TestWorkshop.WorkshopOrder:Cancelled'),
 };
 
@@ -189,7 +234,7 @@ const gridOptions: VxeGridProps<WorkshopOrderDto> = {
     {
       align: 'center',
       field: 'status',
-      minWidth: 100,
+      minWidth: 150,
       slots: { default: 'status' },
       title: $t('TestWorkshop.WorkshopOrder:Status'),
     },
@@ -222,7 +267,7 @@ const gridOptions: VxeGridProps<WorkshopOrderDto> = {
       fixed: 'right',
       slots: { default: 'action' },
       title: $t('TestWorkshop.WorkshopOrder:TestingActions'),
-      width: 320,
+      width: 480,
     },
   ],
   exportConfig: {},
@@ -300,6 +345,12 @@ const [WorkshopOrderGraphDrawer, workshopOrderGraphDrawerApi] = useVbenDrawer({
   ),
 });
 
+const [WorkshopOrderAuditDrawer, workshopOrderAuditDrawerApi] = useVbenDrawer({
+  connectedComponent: defineAsyncComponent(
+    () => import('./WorkshopOrderAuditDrawer.vue'),
+  ),
+});
+
 function onCreate() {
   workshopOrderModalApi.setData({});
   workshopOrderModalApi.open();
@@ -318,6 +369,11 @@ function onViewTasks(row: WorkshopOrderDto) {
 function onViewGraph(row: WorkshopOrderDto) {
   workshopOrderGraphDrawerApi.setData(row);
   workshopOrderGraphDrawerApi.open();
+}
+
+function onAudit(row: WorkshopOrderDto) {
+  workshopOrderAuditDrawerApi.setData(row);
+  workshopOrderAuditDrawerApi.open();
 }
 
 function getDeviceLabel(row: WorkshopOrderDto) {
@@ -382,6 +438,19 @@ function onDelete(row: WorkshopOrderDto) {
   );
 }
 
+async function onDownloadReport(row: WorkshopOrderDto) {
+  gridApi.setLoading(true);
+  try {
+    const blob = await downloadTestReportApi(row.id);
+    downloadFileFromBlob({
+      fileName: row.testReportFileName ?? `${row.orderNo}-测试报告.pdf`,
+      source: blob,
+    });
+  } finally {
+    gridApi.setLoading(false);
+  }
+}
+
 function canEdit(row: WorkshopOrderDto) {
   return canManageOrder.value && row.status === WorkshopOrderStatus.Draft;
 }
@@ -392,6 +461,40 @@ function canStart(row: WorkshopOrderDto) {
 
 function canEnd(row: WorkshopOrderDto) {
   return canOperate.value && row.status === WorkshopOrderStatus.Testing;
+}
+
+function canAuditOrder(row: WorkshopOrderDto) {
+  return (
+    canAudit.value &&
+    [
+      WorkshopOrderStatus.PendingReview,
+      WorkshopOrderStatus.ReviewRejected,
+    ].includes(row.status)
+  );
+}
+
+function canViewAuditRecords(row: WorkshopOrderDto) {
+  return [
+    WorkshopOrderStatus.PendingReview,
+    WorkshopOrderStatus.ReviewApproved,
+    WorkshopOrderStatus.ReviewRejected,
+  ].includes(row.status);
+}
+
+function canDownloadReport(row: WorkshopOrderDto) {
+  if (row.status !== WorkshopOrderStatus.ReviewApproved || !row.hasTestReport) {
+    return false;
+  }
+
+  if (canDownloadAllReports.value) {
+    return true;
+  }
+
+  return (
+    isProjectSupervisor.value &&
+    row.projectSupervisorUserId?.toLowerCase() ===
+      abpStore.application?.currentUser.id?.toLowerCase()
+  );
 }
 
 function canCancelOrder(row: WorkshopOrderDto) {
@@ -413,11 +516,20 @@ function canDelete(row: WorkshopOrderDto) {
 }
 
 function hasMoreActions(row: WorkshopOrderDto) {
-  return canEdit(row) || canCancelOrder(row) || canDelete(row);
+  return (
+    canEdit(row) ||
+    canCancelOrder(row) ||
+    canDelete(row) ||
+    canViewAuditRecords(row)
+  );
 }
 
 function handleMoreMenuClick(row: WorkshopOrderDto, info: MenuInfo) {
   switch (info.key) {
+    case 'auditRecords': {
+      onAudit(row);
+      break;
+    }
     case 'cancel': {
       onCancel(row);
       break;
@@ -473,7 +585,16 @@ onMounted(() => {
         <div class="flex flex-row items-center justify-center">
           <Space :size="4">
             <Button
-              v-if="canStart(row)"
+              v-if="canAuditOrder(row)"
+              :icon="h(AuditOutlined)"
+              size="small"
+              type="primary"
+              @click="onAudit(row)"
+            >
+              {{ $t('TestWorkshop.WorkshopOrder:Audit') }}
+            </Button>
+            <Button
+              v-else-if="canStart(row)"
               :icon="h(PlayCircleOutlined)"
               size="small"
               type="primary"
@@ -498,6 +619,15 @@ onMounted(() => {
               @click="onViewTasks(row)"
             >
               {{ $t('TestWorkshop.WorkshopOrder:TelemetryTasks') }}
+            </Button>
+            <Button
+              v-if="canDownloadReport(row)"
+              :icon="h(DownloadOutlined)"
+              size="small"
+              type="text"
+              @click="onDownloadReport(row)"
+            >
+              {{ $t('TestWorkshop.WorkshopOrder:DownloadReport') }}
             </Button>
             <Button
               :icon="h(LineChartOutlined)"
@@ -532,6 +662,13 @@ onMounted(() => {
                   >
                     {{ $t('AbpUi.Delete') }}
                   </MenuItem>
+                  <MenuItem
+                    v-if="canViewAuditRecords(row)"
+                    key="auditRecords"
+                    :icon="h(AuditOutlined)"
+                  >
+                    {{ $t('TestWorkshop.WorkshopOrder:AuditRecords') }}
+                  </MenuItem>
                 </Menu>
               </template>
               <Button :icon="h(EllipsisOutlined)" size="small" type="text" />
@@ -544,6 +681,7 @@ onMounted(() => {
     <WorkshopOrderModal @change="() => gridApi.query()" />
     <WorkshopOrderTasksDrawer />
     <WorkshopOrderGraphDrawer />
+    <WorkshopOrderAuditDrawer @change="() => gridApi.query()" />
   </Page>
 </template>
 

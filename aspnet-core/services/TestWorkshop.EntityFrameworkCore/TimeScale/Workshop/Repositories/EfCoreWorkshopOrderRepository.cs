@@ -41,7 +41,9 @@ public class EfCoreWorkshopOrderRepository :
             .AsNoTracking()
             .Where(x => x.DeviceId == deviceId
                         && (x.Status == WorkshopOrderStatus.Testing
-                            || x.Status == WorkshopOrderStatus.Completed)
+                            || x.Status == WorkshopOrderStatus.PendingReview
+                            || x.Status == WorkshopOrderStatus.ReviewApproved
+                            || x.Status == WorkshopOrderStatus.ReviewRejected)
                         && x.TestStartedAt.HasValue
                         && x.TestStartedAt.Value <= latestStartTime
                         && (!x.TestEndedAt.HasValue || x.TestEndedAt.Value >= earliestEndTime))

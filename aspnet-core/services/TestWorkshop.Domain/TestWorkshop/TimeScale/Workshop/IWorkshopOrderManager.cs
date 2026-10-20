@@ -24,6 +24,19 @@ public interface IWorkshopOrderManager
 
     Task<WorkshopOrder> CancelAsync(Guid id);
 
+    Task<WorkshopOrder> AuditAsync(
+        Guid id,
+        WorkshopOrderAuditResult result,
+        string maintenanceSuggestion,
+        Guid auditorUserId,
+        string auditorName);
+
+    Task<WorkshopOrder> MarkTestReportFetchingAsync(Guid id);
+
+    Task<WorkshopOrder> SetTestReportAsync(Guid id, Guid fileId, string fileName);
+
+    Task<WorkshopOrder> MarkTestReportFetchFailedAsync(Guid id, string error);
+
     Task DeleteAsync(Guid id);
 
     /// <summary>

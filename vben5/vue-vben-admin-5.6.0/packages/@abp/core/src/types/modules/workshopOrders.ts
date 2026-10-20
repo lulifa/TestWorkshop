@@ -2,9 +2,23 @@ import type { EntityDto, PagedAndSortedResultRequestDto } from '../..';
 
 enum WorkshopOrderStatus {
   Cancelled = 3,
-  Completed = 2,
   Draft = 0,
+  PendingReview = 2,
+  ReviewApproved = 4,
+  ReviewRejected = 5,
   Testing = 1,
+}
+
+enum WorkshopTestReportStatus {
+  Failed = 3,
+  Fetching = 1,
+  NotReady = 0,
+  Ready = 2,
+}
+
+enum WorkshopOrderAuditResult {
+  Approved = 1,
+  Rejected = 0,
 }
 
 interface WorkshopOrderDto extends EntityDto<string> {
@@ -12,6 +26,7 @@ interface WorkshopOrderDto extends EntityDto<string> {
   deviceCode?: string;
   deviceId: string;
   deviceName?: string;
+  hasTestReport: boolean;
   lastModificationTime?: string;
   orderNo: string;
   projectSupervisorName?: string;
@@ -20,6 +35,9 @@ interface WorkshopOrderDto extends EntityDto<string> {
   status: WorkshopOrderStatus;
   statusName?: string;
   testEndedAt?: string;
+  testReportFetchedAt?: string;
+  testReportFileName?: string;
+  testReportStatus: WorkshopTestReportStatus;
   testStartedAt?: string;
 }
 
@@ -70,10 +88,31 @@ interface WorkshopOrderTelemetryGraphDto {
   testedDeviceName?: string;
 }
 
-export { WorkshopOrderStatus };
+interface WorkshopOrderAuditInput {
+  maintenanceSuggestion?: string;
+  result: WorkshopOrderAuditResult;
+}
+
+interface WorkshopOrderAuditRecordDto extends EntityDto<string> {
+  auditedAt: string;
+  auditorName?: string;
+  auditorUserId: string;
+  maintenanceSuggestion?: string;
+  orderId: string;
+  result: WorkshopOrderAuditResult;
+  resultName?: string;
+}
+
+export {
+  WorkshopOrderAuditResult,
+  WorkshopOrderStatus,
+  WorkshopTestReportStatus,
+};
 
 export type {
   GetWorkshopOrderListInput,
+  WorkshopOrderAuditInput,
+  WorkshopOrderAuditRecordDto,
   WorkshopOrderCreateDto,
   WorkshopOrderDto,
   WorkshopOrderProjectSupervisorDto,

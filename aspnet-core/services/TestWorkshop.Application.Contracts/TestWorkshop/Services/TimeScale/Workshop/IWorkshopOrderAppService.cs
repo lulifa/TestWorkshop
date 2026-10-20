@@ -21,6 +21,14 @@ public interface IWorkshopOrderAppService : IApplicationService
 
     Task<WorkshopOrderDto> CancelAsync(Guid id);
 
+    Task<WorkshopOrderDto> AuditAsync(Guid id, WorkshopOrderAuditInput input);
+
+    Task<List<WorkshopOrderAuditRecordDto>> GetAuditRecordsAsync(Guid id);
+
+    Task<IRemoteStreamContent> PreviewTestReportAsync(Guid id);
+
+    Task<IRemoteStreamContent> DownloadTestReportAsync(Guid id);
+
     /// <summary>
     /// 可选的单船项目主管（拥有“单船项目主管”角色的用户）
     /// </summary>

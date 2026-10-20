@@ -16,12 +16,22 @@ public enum WorkshopOrderStatus
     Testing = 1,
 
     /// <summary>
-    /// 已完成，释放设备
+    /// 测试完成，等待报告审核
     /// </summary>
-    Completed = 2,
+    PendingReview = 2,
 
     /// <summary>
     /// 已取消，释放设备
     /// </summary>
-    Cancelled = 3
+    Cancelled = 3,
+
+    /// <summary>
+    /// 审核通过，可下载最终报告
+    /// </summary>
+    ReviewApproved = 4,
+
+    /// <summary>
+    /// 审核不通过，可重新审核
+    /// </summary>
+    ReviewRejected = 5
 }

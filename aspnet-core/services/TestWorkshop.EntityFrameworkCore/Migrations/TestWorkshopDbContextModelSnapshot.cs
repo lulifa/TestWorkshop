@@ -1071,7 +1071,7 @@ namespace TestWorkshop.Migrations
 
                     b.Property<int>("Status")
                         .HasColumnType("integer")
-                        .HasComment("测试状态 (0=Draft 1=Testing 2=Completed 3=Cancelled)");
+                        .HasComment("测试状态 (0=已录入未测试 1=测试中 2=测试完成未审核 3=已取消 4=审核通过 5=审核不通过)");
 
                     b.Property<Guid?>("TenantId")
                         .HasColumnType("uuid")
@@ -1081,6 +1081,30 @@ namespace TestWorkshop.Migrations
                     b.Property<DateTime?>("TestEndedAt")
                         .HasColumnType("timestamp without time zone")
                         .HasComment("实际测试结束时间（本地时间）");
+
+                    b.Property<string>("TestReportError")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasComment("测试报告获取失败原因");
+
+                    b.Property<DateTime?>("TestReportFetchedAt")
+                        .HasColumnType("timestamp without time zone")
+                        .HasComment("测试报告获取完成时间");
+
+                    b.Property<Guid?>("TestReportFileId")
+                        .HasColumnType("uuid")
+                        .HasComment("测试报告文件ID");
+
+                    b.Property<string>("TestReportFileName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasComment("测试报告文件名");
+
+                    b.Property<int>("TestReportStatus")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("测试报告获取状态 (0=未获取 1=获取中 2=已就绪 3=获取失败)");
 
                     b.Property<DateTime?>("TestStartedAt")
                         .HasColumnType("timestamp without time zone")
@@ -1107,6 +1131,74 @@ namespace TestWorkshop.Migrations
                         .HasFilter("\"TenantId\" IS NOT NULL");
 
                     b.ToTable("AppWorkshopOrders", (string)null);
+                });
+
+            modelBuilder.Entity("TestWorkshop.TimeScale.WorkshopOrderAuditRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("AuditedAt")
+                        .HasColumnType("timestamp without time zone")
+                        .HasComment("审核时间");
+
+                    b.Property<string>("AuditorName")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasComment("审核人姓名");
+
+                    b.Property<Guid>("AuditorUserId")
+                        .HasColumnType("uuid")
+                        .HasComment("审核人用户ID");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("ConcurrencyStamp");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<string>("ExtraProperties")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("ExtraProperties");
+
+                    b.Property<string>("MaintenanceSuggestion")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasComment("维保建议");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid")
+                        .HasComment("订单ID");
+
+                    b.Property<Guid?>("ReportFileId")
+                        .HasColumnType("uuid")
+                        .HasComment("审核时对应的报告文件ID");
+
+                    b.Property<int>("Result")
+                        .HasColumnType("integer")
+                        .HasComment("审核结果 (0=不通过 1=通过)");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("TenantId")
+                        .HasComment("租户ID");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId", "AuditedAt");
+
+                    b.ToTable("AppWorkshopOrderAuditRecords", (string)null);
                 });
 
             modelBuilder.Entity("TestWorkshop.TimeScale.WorkshopRealtimeData", b =>
@@ -3231,6 +3323,15 @@ namespace TestWorkshop.Migrations
                     b.HasOne("TestWorkshop.TimeScale.WorkshopDevice", null)
                         .WithMany()
                         .HasForeignKey("DeviceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("TestWorkshop.TimeScale.WorkshopOrderAuditRecord", b =>
+                {
+                    b.HasOne("TestWorkshop.TimeScale.WorkshopOrder", null)
+                        .WithMany()
+                        .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

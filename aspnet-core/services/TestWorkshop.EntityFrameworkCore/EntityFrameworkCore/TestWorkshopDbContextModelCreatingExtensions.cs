@@ -55,7 +55,7 @@ public static class TestWorkshopDbContextModelCreatingExtensions
 
             b.Property(p => p.Status)
                 .IsRequired()
-                .HasComment("测试状态 (0=Draft 1=Testing 2=Completed 3=Cancelled)");
+                .HasComment("测试状态 (0=已录入未测试 1=测试中 2=测试完成未审核 3=已取消 4=审核通过 5=审核不通过)");
 
             b.Property(p => p.TestStartedAt)
                 .HasColumnType("timestamp without time zone")
@@ -73,6 +73,26 @@ public static class TestWorkshopDbContextModelCreatingExtensions
                 .HasColumnType("timestamp without time zone")
                 .IsRequired()
                 .HasComment("要求车间完成测试时间");
+
+            b.Property(p => p.TestReportStatus)
+                .IsRequired()
+                .HasDefaultValue(WorkshopTestReportStatus.NotReady)
+                .HasComment("测试报告获取状态 (0=未获取 1=获取中 2=已就绪 3=获取失败)");
+
+            b.Property(p => p.TestReportFileId)
+                .HasComment("测试报告文件ID");
+
+            b.Property(p => p.TestReportFileName)
+                .HasMaxLength(TestWorkshopConsts.MaxLength256)
+                .HasComment("测试报告文件名");
+
+            b.Property(p => p.TestReportFetchedAt)
+                .HasColumnType("timestamp without time zone")
+                .HasComment("测试报告获取完成时间");
+
+            b.Property(p => p.TestReportError)
+                .HasMaxLength(TestWorkshopConsts.MaxLength2000)
+                .HasComment("测试报告获取失败原因");
 
             b.Property(p => p.TenantId)
                 .HasComment("租户ID");
@@ -99,6 +119,56 @@ public static class TestWorkshopDbContextModelCreatingExtensions
                 .IsUnique()
                 .HasFilter("\"Status\" = 1")
                 .HasDatabaseName("UX_AppWorkshopOrders_DeviceId_Testing");
+        });
+
+        builder.Entity<WorkshopOrderAuditRecord>(b =>
+        {
+            b.ToTable(
+                TestWorkshopDbProperties.DbTablePrefix + "WorkshopOrderAuditRecords",
+                TestWorkshopDbProperties.DbSchema);
+
+            b.HasKey(x => x.Id);
+
+            b.Property(p => p.OrderId)
+                .IsRequired()
+                .HasComment("订单ID");
+
+            b.Property(p => p.Result)
+                .IsRequired()
+                .HasComment("审核结果 (0=不通过 1=通过)");
+
+            b.Property(p => p.MaintenanceSuggestion)
+                .HasMaxLength(TestWorkshopConsts.MaxLength2000)
+                .HasComment("维保建议");
+
+            b.Property(p => p.AuditorUserId)
+                .IsRequired()
+                .HasComment("审核人用户ID");
+
+            b.Property(p => p.AuditorName)
+                .HasMaxLength(TestWorkshopConsts.MaxLength128)
+                .IsRequired()
+                .HasComment("审核人姓名");
+
+            b.Property(p => p.AuditedAt)
+                .HasColumnType("timestamp without time zone")
+                .IsRequired()
+                .HasComment("审核时间");
+
+            b.Property(p => p.ReportFileId)
+                .HasComment("审核时对应的报告文件ID");
+
+            b.Property(p => p.TenantId)
+                .HasComment("租户ID");
+
+            b.ConfigureByConvention();
+
+            b.HasOne<WorkshopOrder>()
+                .WithMany()
+                .HasForeignKey(x => x.OrderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            b.HasIndex(x => new { x.OrderId, x.AuditedAt });
         });
 
         // ✅ WorkshopTelemetryTask 配置（清爽版）

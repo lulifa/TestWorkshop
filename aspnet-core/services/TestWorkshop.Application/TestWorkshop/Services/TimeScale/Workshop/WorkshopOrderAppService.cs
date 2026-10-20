@@ -1,3 +1,5 @@
+using Volo.Abp.Domain.Repositories;
+
 namespace TestWorkshop;
 
 /// <summary>
@@ -10,21 +12,24 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
     private const int TelemetryTaskStatusSuccess = 2;
 
     /// <summary>
-    /// 不按车间限制、可查看全部订单的岗位：管理员 + 调度。
+    /// 不按车间限制、可查看全部订单的岗位：管理员 + 调度 + 质量审核员。
     /// 其他角色（车间主管 / 测试工程师 / 大区负责人等）只看自己所属车间的订单。
     /// </summary>
     private static readonly string[] OrganizationUnitUnrestrictedRoles =
     {
         RoleConstants.admin,
-        RoleConstants.dispatcher
+        RoleConstants.dispatcher,
+        RoleConstants.auditor
     };
 
     private readonly IWorkshopOrderManager _orderManager;
     private readonly IWorkshopOrderRepository _orderRepository;
+    private readonly IRepository<WorkshopOrderAuditRecord, Guid> _auditRecordRepository;
     private readonly IWorkshopDeviceRepository _deviceRepository;
     private readonly IWorkshopTelemetryTaskRepository _taskRepository;
     private readonly IWorkshopDeviceTelemetryRepository _telemetryRepository;
     private readonly IFileObjectRepository _fileObjectRepository;
+    private readonly IFileObjectManager _fileObjectManager;
     private readonly IAsyncQueryableExecuter _asyncQueryableExecuter;
     private readonly IIdentityUserRepository _identityUserRepository;
     private readonly IdentityUserManager _identityUserManager;
@@ -34,10 +39,12 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
     public WorkshopOrderAppService(
         IWorkshopOrderManager orderManager,
         IWorkshopOrderRepository orderRepository,
+        IRepository<WorkshopOrderAuditRecord, Guid> auditRecordRepository,
         IWorkshopDeviceRepository deviceRepository,
         IWorkshopTelemetryTaskRepository taskRepository,
         IWorkshopDeviceTelemetryRepository telemetryRepository,
         IFileObjectRepository fileObjectRepository,
+        IFileObjectManager fileObjectManager,
         IAsyncQueryableExecuter asyncQueryableExecuter,
         IIdentityUserRepository identityUserRepository,
         IdentityUserManager identityUserManager,
@@ -46,10 +53,12 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
     {
         _orderManager = orderManager;
         _orderRepository = orderRepository;
+        _auditRecordRepository = auditRecordRepository;
         _deviceRepository = deviceRepository;
         _taskRepository = taskRepository;
         _telemetryRepository = telemetryRepository;
         _fileObjectRepository = fileObjectRepository;
+        _fileObjectManager = fileObjectManager;
         _asyncQueryableExecuter = asyncQueryableExecuter;
         _identityUserRepository = identityUserRepository;
         _identityUserManager = identityUserManager;
@@ -65,7 +74,7 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
             input.MaxResultCount = int.MaxValue;
         }
 
-        // 可见性：管理员/调度不限；其他角色看"自己所属车间的订单" + "自己作为单船项目主管的订单"
+        // 可见性：管理员/调度/质量审核员不限；其他角色看"自己所属车间的订单" + "自己作为单船项目主管的订单"
         var (organizationUnitIds, projectSupervisorUserId) = await GetOrderVisibilityAsync();
 
         var result = await _orderRepository.GetPagedListAsync(
@@ -115,7 +124,7 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
 
     /// <summary>
     /// 当前用户的订单可见范围：
-    /// 管理员 / 调度 → 不限（两个都返回 null）；
+    /// 管理员 / 调度 / 质量审核员 → 不限（都返回 null）；
     /// 其他角色 → 自己所属车间的订单，外加"自己作为单船项目主管"的订单。
     /// </summary>
     private async Task<(ICollection<Guid> OrganizationUnitIds, Guid? ProjectSupervisorUserId)> GetOrderVisibilityAsync()
@@ -239,6 +248,83 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
         var order = await _orderManager.CancelAsync(id);
         var device = await _deviceRepository.FindAsync(order.DeviceId);
         return ToDto(order, device, await GetProjectSupervisorNameAsync(order.ProjectSupervisorUserId));
+    }
+
+    [Authorize(Roles = RoleConstants.admin + "," + RoleConstants.auditor)]
+    public virtual async Task<WorkshopOrderDto> AuditAsync(Guid id, WorkshopOrderAuditInput input)
+    {
+        if (!input.Result.HasValue
+            || !Enum.IsDefined(typeof(WorkshopOrderAuditResult), input.Result.Value))
+        {
+            throw new UserFriendlyException("审核结果无效");
+        }
+
+        await EnsureOrderAccessibleAsync(await _orderRepository.GetAsync(id));
+        var auditor = await _identityUserRepository.FindAsync(CurrentUser.GetId());
+        var auditorName = GetUserName(auditor) ?? CurrentUser.UserName;
+        var order = await _orderManager.AuditAsync(
+            id,
+            input.Result.Value,
+            input.MaintenanceSuggestion,
+            CurrentUser.GetId(),
+            auditorName);
+        var device = await _deviceRepository.FindAsync(order.DeviceId);
+        return ToDto(order, device, await GetProjectSupervisorNameAsync(order.ProjectSupervisorUserId));
+    }
+
+    public virtual async Task<List<WorkshopOrderAuditRecordDto>> GetAuditRecordsAsync(Guid id)
+    {
+        var order = await _orderRepository.GetAsync(id);
+        await EnsureOrderAccessibleAsync(order);
+
+        var auditQuery = await _auditRecordRepository.GetQueryableAsync();
+        var records = await _asyncQueryableExecuter.ToListAsync(
+            auditQuery
+                .Where(x => x.OrderId == id)
+                .OrderByDescending(x => x.AuditedAt));
+
+        return records
+            .Select(x => new WorkshopOrderAuditRecordDto
+            {
+                Id = x.Id,
+                OrderId = x.OrderId,
+                Result = x.Result,
+                MaintenanceSuggestion = x.MaintenanceSuggestion,
+                AuditorUserId = x.AuditorUserId,
+                AuditorName = x.AuditorName,
+                AuditedAt = x.AuditedAt
+            })
+            .ToList();
+    }
+
+    [Authorize(
+        Roles = RoleConstants.admin
+                + ","
+                + RoleConstants.auditor
+                + ","
+                + RoleConstants.dispatcher
+                + ","
+                + RoleConstants.projectSupervisor)]
+    public virtual async Task<IRemoteStreamContent> DownloadTestReportAsync(Guid id)
+    {
+        var order = await _orderRepository.GetAsync(id);
+        EnsureTestReportDownloadable(order);
+
+        return await ReadTestReportAsync(order);
+    }
+
+    [Authorize(Roles = RoleConstants.admin + "," + RoleConstants.auditor)]
+    public virtual async Task<IRemoteStreamContent> PreviewTestReportAsync(Guid id)
+    {
+        var order = await _orderRepository.GetAsync(id);
+        if (order.Status != WorkshopOrderStatus.PendingReview
+            && order.Status != WorkshopOrderStatus.ReviewRejected)
+        {
+            throw new UserFriendlyException("当前订单状态不需要预览测试报告");
+        }
+
+        EnsureTestReportReady(order);
+        return await ReadTestReportAsync(order);
     }
 
     public virtual async Task<PagedResultDto<WorkshopTelemetryTaskDto>> GetTelemetryTasksAsync(
@@ -368,9 +454,53 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
             Status = order.Status,
             TestStartedAt = order.TestStartedAt,
             TestEndedAt = order.TestEndedAt,
+            TestReportStatus = order.TestReportStatus,
+            TestReportFileName = order.TestReportFileName,
+            TestReportFetchedAt = order.TestReportFetchedAt,
             CreationTime = order.CreationTime,
             LastModificationTime = order.LastModificationTime
         };
+    }
+
+    private void EnsureTestReportDownloadable(WorkshopOrder order)
+    {
+        if (order.Status != WorkshopOrderStatus.ReviewApproved)
+        {
+            throw new UserFriendlyException("只有审核通过的订单才能下载最终报告");
+        }
+
+        EnsureTestReportReady(order);
+
+        if (CurrentUser.IsInRole(RoleConstants.admin)
+            || CurrentUser.IsInRole(RoleConstants.dispatcher)
+            || CurrentUser.IsInRole(RoleConstants.auditor))
+        {
+            return;
+        }
+
+        if (CurrentUser.IsInRole(RoleConstants.projectSupervisor)
+            && order.ProjectSupervisorUserId == CurrentUser.GetId())
+        {
+            return;
+        }
+
+        throw new UserFriendlyException("无权下载该订单的测试报告");
+    }
+
+    private static void EnsureTestReportReady(WorkshopOrder order)
+    {
+        if (order.TestReportStatus != WorkshopTestReportStatus.Ready
+            || !order.TestReportFileId.HasValue)
+        {
+            throw new UserFriendlyException("测试报告尚未获取");
+        }
+    }
+
+    private async Task<IRemoteStreamContent> ReadTestReportAsync(WorkshopOrder order)
+    {
+        var (stream, contentType, fileName) =
+            await _fileObjectManager.GetFileAsync(order.TestReportFileId.Value);
+        return new RemoteStreamContent(stream, fileName, contentType);
     }
 
     private static string GetUserName(IdentityUser user)

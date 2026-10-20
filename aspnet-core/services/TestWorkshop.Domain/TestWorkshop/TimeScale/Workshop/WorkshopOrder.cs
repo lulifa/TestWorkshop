@@ -42,6 +42,31 @@ public class WorkshopOrder : FullAuditedAggregateRoot<Guid>, IMultiTenant
     public DateTime RequiredCompletionTime { get; private set; }
 
     /// <summary>
+    /// 外部测试报告获取状态
+    /// </summary>
+    public WorkshopTestReportStatus TestReportStatus { get; private set; }
+
+    /// <summary>
+    /// 外部测试报告文件
+    /// </summary>
+    public Guid? TestReportFileId { get; private set; }
+
+    /// <summary>
+    /// 外部测试报告文件名
+    /// </summary>
+    public string TestReportFileName { get; private set; }
+
+    /// <summary>
+    /// 测试报告获取完成时间
+    /// </summary>
+    public DateTime? TestReportFetchedAt { get; private set; }
+
+    /// <summary>
+    /// 测试报告获取失败原因
+    /// </summary>
+    public string TestReportError { get; private set; }
+
+    /// <summary>
     /// 租户ID
     /// </summary>
     public Guid? TenantId { get; protected set; }
@@ -64,6 +89,7 @@ public class WorkshopOrder : FullAuditedAggregateRoot<Guid>, IMultiTenant
         SetProjectSupervisor(projectSupervisorUserId);
         SetRequiredCompletionTime(requiredCompletionTime);
         Status = WorkshopOrderStatus.Draft;
+        TestReportStatus = WorkshopTestReportStatus.NotReady;
         TenantId = tenantId;
     }
 
@@ -120,8 +146,13 @@ public class WorkshopOrder : FullAuditedAggregateRoot<Guid>, IMultiTenant
             throw new UserFriendlyException("测试结束时间不能早于测试开始时间");
         }
 
-        Status = WorkshopOrderStatus.Completed;
+        Status = WorkshopOrderStatus.PendingReview;
         TestEndedAt = endedAt;
+        TestReportStatus = WorkshopTestReportStatus.NotReady;
+        TestReportFileId = null;
+        TestReportFileName = null;
+        TestReportFetchedAt = null;
+        TestReportError = null;
     }
 
     /// <summary>
@@ -129,14 +160,15 @@ public class WorkshopOrder : FullAuditedAggregateRoot<Guid>, IMultiTenant
     /// </summary>
     public void Cancel(DateTime cancelledAt)
     {
-        if (Status == WorkshopOrderStatus.Completed)
-        {
-            throw new UserFriendlyException("已完成的订单不能取消");
-        }
-
         if (Status == WorkshopOrderStatus.Cancelled)
         {
             return;
+        }
+
+        if (Status != WorkshopOrderStatus.Draft
+            && Status != WorkshopOrderStatus.Testing)
+        {
+            throw new UserFriendlyException("只有未开始或测试中的订单才能取消");
         }
 
         if (Status == WorkshopOrderStatus.Testing && TestStartedAt.HasValue)
@@ -153,11 +185,86 @@ public class WorkshopOrder : FullAuditedAggregateRoot<Guid>, IMultiTenant
         Status = WorkshopOrderStatus.Cancelled;
     }
 
+    /// <summary>
+    /// 标记测试报告正在获取。
+    /// </summary>
+    public void MarkTestReportFetching()
+    {
+        EnsureReportCanBeUpdated();
+        TestReportStatus = WorkshopTestReportStatus.Fetching;
+        TestReportError = null;
+    }
+
+    /// <summary>
+    /// 保存外部接口获取到的测试报告。
+    /// </summary>
+    public void SetTestReport(Guid fileId, string fileName, DateTime fetchedAt)
+    {
+        if (fileId == Guid.Empty)
+        {
+            throw new UserFriendlyException("测试报告文件不能为空");
+        }
+
+        Check.NotNullOrWhiteSpace(fileName, nameof(fileName));
+        if (fetchedAt == default)
+        {
+            throw new UserFriendlyException("测试报告获取时间不能为空");
+        }
+
+        EnsureReportCanBeUpdated();
+        TestReportFileId = fileId;
+        TestReportFileName = fileName.Trim();
+        TestReportFetchedAt = DateTime.SpecifyKind(fetchedAt, DateTimeKind.Unspecified);
+        TestReportStatus = WorkshopTestReportStatus.Ready;
+        TestReportError = null;
+    }
+
+    /// <summary>
+    /// 标记测试报告获取失败。
+    /// </summary>
+    public void MarkTestReportFetchFailed(string error)
+    {
+        EnsureReportCanBeUpdated();
+        TestReportStatus = WorkshopTestReportStatus.Failed;
+        TestReportError = error?.Trim();
+    }
+
+    /// <summary>
+    /// 提交报告审核。审核不通过后仍可再次审核，审核通过后锁定。
+    /// </summary>
+    public void Audit(WorkshopOrderAuditResult result)
+    {
+        if (Status != WorkshopOrderStatus.PendingReview
+            && Status != WorkshopOrderStatus.ReviewRejected)
+        {
+            throw new UserFriendlyException("当前订单状态不允许审核");
+        }
+
+        if (TestReportStatus != WorkshopTestReportStatus.Ready
+            || !TestReportFileId.HasValue)
+        {
+            throw new UserFriendlyException("测试报告尚未获取，不能审核");
+        }
+
+        Status = result == WorkshopOrderAuditResult.Approved
+            ? WorkshopOrderStatus.ReviewApproved
+            : WorkshopOrderStatus.ReviewRejected;
+    }
+
     private void EnsureDraft()
     {
         if (Status != WorkshopOrderStatus.Draft)
         {
             throw new UserFriendlyException("只有未开始的订单才能修改");
+        }
+    }
+
+    private void EnsureReportCanBeUpdated()
+    {
+        if (Status != WorkshopOrderStatus.PendingReview
+            && Status != WorkshopOrderStatus.ReviewRejected)
+        {
+            throw new UserFriendlyException("当前订单状态不允许更新测试报告");
         }
     }
 

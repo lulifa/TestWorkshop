@@ -10,13 +10,14 @@ public class TestWorkshopDbContext : AbpDbContext<TestWorkshopDbContext>, ITenan
     public DbSet<WorkshopDevice> Devices { get; set; }
 
     public DbSet<WorkshopOrder> Orders { get; set; }
+    public DbSet<WorkshopOrderAuditRecord> OrderAuditRecords { get; set; }
     public DbSet<WorkshopTelemetryTask> TelemetryTasks { get; set; }
     public DbSet<WorkshopDeviceHeartbeat> DeviceHeartbeats { get; set; }
     public DbSet<WorkshopThresholdRule> ThresholdRules { get; set; }
     public DbSet<WorkshopAlarm> Alarms { get; set; }
     public DbSet<WorkshopRealtimeData> RealtimeData { get; set; }
 
-    #region ÄÚÖÃÏà¹Ø±í
+    #region ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø±ï¿½
 
 
     // Platform

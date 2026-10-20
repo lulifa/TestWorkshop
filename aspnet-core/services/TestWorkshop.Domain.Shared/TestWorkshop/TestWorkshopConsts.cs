@@ -37,5 +37,7 @@ public static class TestWorkshopConsts
 
     public static int MaxLength1024 { get; set; } = 1024;
 
+    public const int MaxLength2000 = 2000;
+
 
 }

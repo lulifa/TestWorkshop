@@ -2,6 +2,8 @@ import type { PagedResultDto } from '@abp/core';
 
 import type {
   GetWorkshopOrderListInput,
+  WorkshopOrderAuditInput,
+  WorkshopOrderAuditRecordDto,
   WorkshopOrderCreateDto,
   WorkshopOrderDto,
   WorkshopOrderProjectSupervisorDto,
@@ -11,7 +13,7 @@ import type {
   WorkshopTelemetryTaskListInput,
 } from '../../types';
 
-import { useRequest } from '../../hooks';
+import { requestClient, useRequest } from '../../hooks';
 
 export function useWorkshopOrderApi() {
   const { cancel, request } = useRequest();
@@ -73,6 +75,39 @@ export function useWorkshopOrderApi() {
     });
   }
 
+  function auditApi(
+    id: string,
+    input: WorkshopOrderAuditInput,
+  ): Promise<WorkshopOrderDto> {
+    return request<WorkshopOrderDto>(`/api/workshop/orders/${id}/audits`, {
+      data: input,
+      method: 'POST',
+    });
+  }
+
+  function getAuditRecordsApi(
+    id: string,
+  ): Promise<WorkshopOrderAuditRecordDto[]> {
+    return request<WorkshopOrderAuditRecordDto[]>(
+      `/api/workshop/orders/${id}/audits`,
+      {
+        method: 'GET',
+      },
+    );
+  }
+
+  function downloadTestReportApi(id: string): Promise<Blob> {
+    return requestClient.download(
+      `/api/workshop/orders/${id}/test-report/download`,
+    );
+  }
+
+  function previewTestReportApi(id: string): Promise<Blob> {
+    return requestClient.download(
+      `/api/workshop/orders/${id}/test-report/preview`,
+    );
+  }
+
   function getTelemetryTasksApi(
     id: string,
     input?: WorkshopTelemetryTaskListInput,
@@ -108,14 +143,18 @@ export function useWorkshopOrderApi() {
   }
 
   return {
+    auditApi,
     cancel,
     cancelApi,
     createApi,
     deleteApi,
+    downloadTestReportApi,
     endTestApi,
+    getAuditRecordsApi,
     getApi,
     getListApi,
     getProjectSupervisorOptionsApi,
+    previewTestReportApi,
     getTelemetryGraphApi,
     getTelemetryTasksApi,
     startTestApi,
