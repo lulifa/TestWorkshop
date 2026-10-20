@@ -29,11 +29,12 @@ public interface IWorkshopOrderManager
         WorkshopOrderAuditResult result,
         string maintenanceSuggestion,
         Guid auditorUserId,
-        string auditorName);
+        string auditorName,
+        int reportFileCount);
 
     Task<WorkshopOrder> MarkTestReportFetchingAsync(Guid id);
 
-    Task<WorkshopOrder> SetTestReportAsync(Guid id, Guid fileId, string fileName);
+    Task<WorkshopOrder> SetTestReportReadyAsync(Guid id);
 
     Task<WorkshopOrder> MarkTestReportFetchFailedAsync(Guid id, string error);
 

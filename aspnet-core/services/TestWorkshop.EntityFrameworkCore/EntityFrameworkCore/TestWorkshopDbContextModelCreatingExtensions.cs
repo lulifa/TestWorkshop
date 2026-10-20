@@ -79,13 +79,6 @@ public static class TestWorkshopDbContextModelCreatingExtensions
                 .HasDefaultValue(WorkshopTestReportStatus.NotReady)
                 .HasComment("测试报告获取状态 (0=未获取 1=获取中 2=已就绪 3=获取失败)");
 
-            b.Property(p => p.TestReportFileId)
-                .HasComment("测试报告文件ID");
-
-            b.Property(p => p.TestReportFileName)
-                .HasMaxLength(TestWorkshopConsts.MaxLength256)
-                .HasComment("测试报告文件名");
-
             b.Property(p => p.TestReportFetchedAt)
                 .HasColumnType("timestamp without time zone")
                 .HasComment("测试报告获取完成时间");
@@ -155,8 +148,10 @@ public static class TestWorkshopDbContextModelCreatingExtensions
                 .IsRequired()
                 .HasComment("审核时间");
 
-            b.Property(p => p.ReportFileId)
-                .HasComment("审核时对应的报告文件ID");
+            b.Property(p => p.ReportFileCount)
+                .IsRequired()
+                .HasDefaultValue(0)
+                .HasComment("审核时的报告文件数量");
 
             b.Property(p => p.TenantId)
                 .HasComment("租户ID");
@@ -361,16 +356,7 @@ public static class TestWorkshopDbContextModelCreatingExtensions
             b.Property(p => p.StartedAt)
                 .HasColumnType("timestamp with time zone")
                 .IsRequired()
-                .HasComment("报警成立时间，升级时长从这里算");
-
-            b.Property(p => p.Level)
-                .IsRequired()
-                .HasDefaultValue(0)
-                .HasComment("已通知级别 0=未通知 1/2/3");
-
-            b.Property(p => p.LastNotifiedAt)
-                .HasColumnType("timestamp with time zone")
-                .HasComment("最近一次通知时间");
+                .HasComment("报警成立时间");
 
             b.Property(p => p.Status)
                 .IsRequired()

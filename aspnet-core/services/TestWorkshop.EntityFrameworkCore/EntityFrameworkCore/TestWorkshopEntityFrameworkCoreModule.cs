@@ -76,7 +76,6 @@ public class TestWorkshopEntityFrameworkCoreModule : AbpModule
         context.AddBackgroundWorkerAsync<WorkshopTelemetryWorker>();
         context.AddBackgroundWorkerAsync<WorkshopTelemetryFileCleanupWorker>();
         context.AddBackgroundWorkerAsync<WorkshopDeviceHeartbeatMonitorWorker>();
-        context.AddBackgroundWorkerAsync<WorkshopAlarmEscalationWorker>();
         context.AddBackgroundWorkerAsync<WorkshopThresholdAlarmWorker>();
     }
 

@@ -801,23 +801,13 @@ namespace TestWorkshop.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("LastModifierId");
 
-                    b.Property<DateTime?>("LastNotifiedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasComment("最近一次通知时间");
-
-                    b.Property<int>("Level")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0)
-                        .HasComment("已通知级别 0=未通知 1/2/3");
-
                     b.Property<Guid>("OrganizationUnitId")
                         .HasColumnType("uuid")
                         .HasComment("所属车间，报警可见性按此过滤");
 
                     b.Property<DateTime>("StartedAt")
                         .HasColumnType("timestamp with time zone")
-                        .HasComment("报警成立时间，升级时长从这里算");
+                        .HasComment("报警成立时间");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer")
@@ -1091,15 +1081,6 @@ namespace TestWorkshop.Migrations
                         .HasColumnType("timestamp without time zone")
                         .HasComment("测试报告获取完成时间");
 
-                    b.Property<Guid?>("TestReportFileId")
-                        .HasColumnType("uuid")
-                        .HasComment("测试报告文件ID");
-
-                    b.Property<string>("TestReportFileName")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)")
-                        .HasComment("测试报告文件名");
-
                     b.Property<int>("TestReportStatus")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
@@ -1181,9 +1162,11 @@ namespace TestWorkshop.Migrations
                         .HasColumnType("uuid")
                         .HasComment("订单ID");
 
-                    b.Property<Guid?>("ReportFileId")
-                        .HasColumnType("uuid")
-                        .HasComment("审核时对应的报告文件ID");
+                    b.Property<int>("ReportFileCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasComment("审核时的报告文件数量");
 
                     b.Property<int>("Result")
                         .HasColumnType("integer")

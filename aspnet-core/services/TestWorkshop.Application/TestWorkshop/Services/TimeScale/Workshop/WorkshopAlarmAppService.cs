@@ -1,22 +1,19 @@
 namespace TestWorkshop;
 
 /// <summary>
-/// 报警管理应用服务。按当前用户可访问的车间过滤。
+/// 报警列表应用服务。所有登录用户都可以查看全部报警。
 /// </summary>
 [Authorize]
 public class WorkshopAlarmAppService : TestWorkshopAppService, IWorkshopAlarmAppService
 {
     private readonly IWorkshopAlarmRepository _alarmRepository;
-    private readonly IWorkshopOrganizationUnitAccessChecker _organizationUnitAccessChecker;
     private readonly IAsyncQueryableExecuter _asyncQueryableExecuter;
 
     public WorkshopAlarmAppService(
         IWorkshopAlarmRepository alarmRepository,
-        IWorkshopOrganizationUnitAccessChecker organizationUnitAccessChecker,
         IAsyncQueryableExecuter asyncQueryableExecuter)
     {
         _alarmRepository = alarmRepository;
-        _organizationUnitAccessChecker = organizationUnitAccessChecker;
         _asyncQueryableExecuter = asyncQueryableExecuter;
     }
 
@@ -28,13 +25,6 @@ public class WorkshopAlarmAppService : TestWorkshopAppService, IWorkshopAlarmApp
         }
 
         var query = await _alarmRepository.GetQueryableAsync();
-
-        // 车间可见性：管理员不限，其他人只看自己所属车间
-        var accessibleIds = await _organizationUnitAccessChecker.GetAccessibleOrganizationUnitIdsAsync();
-        if (accessibleIds != null)
-        {
-            query = query.Where(x => accessibleIds.Contains(x.OrganizationUnitId));
-        }
 
         if (input.OrganizationUnitId.HasValue)
         {

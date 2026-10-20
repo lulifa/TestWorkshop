@@ -7,6 +7,7 @@ import type {
   WorkshopOrderCreateDto,
   WorkshopOrderDto,
   WorkshopOrderProjectSupervisorDto,
+  WorkshopOrderReportFileDto,
   WorkshopOrderTelemetryGraphDto,
   WorkshopOrderUpdateDto,
   WorkshopTelemetryTaskDto,
@@ -102,6 +103,26 @@ export function useWorkshopOrderApi() {
     );
   }
 
+  function getTestReportFilesApi(
+    id: string,
+  ): Promise<WorkshopOrderReportFileDto[]> {
+    return request<WorkshopOrderReportFileDto[]>(
+      `/api/workshop/orders/${id}/test-report-files`,
+      {
+        method: 'GET',
+      },
+    );
+  }
+
+  function previewTestReportFileApi(
+    id: string,
+    fileKey: string,
+  ): Promise<Blob> {
+    return requestClient.download(
+      `/api/workshop/orders/${id}/test-report-files/${fileKey}/preview`,
+    );
+  }
+
   function previewTestReportApi(id: string): Promise<Blob> {
     return requestClient.download(
       `/api/workshop/orders/${id}/test-report/preview`,
@@ -154,7 +175,9 @@ export function useWorkshopOrderApi() {
     getApi,
     getListApi,
     getProjectSupervisorOptionsApi,
+    getTestReportFilesApi,
     previewTestReportApi,
+    previewTestReportFileApi,
     getTelemetryGraphApi,
     getTelemetryTasksApi,
     startTestApi,

@@ -51,21 +51,21 @@ public class WorkshopOrderDto : EntityDto<Guid>
     public WorkshopTestReportStatus TestReportStatus { get; set; }
 
     /// <summary>
-    /// 测试报告文件名
-    /// </summary>
-    public string TestReportFileName { get; set; }
-
-    /// <summary>
     /// 测试报告获取完成时间
     /// </summary>
     public DateTime? TestReportFetchedAt { get; set; }
+
+    /// <summary>
+    /// 测试报告文件数量
+    /// </summary>
+    public int TestReportFileCount { get; set; }
 
     /// <summary>
     /// 是否已有可用的测试报告
     /// </summary>
     public bool HasTestReport =>
         TestReportStatus == WorkshopTestReportStatus.Ready
-        && !string.IsNullOrWhiteSpace(TestReportFileName);
+        && TestReportFileCount > 0;
 
     public DateTime CreationTime { get; set; }
 

@@ -18,9 +18,9 @@ public class WorkshopOrderAuditRecord : CreationAuditedAggregateRoot<Guid>, IMul
     public DateTime AuditedAt { get; private set; }
 
     /// <summary>
-    /// 审核时对应的报告文件，避免后续报告更新导致记录无法追溯。
+    /// 审核时的报告文件数量
     /// </summary>
-    public Guid? ReportFileId { get; private set; }
+    public int ReportFileCount { get; private set; }
 
     public Guid? TenantId { get; protected set; }
 
@@ -36,7 +36,7 @@ public class WorkshopOrderAuditRecord : CreationAuditedAggregateRoot<Guid>, IMul
         Guid auditorUserId,
         string auditorName,
         DateTime auditedAt,
-        Guid? reportFileId,
+        int reportFileCount,
         Guid? tenantId = null)
         : base(id)
     {
@@ -62,7 +62,7 @@ public class WorkshopOrderAuditRecord : CreationAuditedAggregateRoot<Guid>, IMul
         AuditorUserId = auditorUserId;
         AuditorName = auditorName.Trim();
         AuditedAt = DateTime.SpecifyKind(auditedAt, DateTimeKind.Unspecified);
-        ReportFileId = reportFileId;
+        ReportFileCount = reportFileCount;
         TenantId = tenantId;
     }
 

@@ -36,7 +36,7 @@ interface WorkshopOrderDto extends EntityDto<string> {
   statusName?: string;
   testEndedAt?: string;
   testReportFetchedAt?: string;
-  testReportFileName?: string;
+  testReportFileCount: number;
   testReportStatus: WorkshopTestReportStatus;
   testStartedAt?: string;
 }
@@ -99,8 +99,18 @@ interface WorkshopOrderAuditRecordDto extends EntityDto<string> {
   auditorUserId: string;
   maintenanceSuggestion?: string;
   orderId: string;
+  reportFileCount: number;
   result: WorkshopOrderAuditResult;
   resultName?: string;
+}
+
+interface WorkshopOrderReportFileDto {
+  contentType?: string;
+  creationTime: string;
+  fileName: string;
+  fileSize: number;
+  hasPreview: boolean;
+  key: string;
 }
 
 export {
@@ -116,6 +126,7 @@ export type {
   WorkshopOrderCreateDto,
   WorkshopOrderDto,
   WorkshopOrderProjectSupervisorDto,
+  WorkshopOrderReportFileDto,
   WorkshopOrderTelemetryGraphDto,
   WorkshopOrderUpdateDto,
   WorkshopTelemetryGraphChannelDto,

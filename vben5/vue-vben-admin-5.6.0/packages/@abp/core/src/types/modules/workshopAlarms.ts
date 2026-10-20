@@ -20,8 +20,6 @@ interface WorkshopAlarmDto extends EntityDto<string> {
   dataItemType: string;
   deviceCode: string;
   deviceId: string;
-  lastNotifiedAt?: string;
-  level: number;
   organizationUnitId: string;
   startedAt: string;
   status: WorkshopAlarmStatus;

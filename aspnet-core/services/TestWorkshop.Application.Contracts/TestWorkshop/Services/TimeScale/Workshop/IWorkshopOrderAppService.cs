@@ -25,6 +25,10 @@ public interface IWorkshopOrderAppService : IApplicationService
 
     Task<List<WorkshopOrderAuditRecordDto>> GetAuditRecordsAsync(Guid id);
 
+    Task<List<WorkshopOrderReportFileDto>> GetTestReportFilesAsync(Guid id);
+
+    Task<IRemoteStreamContent> PreviewTestReportFileAsync(Guid id, string fileKey);
+
     Task<IRemoteStreamContent> PreviewTestReportAsync(Guid id);
 
     Task<IRemoteStreamContent> DownloadTestReportAsync(Guid id);

@@ -5,8 +5,7 @@ using Volo.Abp.Uow;
 
 /// <summary>
 /// 后台任务：扫描每台测试台的最新一帧实时数据，判定阈值报警和设备报警。
-/// 值超出阈值上下限时，同时产生一条阈值报警和一条设备报警（各自独立升级）。
-/// 报警的 5/10/20 升级由 <see cref="WorkshopAlarmEscalationWorker"/> 统一处理。
+/// 值超出阈值上下限时，立即产生报警，不做人员通知。
 /// </summary>
 public class WorkshopThresholdAlarmWorker : AsyncPeriodicBackgroundWorkerBase
 {
@@ -14,7 +13,6 @@ public class WorkshopThresholdAlarmWorker : AsyncPeriodicBackgroundWorkerBase
 
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<WorkshopThresholdAlarmWorker> _logger;
-    private readonly int _staleDataMinutes;
 
     public WorkshopThresholdAlarmWorker(
         AbpAsyncTimer timer,
@@ -28,8 +26,7 @@ public class WorkshopThresholdAlarmWorker : AsyncPeriodicBackgroundWorkerBase
 
         var value = options.Value;
         value.Validate();
-        _staleDataMinutes = value.StaleDataMinutes;
-        Timer.Period = (int)TimeSpan.FromMinutes(value.CheckIntervalMinutes).TotalMilliseconds;
+        Timer.Period = (int)TimeSpan.FromSeconds(value.CheckIntervalSeconds).TotalMilliseconds;
     }
 
     protected override async Task DoWorkAsync(PeriodicBackgroundWorkerContext workerContext)
@@ -74,18 +71,6 @@ public class WorkshopThresholdAlarmWorker : AsyncPeriodicBackgroundWorkerBase
                     _logger.LogWarning(
                         "实时数据找不到对应设备 {DeviceCode}，已跳过",
                         frame.DeviceCode);
-                    continue;
-                }
-
-                // 数据停发兜底：这一帧已经太久没更新，说明设备不再上报了。
-                // 此时不能再基于它判定（否则超限那条会永远挂着、一路升级到三级），
-                // 直接把该设备还在进行中的数据类报警恢复掉。
-                // 注意：frame.Timestamp 是 timestamptz（读出来是 UTC），clock.Now 是本地时间，
-                // 两边都转成 UTC 再比较，避免差一个时区把正常上报误判成停发。
-                if (now.ToUniversalTime() - frame.Timestamp.ToUniversalTime()
-                    >= TimeSpan.FromMinutes(_staleDataMinutes))
-                {
-                    await alarmManager.ClearStaleDataAlarmsAsync(device.Id, now);
                     continue;
                 }
 

@@ -46,16 +46,6 @@ public class WorkshopAlarmDto : EntityDto<Guid>
     public DateTime StartedAt { get; set; }
 
     /// <summary>
-    /// 已通知级别
-    /// </summary>
-    public int Level { get; set; }
-
-    /// <summary>
-    /// 最近一次通知时间
-    /// </summary>
-    public DateTime? LastNotifiedAt { get; set; }
-
-    /// <summary>
     /// 状态
     /// </summary>
     public WorkshopAlarmStatus Status { get; set; }

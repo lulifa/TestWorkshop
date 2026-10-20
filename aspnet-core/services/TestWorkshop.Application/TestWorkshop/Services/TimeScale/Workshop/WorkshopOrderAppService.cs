@@ -1,4 +1,5 @@
 using Volo.Abp.Domain.Repositories;
+using System.IO.Compression;
 
 namespace TestWorkshop;
 
@@ -102,13 +103,16 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
             ? new List<IdentityUser>()
             : await _identityUserRepository.GetListByIdListAsync(supervisorIds);
         var supervisorMap = supervisors.ToDictionary(x => x.Id);
+        var reportCountMap = await GetTestReportFileCountMapAsync(
+            result.Items.Select(x => x.Id).ToList());
 
         var items = result.Items
             .Select(order => ToDto(
                 order,
                 deviceMap.GetValueOrDefault(order.DeviceId),
                 GetUserName(
-                    supervisorMap.GetValueOrDefault(order.ProjectSupervisorUserId))))
+                    supervisorMap.GetValueOrDefault(order.ProjectSupervisorUserId)),
+                reportCountMap.GetValueOrDefault(order.Id)))
             .ToList();
 
         return new PagedResultDto<WorkshopOrderDto>(result.TotalCount, items);
@@ -119,7 +123,7 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
         var order = await _orderRepository.GetAsync(id);
         await EnsureOrderAccessibleAsync(order);
         var device = await _deviceRepository.FindAsync(order.DeviceId);
-        return ToDto(order, device, await GetProjectSupervisorNameAsync(order.ProjectSupervisorUserId));
+        return await ToDtoAsync(order, device);
     }
 
     /// <summary>
@@ -180,7 +184,7 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
 
         await _orderNotificationSender.NotifyOrderCreatedAsync(order);
 
-        return ToDto(order, device, await GetProjectSupervisorNameAsync(order.ProjectSupervisorUserId));
+        return await ToDtoAsync(order, device);
     }
 
     [Authorize(Roles = RoleConstants.admin + "," + RoleConstants.dispatcher)]
@@ -193,7 +197,7 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
             input.ProjectSupervisorUserId,
             input.RequiredCompletionTime);
         var device = await _deviceRepository.FindAsync(order.DeviceId);
-        return ToDto(order, device, await GetProjectSupervisorNameAsync(order.ProjectSupervisorUserId));
+        return await ToDtoAsync(order, device);
     }
 
     [Authorize(Roles = RoleConstants.admin + "," + RoleConstants.dispatcher)]
@@ -228,7 +232,7 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
         await EnsureOrderAccessibleAsync(await _orderRepository.GetAsync(id));
         var order = await _orderManager.StartTestAsync(id);
         var device = await _deviceRepository.FindAsync(order.DeviceId);
-        return ToDto(order, device, await GetProjectSupervisorNameAsync(order.ProjectSupervisorUserId));
+        return await ToDtoAsync(order, device);
     }
 
     [Authorize(Roles = RoleConstants.admin + "," + RoleConstants.supervisor + "," + RoleConstants.tester)]
@@ -237,7 +241,7 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
         await EnsureOrderAccessibleAsync(await _orderRepository.GetAsync(id));
         var order = await _orderManager.EndTestAsync(id);
         var device = await _deviceRepository.FindAsync(order.DeviceId);
-        return ToDto(order, device, await GetProjectSupervisorNameAsync(order.ProjectSupervisorUserId));
+        return await ToDtoAsync(order, device);
     }
 
     // 取消订单与开始/结束测试同一套角色：管理员、车间主管、测试工程师
@@ -247,7 +251,7 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
         await EnsureOrderAccessibleAsync(await _orderRepository.GetAsync(id));
         var order = await _orderManager.CancelAsync(id);
         var device = await _deviceRepository.FindAsync(order.DeviceId);
-        return ToDto(order, device, await GetProjectSupervisorNameAsync(order.ProjectSupervisorUserId));
+        return await ToDtoAsync(order, device);
     }
 
     [Authorize(Roles = RoleConstants.admin + "," + RoleConstants.auditor)]
@@ -260,6 +264,12 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
         }
 
         await EnsureOrderAccessibleAsync(await _orderRepository.GetAsync(id));
+        var reportFiles = await GetTestReportFileObjectsAsync(id);
+        if (reportFiles.Count == 0)
+        {
+            throw new UserFriendlyException("测试报告文件不存在，不能审核");
+        }
+
         var auditor = await _identityUserRepository.FindAsync(CurrentUser.GetId());
         var auditorName = GetUserName(auditor) ?? CurrentUser.UserName;
         var order = await _orderManager.AuditAsync(
@@ -267,9 +277,10 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
             input.Result.Value,
             input.MaintenanceSuggestion,
             CurrentUser.GetId(),
-            auditorName);
+            auditorName,
+            reportFiles.Count);
         var device = await _deviceRepository.FindAsync(order.DeviceId);
-        return ToDto(order, device, await GetProjectSupervisorNameAsync(order.ProjectSupervisorUserId));
+        return await ToDtoAsync(order, device);
     }
 
     public virtual async Task<List<WorkshopOrderAuditRecordDto>> GetAuditRecordsAsync(Guid id)
@@ -292,9 +303,51 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
                 MaintenanceSuggestion = x.MaintenanceSuggestion,
                 AuditorUserId = x.AuditorUserId,
                 AuditorName = x.AuditorName,
-                AuditedAt = x.AuditedAt
+                AuditedAt = x.AuditedAt,
+                ReportFileCount = x.ReportFileCount
             })
             .ToList();
+    }
+
+    public virtual async Task<List<WorkshopOrderReportFileDto>> GetTestReportFilesAsync(Guid id)
+    {
+        await _orderRepository.GetAsync(id);
+        var files = await GetTestReportFileObjectsAsync(id);
+        var previewFileIds = await GetPreviewFileIdsAsync(
+            files.Select(x => x.Id).ToList());
+
+        return files
+            .Select(x => new WorkshopOrderReportFileDto
+            {
+                Key = BuildReportFileKey(id, x.Id),
+                FileName = x.FileName,
+                FileSize = x.FileSize,
+                ContentType = x.ContentType,
+                HasPreview = previewFileIds.Contains(x.Id),
+                CreationTime = x.CreationTime
+            })
+            .ToList();
+    }
+
+    public virtual async Task<IRemoteStreamContent> PreviewTestReportFileAsync(Guid id, string fileKey)
+    {
+        await _orderRepository.GetAsync(id);
+        var files = await GetTestReportFileObjectsAsync(id);
+        var file = files.FirstOrDefault(x => BuildReportFileKey(id, x.Id) == fileKey);
+        if (file == null)
+        {
+            throw new UserFriendlyException("测试报告文件不存在");
+        }
+
+        var previewFile = await _fileObjectManager.GetFileObjectByOwnerAsync(
+            SystemFileTypes.WorkshopTestReportPreview,
+            file.Id.ToString());
+        if (previewFile == null)
+        {
+            throw new UserFriendlyException("该报告暂无可预览内容");
+        }
+
+        return await ReadFileAsync(previewFile.Id);
     }
 
     [Authorize(
@@ -310,21 +363,56 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
         var order = await _orderRepository.GetAsync(id);
         EnsureTestReportDownloadable(order);
 
-        return await ReadTestReportAsync(order);
-    }
-
-    [Authorize(Roles = RoleConstants.admin + "," + RoleConstants.auditor)]
-    public virtual async Task<IRemoteStreamContent> PreviewTestReportAsync(Guid id)
-    {
-        var order = await _orderRepository.GetAsync(id);
-        if (order.Status != WorkshopOrderStatus.PendingReview
-            && order.Status != WorkshopOrderStatus.ReviewRejected)
+        var files = await GetTestReportFileObjectsAsync(order.Id);
+        if (files.Count == 0)
         {
-            throw new UserFriendlyException("当前订单状态不需要预览测试报告");
+            throw new UserFriendlyException("测试报告文件不存在");
         }
 
-        EnsureTestReportReady(order);
-        return await ReadTestReportAsync(order);
+        var output = new MemoryStream();
+        using (var archive = new ZipArchive(output, ZipArchiveMode.Create, leaveOpen: true))
+        {
+            var usedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var file in files)
+            {
+                var entryName = MakeUniqueEntryName(file.FileName, usedNames);
+                var entry = archive.CreateEntry(entryName, CompressionLevel.Optimal);
+                var (stream, _, _) = await _fileObjectManager.GetFileAsync(file.Id);
+                await using (stream)
+                await using (var entryStream = entry.Open())
+                {
+                    await stream.CopyToAsync(entryStream);
+                }
+            }
+        }
+
+        output.Position = 0;
+        return new RemoteStreamContent(
+            output,
+            $"{order.OrderNo}-测试报告.zip",
+            "application/zip");
+    }
+
+    [Authorize]
+    public virtual async Task<IRemoteStreamContent> PreviewTestReportAsync(Guid id)
+    {
+        await _orderRepository.GetAsync(id);
+        var files = await GetTestReportFileObjectsAsync(id);
+        var first = files.FirstOrDefault();
+        if (first == null)
+        {
+            throw new UserFriendlyException("测试报告文件不存在");
+        }
+
+        var previewFile = await _fileObjectManager.GetFileObjectByOwnerAsync(
+            SystemFileTypes.WorkshopTestReportPreview,
+            first.Id.ToString());
+        if (previewFile == null)
+        {
+            throw new UserFriendlyException("该报告暂无可预览内容");
+        }
+
+        return await ReadFileAsync(previewFile.Id);
     }
 
     public virtual async Task<PagedResultDto<WorkshopTelemetryTaskDto>> GetTelemetryTasksAsync(
@@ -439,7 +527,8 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
     private static WorkshopOrderDto ToDto(
         WorkshopOrder order,
         WorkshopDevice device,
-        string projectSupervisorName = null)
+        string projectSupervisorName = null,
+        int testReportFileCount = 0)
     {
         return new WorkshopOrderDto
         {
@@ -455,11 +544,89 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
             TestStartedAt = order.TestStartedAt,
             TestEndedAt = order.TestEndedAt,
             TestReportStatus = order.TestReportStatus,
-            TestReportFileName = order.TestReportFileName,
             TestReportFetchedAt = order.TestReportFetchedAt,
+            TestReportFileCount = testReportFileCount,
             CreationTime = order.CreationTime,
             LastModificationTime = order.LastModificationTime
         };
+    }
+
+    private async Task<WorkshopOrderDto> ToDtoAsync(
+        WorkshopOrder order,
+        WorkshopDevice device)
+    {
+        var reportFiles = await GetTestReportFileObjectsAsync(order.Id);
+        return ToDto(
+            order,
+            device,
+            await GetProjectSupervisorNameAsync(order.ProjectSupervisorUserId),
+            reportFiles.Count);
+    }
+
+    private async Task<List<FileObject>> GetTestReportFileObjectsAsync(Guid orderId)
+    {
+        var ownerId = orderId.ToString();
+        return await _fileObjectRepository.GetListAsync(
+            x => x.OwnerType == SystemFileTypes.WorkshopTestReport
+                 && x.OwnerId == ownerId,
+            x => x.CreationTime);
+    }
+
+    private async Task<HashSet<Guid>> GetPreviewFileIdsAsync(List<Guid> reportFileIds)
+    {
+        if (reportFileIds.Count == 0)
+        {
+            return [];
+        }
+
+        var ownerIds = reportFileIds.Select(x => x.ToString()).ToList();
+        var previewFiles = await _fileObjectRepository.GetListAsync(
+            x => x.OwnerType == SystemFileTypes.WorkshopTestReportPreview
+                 && ownerIds.Contains(x.OwnerId));
+
+        var result = new HashSet<Guid>();
+        foreach (var previewFile in previewFiles)
+        {
+            if (Guid.TryParse(previewFile.OwnerId, out var originalFileId))
+            {
+                result.Add(originalFileId);
+            }
+        }
+
+        return result;
+    }
+
+    private static string BuildReportFileKey(Guid orderId, Guid fileId)
+    {
+        var source = $"{orderId:N}:{fileId:N}";
+        var hash = System.Security.Cryptography.SHA256.HashData(
+            System.Text.Encoding.UTF8.GetBytes(source));
+        return Convert.ToHexString(hash).ToLowerInvariant();
+    }
+
+    private async Task<Dictionary<Guid, int>> GetTestReportFileCountMapAsync(
+        List<Guid> orderIds)
+    {
+        if (orderIds.Count == 0)
+        {
+            return new Dictionary<Guid, int>();
+        }
+
+        var ownerIds = orderIds.Select(x => x.ToString()).ToList();
+        var files = await _fileObjectRepository.GetListAsync(
+            x => x.OwnerType == SystemFileTypes.WorkshopTestReport
+                 && ownerIds.Contains(x.OwnerId));
+
+        var result = new Dictionary<Guid, int>();
+        foreach (var file in files)
+        {
+            if (Guid.TryParse(file.OwnerId, out var orderId))
+            {
+                result[orderId] = result.GetValueOrDefault(orderId) + 1;
+            }
+        }
+
+        return result;
     }
 
     private void EnsureTestReportDownloadable(WorkshopOrder order)
@@ -468,8 +635,6 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
         {
             throw new UserFriendlyException("只有审核通过的订单才能下载最终报告");
         }
-
-        EnsureTestReportReady(order);
 
         if (CurrentUser.IsInRole(RoleConstants.admin)
             || CurrentUser.IsInRole(RoleConstants.dispatcher)
@@ -487,20 +652,33 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
         throw new UserFriendlyException("无权下载该订单的测试报告");
     }
 
-    private static void EnsureTestReportReady(WorkshopOrder order)
-    {
-        if (order.TestReportStatus != WorkshopTestReportStatus.Ready
-            || !order.TestReportFileId.HasValue)
-        {
-            throw new UserFriendlyException("测试报告尚未获取");
-        }
-    }
-
-    private async Task<IRemoteStreamContent> ReadTestReportAsync(WorkshopOrder order)
+    private async Task<IRemoteStreamContent> ReadFileAsync(Guid fileId)
     {
         var (stream, contentType, fileName) =
-            await _fileObjectManager.GetFileAsync(order.TestReportFileId.Value);
+            await _fileObjectManager.GetFileAsync(fileId);
         return new RemoteStreamContent(stream, fileName, contentType);
+    }
+
+    private static string MakeUniqueEntryName(string fileName, HashSet<string> usedNames)
+    {
+        var safeName = Path.GetFileName(fileName);
+        if (usedNames.Add(safeName))
+        {
+            return safeName;
+        }
+
+        var baseName = Path.GetFileNameWithoutExtension(safeName);
+        var extension = Path.GetExtension(safeName);
+        var index = 2;
+        string candidate;
+        do
+        {
+            candidate = $"{baseName} ({index}){extension}";
+            index++;
+        }
+        while (!usedNames.Add(candidate));
+
+        return candidate;
     }
 
     private static string GetUserName(IdentityUser user)

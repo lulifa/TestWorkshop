@@ -47,16 +47,6 @@ public class WorkshopOrder : FullAuditedAggregateRoot<Guid>, IMultiTenant
     public WorkshopTestReportStatus TestReportStatus { get; private set; }
 
     /// <summary>
-    /// 外部测试报告文件
-    /// </summary>
-    public Guid? TestReportFileId { get; private set; }
-
-    /// <summary>
-    /// 外部测试报告文件名
-    /// </summary>
-    public string TestReportFileName { get; private set; }
-
-    /// <summary>
     /// 测试报告获取完成时间
     /// </summary>
     public DateTime? TestReportFetchedAt { get; private set; }
@@ -149,8 +139,6 @@ public class WorkshopOrder : FullAuditedAggregateRoot<Guid>, IMultiTenant
         Status = WorkshopOrderStatus.PendingReview;
         TestEndedAt = endedAt;
         TestReportStatus = WorkshopTestReportStatus.NotReady;
-        TestReportFileId = null;
-        TestReportFileName = null;
         TestReportFetchedAt = null;
         TestReportError = null;
     }
@@ -196,24 +184,16 @@ public class WorkshopOrder : FullAuditedAggregateRoot<Guid>, IMultiTenant
     }
 
     /// <summary>
-    /// 保存外部接口获取到的测试报告。
+    /// 标记外部测试报告文件已经全部保存完成。
     /// </summary>
-    public void SetTestReport(Guid fileId, string fileName, DateTime fetchedAt)
+    public void SetTestReportReady(DateTime fetchedAt)
     {
-        if (fileId == Guid.Empty)
-        {
-            throw new UserFriendlyException("测试报告文件不能为空");
-        }
-
-        Check.NotNullOrWhiteSpace(fileName, nameof(fileName));
         if (fetchedAt == default)
         {
             throw new UserFriendlyException("测试报告获取时间不能为空");
         }
 
         EnsureReportCanBeUpdated();
-        TestReportFileId = fileId;
-        TestReportFileName = fileName.Trim();
         TestReportFetchedAt = DateTime.SpecifyKind(fetchedAt, DateTimeKind.Unspecified);
         TestReportStatus = WorkshopTestReportStatus.Ready;
         TestReportError = null;
@@ -240,8 +220,7 @@ public class WorkshopOrder : FullAuditedAggregateRoot<Guid>, IMultiTenant
             throw new UserFriendlyException("当前订单状态不允许审核");
         }
 
-        if (TestReportStatus != WorkshopTestReportStatus.Ready
-            || !TestReportFileId.HasValue)
+        if (TestReportStatus != WorkshopTestReportStatus.Ready)
         {
             throw new UserFriendlyException("测试报告尚未获取，不能审核");
         }

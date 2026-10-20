@@ -129,7 +129,8 @@ public class WorkshopOrderManager : DomainService, IWorkshopOrderManager
         WorkshopOrderAuditResult result,
         string maintenanceSuggestion,
         Guid auditorUserId,
-        string auditorName)
+        string auditorName,
+        int reportFileCount)
     {
         var order = await _orderRepository.GetAsync(id);
         order.Audit(result);
@@ -142,7 +143,7 @@ public class WorkshopOrderManager : DomainService, IWorkshopOrderManager
             auditorUserId,
             auditorName,
             GetLocalNow(),
-            order.TestReportFileId,
+            reportFileCount,
             CurrentTenant.Id);
 
         await _auditRecordRepository.InsertAsync(auditRecord, autoSave: true);
@@ -164,17 +165,16 @@ public class WorkshopOrderManager : DomainService, IWorkshopOrderManager
         return order;
     }
 
-    public virtual async Task<WorkshopOrder> SetTestReportAsync(Guid id, Guid fileId, string fileName)
+    public virtual async Task<WorkshopOrder> SetTestReportReadyAsync(Guid id)
     {
         var order = await _orderRepository.GetAsync(id);
-        order.SetTestReport(fileId, fileName, GetLocalNow());
+        order.SetTestReportReady(GetLocalNow());
         await _orderRepository.UpdateAsync(order, autoSave: true);
 
         _logger.LogInformation(
-            "订单测试报告已就绪: OrderId={OrderId}, OrderNo={OrderNo}, FileId={FileId}",
+            "订单测试报告已就绪: OrderId={OrderId}, OrderNo={OrderNo}",
             order.Id,
-            order.OrderNo,
-            fileId);
+            order.OrderNo);
         return order;
     }
 

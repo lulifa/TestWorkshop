@@ -5,7 +5,7 @@ using Volo.Abp.Uow;
 
 /// <summary>
 /// 后台任务：扫描设备心跳，把"断线 / 恢复"同步给统一的报警管理。
-/// 报警的 5/10/20 逐级升级由 <see cref="WorkshopAlarmEscalationWorker"/> 统一处理。
+/// 通信报警只进入报警列表，不做人员通知。
 /// </summary>
 public class WorkshopDeviceHeartbeatMonitorWorker : AsyncPeriodicBackgroundWorkerBase
 {
@@ -16,7 +16,7 @@ public class WorkshopDeviceHeartbeatMonitorWorker : AsyncPeriodicBackgroundWorke
 
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<WorkshopDeviceHeartbeatMonitorWorker> _logger;
-    private readonly int _timeoutMinutes;
+    private readonly int _timeoutSeconds;
 
     public WorkshopDeviceHeartbeatMonitorWorker(
         AbpAsyncTimer timer,
@@ -30,9 +30,8 @@ public class WorkshopDeviceHeartbeatMonitorWorker : AsyncPeriodicBackgroundWorke
 
         var value = options.Value;
         value.Validate();
-        // 心跳间隔超过一级阈值即视为通信报警成立
-        _timeoutMinutes = value.Level1Minutes;
-        Timer.Period = (int)TimeSpan.FromMinutes(value.CheckIntervalMinutes).TotalMilliseconds;
+        _timeoutSeconds = value.CommunicationTimeoutSeconds;
+        Timer.Period = (int)TimeSpan.FromSeconds(value.CheckIntervalSeconds).TotalMilliseconds;
     }
 
     protected override async Task DoWorkAsync(PeriodicBackgroundWorkerContext workerContext)
@@ -78,8 +77,8 @@ public class WorkshopDeviceHeartbeatMonitorWorker : AsyncPeriodicBackgroundWorke
                     continue;
                 }
 
-                var elapsedMinutes = (now - heartbeat.LastHeartbeatAt).TotalMinutes;
-                if (elapsedMinutes >= _timeoutMinutes)
+                var elapsedSeconds = (now - heartbeat.LastHeartbeatAt).TotalSeconds;
+                if (elapsedSeconds >= _timeoutSeconds)
                 {
                     // 条件（无心跳）从最后一次心跳那刻开始算，升级时长也从它算起
                     await alarmManager.RaiseAsync(

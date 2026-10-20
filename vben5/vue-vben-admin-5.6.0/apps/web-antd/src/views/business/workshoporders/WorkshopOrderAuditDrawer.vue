@@ -1,11 +1,14 @@
 <script lang="ts" setup>
-import type { WorkshopOrderAuditRecordDto, WorkshopOrderDto } from '@abp/core';
+import type {
+  WorkshopOrderAuditRecordDto,
+  WorkshopOrderDto,
+  WorkshopOrderReportFileDto,
+} from '@abp/core';
 
-import { computed, h, ref } from 'vue';
+import { computed, ref } from 'vue';
 
 import { useVbenDrawer } from '@vben/common-ui';
 import { $t } from '@vben/locales';
-import { downloadFileFromBlob } from '@vben/utils';
 
 import {
   formatToDateTime,
@@ -15,7 +18,6 @@ import {
   WorkshopOrderStatus,
   WorkshopTestReportStatus,
 } from '@abp/core';
-import { DownloadOutlined } from '@ant-design/icons-vue';
 import {
   Alert,
   Button,
@@ -36,10 +38,10 @@ const emits = defineEmits<{
 const Textarea = Input.TextArea;
 const {
   auditApi,
-  downloadTestReportApi,
   getApi,
   getAuditRecordsApi,
-  previewTestReportApi,
+  getTestReportFilesApi,
+  previewTestReportFileApi,
 } = useWorkshopOrderApi();
 const abpStore = useAbpStore();
 
@@ -47,10 +49,11 @@ const order = ref<WorkshopOrderDto>();
 const records = ref<WorkshopOrderAuditRecordDto[]>([]);
 const loading = ref(false);
 const submitting = ref(false);
-const downloading = ref(false);
 const previewing = ref(false);
 const previewVisible = ref(false);
 const previewUrl = ref('');
+const previewFiles = ref<WorkshopOrderReportFileDto[]>([]);
+const previewFileId = ref<string>();
 const auditResult = ref<WorkshopOrderAuditResult>();
 const maintenanceSuggestion = ref('');
 
@@ -59,27 +62,6 @@ const roles = computed(() => {
 });
 const canAudit = computed(() => {
   return roles.value.some((role) => ['admin', 'auditor'].includes(role));
-});
-const canDownloadAllReports = computed(() => {
-  return roles.value.some((role) =>
-    ['admin', 'auditor', 'dispatcher'].includes(role),
-  );
-});
-const canDownloadReport = computed(() => {
-  if (
-    order.value?.status !== WorkshopOrderStatus.ReviewApproved ||
-    !order.value.hasTestReport
-  ) {
-    return false;
-  }
-  if (canDownloadAllReports.value) {
-    return true;
-  }
-  return (
-    roles.value.includes('projectSupervisor') &&
-    order.value.projectSupervisorUserId?.toLowerCase() ===
-      abpStore.application?.currentUser.id?.toLowerCase()
-  );
 });
 const canSubmitAudit = computed(() => {
   return (
@@ -185,6 +167,8 @@ const [Drawer, drawerApi] = useVbenDrawer({
     auditResult.value = undefined;
     maintenanceSuggestion.value = '';
     records.value = [];
+    previewFiles.value = [];
+    previewFileId.value = undefined;
     await loadDetail();
   },
   showConfirmButton: false,
@@ -197,12 +181,14 @@ async function loadDetail() {
   }
   loading.value = true;
   try {
-    const [detail, auditRecords] = await Promise.all([
+    const [detail, auditRecords, reportFiles] = await Promise.all([
       getApi(order.value.id),
       getAuditRecordsApi(order.value.id),
+      getTestReportFilesApi(order.value.id),
     ]);
     order.value = detail;
     records.value = auditRecords ?? [];
+    previewFiles.value = reportFiles ?? [];
   } finally {
     loading.value = false;
   }
@@ -229,41 +215,42 @@ async function onSubmitAudit() {
   }
 }
 
-async function onDownloadReport() {
-  if (!order.value?.id) {
-    return;
-  }
-  downloading.value = true;
-  try {
-    const blob = await downloadTestReportApi(order.value.id);
-    downloadFileFromBlob({
-      fileName:
-        order.value.testReportFileName ?? `${order.value.orderNo}-测试报告.pdf`,
-      source: blob,
-    });
-  } finally {
-    downloading.value = false;
-  }
-}
-
 async function onPreviewReport() {
   if (!order.value?.id) {
     return;
   }
   previewing.value = true;
   try {
-    const blob = await previewTestReportApi(order.value.id);
-    revokePreviewUrl();
-    previewUrl.value = URL.createObjectURL(blob);
+    if (previewFiles.value.length === 0) {
+      previewFiles.value = await getTestReportFilesApi(order.value.id);
+    }
+    const first = previewFiles.value[0];
+    if (!first) {
+      return;
+    }
+    await selectPreviewFile(first);
     previewVisible.value = true;
   } finally {
     previewing.value = false;
   }
 }
 
+async function selectPreviewFile(file: WorkshopOrderReportFileDto) {
+  if (!order.value?.id) {
+    return;
+  }
+
+  previewFileId.value = file.key;
+  revokePreviewUrl();
+  const blob = await previewTestReportFileApi(order.value.id, file.key);
+  previewUrl.value = URL.createObjectURL(blob);
+}
+
 function closePreview() {
   previewVisible.value = false;
   revokePreviewUrl();
+  previewFiles.value = [];
+  previewFileId.value = undefined;
 }
 
 function revokePreviewUrl() {
@@ -329,26 +316,32 @@ function revokePreviewUrl() {
               </Tag>
             </div>
             <Button
-              v-if="canDownloadReport"
-              :icon="h(DownloadOutlined)"
-              :loading="downloading"
-              type="primary"
-              @click="onDownloadReport"
-            >
-              {{ $t('TestWorkshop.WorkshopOrder:DownloadReport') }}
-            </Button>
-            <Button
-              v-else-if="canPreviewReport"
+              v-if="canPreviewReport"
               :loading="previewing"
               type="primary"
               @click="onPreviewReport"
             >
               {{ $t('TestWorkshop.WorkshopOrder:PreviewReport') }}
+              <span v-if="order.testReportFileCount > 1">
+                ({{ order.testReportFileCount }})
+              </span>
             </Button>
           </div>
           <div class="mt-2 text-sm text-gray-500">
-            <div v-if="order.testReportFileName">
-              {{ order.testReportFileName }}
+            <div
+              v-for="file in previewFiles"
+              :key="file.key"
+              class="flex items-center gap-2 py-0.5"
+            >
+              <span class="truncate" :title="file.fileName">
+                {{ file.fileName }}
+              </span>
+              <Tag v-if="!file.hasPreview" color="default">
+                {{ $t('TestWorkshop.WorkshopOrder:NoPreviewContent') }}
+              </Tag>
+            </div>
+            <div v-if="previewFiles.length === 0">
+              {{ $t('TestWorkshop.WorkshopOrder:NoReportFiles') }}
             </div>
             <div v-if="order.testReportFetchedAt" class="mt-1">
               {{ $t('TestWorkshop.WorkshopOrder:ReportFetchedAt') }}:
@@ -461,6 +454,17 @@ function revokePreviewUrl() {
       width="90vw"
       @cancel="closePreview"
     >
+      <div v-if="previewFiles.length > 1" class="mb-2 flex flex-wrap gap-2">
+        <Button
+          v-for="file in previewFiles"
+          :key="file.key"
+          :type="previewFileId === file.key ? 'primary' : 'default'"
+          size="small"
+          @click="selectPreviewFile(file)"
+        >
+          {{ file.fileName }}
+        </Button>
+      </div>
       <div class="h-[78vh]">
         <iframe
           v-if="previewUrl"

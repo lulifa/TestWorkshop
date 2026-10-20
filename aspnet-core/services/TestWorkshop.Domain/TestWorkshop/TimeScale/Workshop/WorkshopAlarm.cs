@@ -37,19 +37,9 @@ public class WorkshopAlarm : FullAuditedAggregateRoot<Guid>
     public string Content { get; private set; }
 
     /// <summary>
-    /// 报警成立时间（条件开始满足的时刻，升级时长从这里算）
+    /// 报警成立时间（条件开始满足的时刻）
     /// </summary>
     public DateTime StartedAt { get; private set; }
-
-    /// <summary>
-    /// 已通知级别：0=未通知，1/2/3 对应 5/10/20 分钟
-    /// </summary>
-    public int Level { get; private set; }
-
-    /// <summary>
-    /// 最近一次通知时间
-    /// </summary>
-    public DateTime? LastNotifiedAt { get; private set; }
 
     /// <summary>
     /// 状态
@@ -83,13 +73,12 @@ public class WorkshopAlarm : FullAuditedAggregateRoot<Guid>
         DataItemType = dataItemType ?? string.Empty;
         Content = content;
         StartedAt = startedAt;
-        Level = 0;
         Status = WorkshopAlarmStatus.Active;
     }
 
     /// <summary>
     /// 刷新报警内容，返回是否真的发生了变化。
-    /// 没变化就不要落库——否则每次无意义的 UPDATE 都会刷新并发戳，跟升级流程打架。
+    /// 没变化就不要落库，避免每次轮询都产生无意义的 UPDATE。
     /// </summary>
     public bool RefreshContent(string content)
     {

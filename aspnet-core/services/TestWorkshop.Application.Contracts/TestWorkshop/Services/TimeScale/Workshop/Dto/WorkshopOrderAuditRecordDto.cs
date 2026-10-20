@@ -23,4 +23,6 @@ public class WorkshopOrderAuditRecordDto : EntityDto<Guid>
     public string AuditorName { get; set; }
 
     public DateTime AuditedAt { get; set; }
+
+    public int ReportFileCount { get; set; }
 }

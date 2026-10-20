@@ -5,6 +5,8 @@ import type { VbenFormProps } from '@vben/common-ui';
 
 import type { VxeGridProps } from '#/adapter/vxe-table';
 
+import { onMounted, onUnmounted } from 'vue';
+
 import { Page } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 
@@ -41,13 +43,6 @@ const alarmTypeLabels: Record<number, string> = {
   [WorkshopAlarmType.Relation]: '关联报警',
   [WorkshopAlarmType.Device]: '设备报警',
   [WorkshopAlarmType.Communication]: '通信报警',
-};
-
-const levelLabels: Record<number, string> = {
-  0: '未通知',
-  1: '一级',
-  2: '二级',
-  3: '三级',
 };
 
 const formOptions: VbenFormProps = {
@@ -129,13 +124,6 @@ const gridOptions: VxeGridProps<WorkshopAlarmDto> = {
     },
     {
       align: 'center',
-      field: 'level',
-      minWidth: 90,
-      slots: { default: 'level' },
-      title: '通知级别',
-    },
-    {
-      align: 'center',
       field: 'status',
       minWidth: 100,
       slots: { default: 'status' },
@@ -181,9 +169,23 @@ const gridOptions: VxeGridProps<WorkshopAlarmDto> = {
   },
 };
 
-const [Grid] = useVbenVxeGrid({
+const [Grid, gridApi] = useVbenVxeGrid({
   formOptions,
   gridOptions,
+});
+
+let refreshTimer: ReturnType<typeof setInterval> | undefined;
+
+onMounted(() => {
+  refreshTimer = setInterval(() => {
+    void gridApi.query();
+  }, 10_000);
+});
+
+onUnmounted(() => {
+  if (refreshTimer) {
+    clearInterval(refreshTimer);
+  }
 });
 </script>
 
@@ -194,9 +196,6 @@ const [Grid] = useVbenVxeGrid({
         <Tag color="blue">
           {{ alarmTypeLabels[row.alarmType] ?? row.alarmTypeName }}
         </Tag>
-      </template>
-      <template #level="{ row }">
-        {{ levelLabels[row.level] ?? row.level }}
       </template>
       <template #status="{ row }">
         <Tag
