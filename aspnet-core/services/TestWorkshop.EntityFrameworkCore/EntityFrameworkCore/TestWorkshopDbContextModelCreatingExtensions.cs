@@ -80,10 +80,6 @@ public static class TestWorkshopDbContextModelCreatingExtensions
                 .HasColumnType("timestamp without time zone")
                 .HasComment("测试报告获取完成时间");
 
-            b.Property(p => p.TestReportError)
-                .HasMaxLength(TestWorkshopConsts.MaxLength2000)
-                .HasComment("测试报告获取失败原因");
-
             b.Property(p => p.TenantId)
                 .HasComment("租户ID");
 
@@ -103,6 +99,7 @@ public static class TestWorkshopDbContextModelCreatingExtensions
             b.HasIndex(x => new { x.DeviceId, x.CreationTime })
                 .HasDatabaseName("IX_AppWorkshopOrders_DeviceId_CreationTime");
             b.HasIndex(x => new { x.Status, x.TestStartedAt });
+            b.HasIndex(x => new { x.Status, x.TestReportStatus });
 
             // PostgreSQL 部分唯一索引：一个设备只能有一个测试中订单。
             b.HasIndex(x => x.DeviceId)
@@ -161,6 +158,74 @@ public static class TestWorkshopDbContextModelCreatingExtensions
                 .OnDelete(DeleteBehavior.Restrict);
 
             b.HasIndex(x => new { x.OrderId, x.AuditedAt });
+        });
+
+        builder.Entity<WorkshopOrderReportFetchRecord>(b =>
+        {
+            b.ToTable(
+                TestWorkshopDbProperties.DbTablePrefix + "WorkshopOrderReportFetchRecords",
+                TestWorkshopDbProperties.DbSchema);
+
+            b.HasKey(x => x.Id);
+
+            b.Property(p => p.OrderId)
+                .IsRequired()
+                .HasComment("订单ID");
+            b.Property(p => p.TriggerType)
+                .IsRequired()
+                .HasComment("触发方式 (0=自动 1=手动)");
+            b.Property(p => p.Status)
+                .IsRequired()
+                .HasComment("请求状态 (0=排队中 1=获取中 2=无报告 3=成功 4=失败)");
+            b.Property(p => p.AttemptNo)
+                .IsRequired()
+                .HasComment("请求序号");
+            b.Property(p => p.ScheduledAt)
+                .HasColumnType("timestamp without time zone")
+                .IsRequired()
+                .HasComment("允许执行本次请求的时间");
+            b.Property(p => p.StartedAt)
+                .HasColumnType("timestamp without time zone")
+                .HasComment("开始请求时间");
+            b.Property(p => p.CompletedAt)
+                .HasColumnType("timestamp without time zone")
+                .HasComment("请求完成时间");
+            b.Property(p => p.HttpStatusCode)
+                .HasComment("外部接口HTTP状态码");
+            b.Property(p => p.ExternalReportId)
+                .HasMaxLength(TestWorkshopConsts.MaxLength256)
+                .HasComment("外部报告ID（接口确定后使用）");
+            b.Property(p => p.ErrorCode)
+                .HasMaxLength(TestWorkshopConsts.MaxLength64)
+                .HasComment("错误码");
+            b.Property(p => p.ErrorMessage)
+                .HasMaxLength(TestWorkshopConsts.MaxLength2000)
+                .HasComment("错误信息");
+            b.Property(p => p.FileCount)
+                .IsRequired()
+                .HasComment("本次获取的文件数量");
+            b.Property(p => p.IsRetryable)
+                .IsRequired()
+                .HasDefaultValue(true)
+                .HasComment("失败后是否允许自动重试");
+            b.Property(p => p.TenantId)
+                .HasComment("租户ID");
+
+            b.ConfigureByConvention();
+
+            b.HasOne<WorkshopOrder>()
+                .WithMany()
+                .HasForeignKey(x => x.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasIndex(x => new { x.OrderId, x.CreationTime })
+                .HasDatabaseName("IX_AppWorkshopOrderReportFetchRecords_OrderId_CreationTime");
+            b.HasIndex(x => new { x.Status, x.ScheduledAt })
+                .HasDatabaseName("IX_AppWorkshopOrderReportFetchRecords_Status_ScheduledAt");
+            b.HasIndex(x => x.OrderId)
+                .IsUnique()
+                .HasFilter("\"Status\" IN (0, 1) AND \"IsDeleted\" = false")
+                .HasDatabaseName("UX_AppWorkshopOrderReportFetchRecords_ActiveOrder");
         });
 
         // ✅ WorkshopTelemetryTask 配置（清爽版）

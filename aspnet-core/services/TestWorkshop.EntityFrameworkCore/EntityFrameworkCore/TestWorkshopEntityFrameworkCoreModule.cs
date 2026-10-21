@@ -27,6 +27,10 @@ public class TestWorkshopEntityFrameworkCoreModule : AbpModule
         var configuration = context.Services.GetConfiguration();
         Configure<WorkshopTelemetryOptions>(configuration.GetSection("WorkshopTelemetry"));
         Configure<WorkshopAlarmOptions>(configuration.GetSection("WorkshopAlarm"));
+        Configure<WorkshopTestReportOptions>(configuration.GetSection("WorkshopTestReport"));
+        context.Services.AddTransient<
+            IWorkshopTestReportFetcher,
+            PlaceholderWorkshopTestReportFetcher>();
 
         context.Services.AddAbpDbContext<TestWorkshopDbContext>(options =>
         {
@@ -37,6 +41,9 @@ public class TestWorkshopEntityFrameworkCoreModule : AbpModule
             options.AddRepository<WorkshopDevice, WorkshopDeviceRepository>();
             options.AddRepository<WorkshopTelemetryTask, WorkshopTelemetryTaskRepository>();
             options.AddRepository<WorkshopOrder, EfCoreWorkshopOrderRepository>();
+            options.AddRepository<
+                WorkshopOrderReportFetchRecord,
+                EfCoreWorkshopOrderReportFetchRecordRepository>();
             options.AddRepository<WorkshopDeviceHeartbeat, WorkshopDeviceHeartbeatRepository>();
             options.AddRepository<WorkshopThresholdRule, WorkshopThresholdRuleRepository>();
             options.AddRepository<WorkshopAlarm, WorkshopAlarmRepository>();
@@ -77,6 +84,7 @@ public class TestWorkshopEntityFrameworkCoreModule : AbpModule
         context.AddBackgroundWorkerAsync<WorkshopTelemetryFileCleanupWorker>();
         context.AddBackgroundWorkerAsync<WorkshopDeviceHeartbeatMonitorWorker>();
         context.AddBackgroundWorkerAsync<WorkshopThresholdAlarmWorker>();
+        context.AddBackgroundWorkerAsync<WorkshopTestReportPollingWorker>();
     }
 
 }

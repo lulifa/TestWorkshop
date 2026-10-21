@@ -13,7 +13,23 @@
   "dashboard": {
     "title": "仪表盘",
     "analytics": "分析页",
-    "workspace": "工作台"
+    "workspace": "工作台",
+    "realtimeTitle": "实时运行分析",
+    "realtimeSubtitle": "在线设备实时指标与运行时长",
+    "onlineDevices": "在线设备",
+    "workshopCount": "覆盖车间",
+    "lastUpdated": "最近刷新",
+    "pressure": "压力",
+    "flow": "流量",
+    "temperature": "温度",
+    "onlineDuration": "累计在线时长",
+    "latestData": "最新数据",
+    "noOnlineDevices": "当前没有在线设备",
+    "refresh": "刷新",
+    "dataPending": "等待数据",
+    "autoRefreshHint": "每分钟自动刷新",
+    "allWorkshops": "全部车间",
+    "searchDevice": "搜索设备名称或编码"
   },
   "business": {
     "title": "业务管理",

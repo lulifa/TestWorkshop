@@ -16,6 +16,11 @@ public interface IWorkshopOrderRepository : IRepository<WorkshopOrder, Guid>
         DateTime earliestEndTime,
         DateTime latestStartTime);
 
+    Task<List<WorkshopOrder>> GetTestReportFetchCandidatesAsync(
+        DateTime earliestTestEndedAt,
+        int maxResultCount,
+        CancellationToken cancellationToken = default);
+
     Task<PagedResultDto<WorkshopOrder>> GetPagedListAsync(
         string orderNo = null,
         Guid? deviceId = null,

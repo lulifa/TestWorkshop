@@ -7,6 +7,7 @@ import type {
   WorkshopOrderCreateDto,
   WorkshopOrderDto,
   WorkshopOrderProjectSupervisorDto,
+  WorkshopOrderReportFetchRecordDto,
   WorkshopOrderReportFileDto,
   WorkshopOrderTelemetryGraphDto,
   WorkshopOrderUpdateDto,
@@ -129,6 +130,28 @@ export function useWorkshopOrderApi() {
     );
   }
 
+  function getTestReportFetchRecordsApi(
+    id: string,
+  ): Promise<WorkshopOrderReportFetchRecordDto[]> {
+    return request<WorkshopOrderReportFetchRecordDto[]>(
+      `/api/workshop/orders/${id}/test-report-fetch-records`,
+      {
+        method: 'GET',
+      },
+    );
+  }
+
+  function requestTestReportFetchApi(
+    id: string,
+  ): Promise<WorkshopOrderReportFetchRecordDto> {
+    return request<WorkshopOrderReportFetchRecordDto>(
+      `/api/workshop/orders/${id}/test-report/fetch`,
+      {
+        method: 'POST',
+      },
+    );
+  }
+
   function getTelemetryTasksApi(
     id: string,
     input?: WorkshopTelemetryTaskListInput,
@@ -175,9 +198,11 @@ export function useWorkshopOrderApi() {
     getApi,
     getListApi,
     getProjectSupervisorOptionsApi,
+    getTestReportFetchRecordsApi,
     getTestReportFilesApi,
     previewTestReportApi,
     previewTestReportFileApi,
+    requestTestReportFetchApi,
     getTelemetryGraphApi,
     getTelemetryTasksApi,
     startTestApi,

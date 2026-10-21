@@ -21,4 +21,13 @@ public class WorkshopRealtimeDataController : TestWorkshopController
     {
         await Service.PushAsync(input);
     }
+
+    /// <summary>
+    /// 获取实时数据分析页所需的在线设备指标。
+    /// </summary>
+    [HttpGet("dashboard")]
+    public virtual async Task<WorkshopRealtimeDashboardDto> GetDashboardAsync()
+    {
+        return await Service.GetDashboardAsync();
+    }
 }

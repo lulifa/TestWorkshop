@@ -16,6 +16,19 @@ enum WorkshopTestReportStatus {
   Ready = 2,
 }
 
+enum WorkshopTestReportFetchTriggerType {
+  Automatic = 0,
+  Manual = 1,
+}
+
+enum WorkshopTestReportFetchRecordStatus {
+  Failed = 4,
+  NoReport = 2,
+  Pending = 0,
+  Processing = 1,
+  Succeeded = 3,
+}
+
 enum WorkshopOrderAuditResult {
   Approved = 1,
   Rejected = 0,
@@ -113,9 +126,29 @@ interface WorkshopOrderReportFileDto {
   key: string;
 }
 
+interface WorkshopOrderReportFetchRecordDto extends EntityDto<string> {
+  attemptNo: number;
+  completedAt?: string;
+  creationTime: string;
+  errorCode?: string;
+  errorMessage?: string;
+  externalReportId?: string;
+  fileCount: number;
+  httpStatusCode?: number;
+  isRetryable: boolean;
+  orderId: string;
+  requestedByUserId?: string;
+  scheduledAt: string;
+  startedAt?: string;
+  status: WorkshopTestReportFetchRecordStatus;
+  triggerType: WorkshopTestReportFetchTriggerType;
+}
+
 export {
   WorkshopOrderAuditResult,
   WorkshopOrderStatus,
+  WorkshopTestReportFetchRecordStatus,
+  WorkshopTestReportFetchTriggerType,
   WorkshopTestReportStatus,
 };
 
@@ -126,6 +159,7 @@ export type {
   WorkshopOrderCreateDto,
   WorkshopOrderDto,
   WorkshopOrderProjectSupervisorDto,
+  WorkshopOrderReportFetchRecordDto,
   WorkshopOrderReportFileDto,
   WorkshopOrderTelemetryGraphDto,
   WorkshopOrderUpdateDto,

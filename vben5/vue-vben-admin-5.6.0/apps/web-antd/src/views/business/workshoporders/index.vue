@@ -18,6 +18,7 @@ import {
   useWorkshopDeviceApi,
   useWorkshopOrderApi,
   WorkshopOrderStatus,
+  WorkshopTestReportStatus,
 } from '@abp/core';
 import {
   AuditOutlined,
@@ -31,6 +32,7 @@ import {
   LineChartOutlined,
   PlayCircleOutlined,
   PlusOutlined,
+  ReloadOutlined,
   StopOutlined,
 } from '@ant-design/icons-vue';
 import {
@@ -55,6 +57,7 @@ const {
   downloadTestReportApi,
   endTestApi,
   getListApi,
+  requestTestReportFetchApi,
   startTestApi,
 } = useWorkshopOrderApi();
 const { getListApi: getDeviceListApi } = useWorkshopDeviceApi();
@@ -365,6 +368,14 @@ const [WorkshopOrderReportFilesDrawer, workshopOrderReportFilesDrawerApi] =
       () => import('./WorkshopOrderReportFilesDrawer.vue'),
     ),
   });
+const [
+  WorkshopOrderReportFetchRecordsDrawer,
+  workshopOrderReportFetchRecordsDrawerApi,
+] = useVbenDrawer({
+  connectedComponent: defineAsyncComponent(
+    () => import('./WorkshopOrderReportFetchRecordsDrawer.vue'),
+  ),
+});
 
 function onCreate() {
   workshopOrderModalApi.setData({});
@@ -394,6 +405,19 @@ function onAudit(row: WorkshopOrderDto) {
 function onPreviewReportFiles(row: WorkshopOrderDto) {
   workshopOrderReportFilesDrawerApi.setData(row);
   workshopOrderReportFilesDrawerApi.open();
+}
+
+function onViewReportFetchRecords(row: WorkshopOrderDto) {
+  workshopOrderReportFetchRecordsDrawerApi.setData(row);
+  workshopOrderReportFetchRecordsDrawerApi.open();
+}
+
+function onFetchReport(row: WorkshopOrderDto) {
+  confirmAction(
+    $t('TestWorkshop.WorkshopOrder:FetchReport'),
+    $t('TestWorkshop.WorkshopOrder:FetchReportConfirm', [row.orderNo]),
+    () => requestTestReportFetchApi(row.id),
+  );
 }
 
 function getDeviceLabel(row: WorkshopOrderDto) {
@@ -517,6 +541,17 @@ function canDownloadReport(row: WorkshopOrderDto) {
   );
 }
 
+function canFetchReport(row: WorkshopOrderDto) {
+  return (
+    canAudit.value &&
+    row.status === WorkshopOrderStatus.PendingReview &&
+    [
+      WorkshopTestReportStatus.Failed,
+      WorkshopTestReportStatus.NotReady,
+    ].includes(row.testReportStatus)
+  );
+}
+
 function canCancelOrder(row: WorkshopOrderDto) {
   return (
     canCancel.value &&
@@ -540,7 +575,8 @@ function hasMoreActions(row: WorkshopOrderDto) {
     canEdit(row) ||
     canCancelOrder(row) ||
     canDelete(row) ||
-    canViewAuditRecords(row)
+    canViewAuditRecords(row) ||
+    canFetchReport(row)
   );
 }
 
@@ -560,6 +596,14 @@ function handleMoreMenuClick(row: WorkshopOrderDto, info: MenuInfo) {
     }
     case 'edit': {
       onEdit(row);
+      break;
+    }
+    case 'fetchRecords': {
+      onViewReportFetchRecords(row);
+      break;
+    }
+    case 'fetchReport': {
+      onFetchReport(row);
       break;
     }
   }
@@ -700,6 +744,20 @@ onMounted(() => {
                     {{ $t('AbpUi.Delete') }}
                   </MenuItem>
                   <MenuItem
+                    v-if="canFetchReport(row)"
+                    key="fetchReport"
+                    :icon="h(ReloadOutlined)"
+                  >
+                    {{ $t('TestWorkshop.WorkshopOrder:FetchReport') }}
+                  </MenuItem>
+                  <MenuItem
+                    v-if="canViewAuditRecords(row)"
+                    key="fetchRecords"
+                    :icon="h(FileTextOutlined)"
+                  >
+                    {{ $t('TestWorkshop.WorkshopOrder:FetchRecords') }}
+                  </MenuItem>
+                  <MenuItem
                     v-if="canViewAuditRecords(row)"
                     key="auditRecords"
                     :icon="h(AuditOutlined)"
@@ -720,6 +778,7 @@ onMounted(() => {
     <WorkshopOrderGraphDrawer />
     <WorkshopOrderAuditDrawer @change="() => gridApi.query()" />
     <WorkshopOrderReportFilesDrawer />
+    <WorkshopOrderReportFetchRecordsDrawer />
   </Page>
 </template>
 

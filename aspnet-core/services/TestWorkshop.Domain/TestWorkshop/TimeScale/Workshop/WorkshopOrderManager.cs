@@ -6,33 +6,39 @@ public class WorkshopOrderManager : DomainService, IWorkshopOrderManager
 {
     private readonly IWorkshopOrderRepository _orderRepository;
     private readonly IRepository<WorkshopOrderAuditRecord, Guid> _auditRecordRepository;
+    private readonly IWorkshopOrderReportFetchRecordRepository _fetchRecordRepository;
     private readonly IWorkshopDeviceRepository _deviceRepository;
     private readonly IIdentityUserRepository _identityUserRepository;
     private readonly IdentityUserManager _identityUserManager;
     private readonly IGuidGenerator _guidGenerator;
     private readonly IClock _clock;
     private readonly ILogger<WorkshopOrderManager> _logger;
+    private readonly WorkshopTestReportOptions _testReportOptions;
     private readonly TimeSpan _telemetryTimeTolerance;
 
     public WorkshopOrderManager(
         IWorkshopOrderRepository orderRepository,
         IRepository<WorkshopOrderAuditRecord, Guid> auditRecordRepository,
+        IWorkshopOrderReportFetchRecordRepository fetchRecordRepository,
         IWorkshopDeviceRepository deviceRepository,
         IIdentityUserRepository identityUserRepository,
         IdentityUserManager identityUserManager,
         IGuidGenerator guidGenerator,
         IClock clock,
         ILogger<WorkshopOrderManager> logger,
-        IOptions<WorkshopTelemetryOptions> options)
+        IOptions<WorkshopTelemetryOptions> options,
+        IOptions<WorkshopTestReportOptions> testReportOptions)
     {
         _orderRepository = orderRepository;
         _auditRecordRepository = auditRecordRepository;
+        _fetchRecordRepository = fetchRecordRepository;
         _deviceRepository = deviceRepository;
         _identityUserRepository = identityUserRepository;
         _identityUserManager = identityUserManager;
         _guidGenerator = guidGenerator;
         _clock = clock;
         _logger = logger;
+        _testReportOptions = testReportOptions.Value;
         options.Value.Validate();
         _telemetryTimeTolerance = TimeSpan.FromSeconds(options.Value.OrderMatchToleranceSeconds);
     }
@@ -178,12 +184,64 @@ public class WorkshopOrderManager : DomainService, IWorkshopOrderManager
         return order;
     }
 
-    public virtual async Task<WorkshopOrder> MarkTestReportFetchFailedAsync(Guid id, string error)
+    public virtual async Task<WorkshopOrder> MarkTestReportFetchFailedAsync(Guid id)
     {
         var order = await _orderRepository.GetAsync(id);
-        order.MarkTestReportFetchFailed(error);
+        order.MarkTestReportFetchFailed();
         await _orderRepository.UpdateAsync(order, autoSave: true);
         return order;
+    }
+
+    public virtual async Task<WorkshopOrder> MarkTestReportNotReadyAsync(Guid id)
+    {
+        var order = await _orderRepository.GetAsync(id);
+        order.MarkTestReportNotReady();
+        await _orderRepository.UpdateAsync(order, autoSave: true);
+        return order;
+    }
+
+    public virtual async Task<WorkshopOrderReportFetchRecord> RequestManualTestReportFetchAsync(
+        Guid id,
+        Guid requestedByUserId)
+    {
+        if (!_testReportOptions.Enabled)
+        {
+            throw new UserFriendlyException("测试报告接口尚未启用");
+        }
+
+        var order = await _orderRepository.GetAsync(id);
+        if (order.Status != WorkshopOrderStatus.PendingReview)
+        {
+            throw new UserFriendlyException("只有测试完成未审核的订单才能获取测试报告");
+        }
+
+        if (order.TestReportStatus == WorkshopTestReportStatus.Ready)
+        {
+            throw new UserFriendlyException("测试报告已经获取，无需重复获取");
+        }
+
+        if (await _fetchRecordRepository.HasActiveRecordAsync(order.Id))
+        {
+            throw new UserFriendlyException("测试报告正在获取中，请稍后");
+        }
+
+        var attemptNo = await _fetchRecordRepository.GetAttemptCountAsync(order.Id) + 1;
+        var record = new WorkshopOrderReportFetchRecord(
+            _guidGenerator.Create(),
+            order.Id,
+            WorkshopTestReportFetchTriggerType.Manual,
+            requestedByUserId,
+            attemptNo,
+            GetLocalNow(),
+            CurrentTenant.Id);
+
+        await _fetchRecordRepository.InsertAsync(record, autoSave: true);
+        _logger.LogInformation(
+            "手动请求获取测试报告: OrderId={OrderId}, OrderNo={OrderNo}, UserId={UserId}",
+            order.Id,
+            order.OrderNo,
+            requestedByUserId);
+        return record;
     }
 
     public virtual async Task DeleteAsync(Guid id)

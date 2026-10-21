@@ -11,18 +11,30 @@ public class WorkshopRealtimeDataAppService : TestWorkshopAppService, IWorkshopR
 {
     private readonly IWorkshopRealtimeDataRepository _realtimeDataRepository;
     private readonly IWorkshopDeviceRepository _deviceRepository;
+    private readonly IWorkshopDeviceHeartbeatRepository _heartbeatRepository;
+    private readonly IOrganizationUnitRepository _organizationUnitRepository;
+    private readonly IWorkshopOrganizationUnitAccessChecker _organizationUnitAccessChecker;
     private readonly IClock _clock;
+    private readonly WorkshopAlarmOptions _alarmOptions;
     private readonly ILogger<WorkshopRealtimeDataAppService> _logger;
 
     public WorkshopRealtimeDataAppService(
         IWorkshopRealtimeDataRepository realtimeDataRepository,
         IWorkshopDeviceRepository deviceRepository,
+        IWorkshopDeviceHeartbeatRepository heartbeatRepository,
+        IOrganizationUnitRepository organizationUnitRepository,
+        IWorkshopOrganizationUnitAccessChecker organizationUnitAccessChecker,
         IClock clock,
+        IOptions<WorkshopAlarmOptions> alarmOptions,
         ILogger<WorkshopRealtimeDataAppService> logger)
     {
         _realtimeDataRepository = realtimeDataRepository;
         _deviceRepository = deviceRepository;
+        _heartbeatRepository = heartbeatRepository;
+        _organizationUnitRepository = organizationUnitRepository;
+        _organizationUnitAccessChecker = organizationUnitAccessChecker;
         _clock = clock;
+        _alarmOptions = alarmOptions.Value;
         _logger = logger;
     }
 
@@ -84,6 +96,107 @@ public class WorkshopRealtimeDataAppService : TestWorkshopAppService, IWorkshopR
         }
 
         await _realtimeDataRepository.UpsertAsync(data);
+    }
+
+    [Authorize]
+    public virtual async Task<WorkshopRealtimeDashboardDto> GetDashboardAsync()
+    {
+        var now = _clock.Now;
+        var timeout = TimeSpan.FromSeconds(_alarmOptions.CommunicationTimeoutSeconds);
+        var onlineThreshold = now - timeout;
+
+        var heartbeats = await _heartbeatRepository.GetListAsync(
+            includeDetails: false,
+            cancellationToken: default);
+        var onlineHeartbeats = heartbeats
+            .Where(x => x.LastHeartbeatAt >= onlineThreshold)
+            .GroupBy(x => x.DeviceId)
+            .Select(group => group.OrderByDescending(x => x.LastHeartbeatAt).First())
+            .ToList();
+        var onlineDeviceIds = onlineHeartbeats
+            .Select(x => x.DeviceId)
+            .ToHashSet();
+
+        if (onlineDeviceIds.Count == 0)
+        {
+            return new WorkshopRealtimeDashboardDto
+            {
+                GeneratedAt = DateTime.SpecifyKind(now, DateTimeKind.Unspecified),
+                OnlineTimeoutSeconds = _alarmOptions.CommunicationTimeoutSeconds
+            };
+        }
+
+        var canViewAll = CurrentUser.IsInRole(RoleConstants.admin)
+                         || CurrentUser.IsInRole(RoleConstants.dispatcher)
+                         || CurrentUser.IsInRole(RoleConstants.auditor);
+        var accessibleOrganizationUnitIds = canViewAll
+            ? null
+            : await _organizationUnitAccessChecker.GetAccessibleOrganizationUnitIdsAsync();
+        var devices = (await _deviceRepository.GetListAsync(
+                includeDetails: false,
+                cancellationToken: default))
+            .Where(x => onlineDeviceIds.Contains(x.Id))
+            .Where(x => accessibleOrganizationUnitIds == null
+                        || accessibleOrganizationUnitIds.Contains(x.OrganizationUnitId))
+            .ToList();
+
+        if (devices.Count == 0)
+        {
+            return new WorkshopRealtimeDashboardDto
+            {
+                GeneratedAt = DateTime.SpecifyKind(now, DateTimeKind.Unspecified),
+                OnlineTimeoutSeconds = _alarmOptions.CommunicationTimeoutSeconds
+            };
+        }
+
+        var deviceIds = devices.Select(x => x.Id).ToHashSet();
+        var latestData = (await _realtimeDataRepository.GetLatestPerDeviceAsync())
+            .Where(x => deviceIds.Contains(x.DeviceId))
+            .ToDictionary(x => x.DeviceId);
+        var organizationUnits = await _organizationUnitRepository.GetListAsync(false);
+        var organizationUnitNames = organizationUnits.ToDictionary(
+            x => x.Id,
+            x => x.DisplayName);
+        var heartbeatMap = onlineHeartbeats
+            .Where(x => deviceIds.Contains(x.DeviceId))
+            .ToDictionary(x => x.DeviceId);
+
+        var items = devices
+            .Select(device =>
+            {
+                var heartbeat = heartbeatMap[device.Id];
+                latestData.TryGetValue(device.Id, out var latest);
+                var elapsedSeconds = Math.Max(
+                    0,
+                    (long)Math.Floor((now - heartbeat.LastHeartbeatAt).TotalSeconds));
+                return new WorkshopRealtimeDeviceDto
+                {
+                    DeviceId = device.Id,
+                    DeviceCode = device.Code,
+                    DeviceName = device.Name,
+                    DeviceType = device.Type,
+                    DeviceTypeName = device.Type.ToString(),
+                    OrganizationUnitId = device.OrganizationUnitId,
+                    OrganizationUnitName = organizationUnitNames.GetValueOrDefault(
+                        device.OrganizationUnitId),
+                    Pressure = latest?.Pressure,
+                    Flow = latest?.Flow,
+                    Temperature = latest?.Temperature,
+                    OnlineDurationSeconds = heartbeat.TotalRuntimeSeconds + elapsedSeconds,
+                    LastHeartbeatAt = heartbeat.LastHeartbeatAt,
+                    DataTimestamp = latest?.Timestamp
+                };
+            })
+            .OrderBy(x => x.OrganizationUnitName)
+            .ThenBy(x => x.DeviceCode)
+            .ToList();
+
+        return new WorkshopRealtimeDashboardDto
+        {
+            GeneratedAt = DateTime.SpecifyKind(now, DateTimeKind.Unspecified),
+            OnlineTimeoutSeconds = _alarmOptions.CommunicationTimeoutSeconds,
+            Devices = items
+        };
     }
 
     /// <summary>

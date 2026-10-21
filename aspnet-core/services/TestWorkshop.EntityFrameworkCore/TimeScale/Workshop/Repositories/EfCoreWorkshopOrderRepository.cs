@@ -51,6 +51,34 @@ public class EfCoreWorkshopOrderRepository :
             .ToListAsync();
     }
 
+    public async Task<List<WorkshopOrder>> GetTestReportFetchCandidatesAsync(
+        DateTime earliestTestEndedAt,
+        int maxResultCount,
+        CancellationToken cancellationToken = default)
+    {
+        var dbSet = await GetDbSetAsync();
+        var dbContext = await GetDbContextAsync();
+        var fetchRecords = dbContext
+            .Set<WorkshopOrderReportFetchRecord>()
+            .IgnoreQueryFilters();
+        return await dbSet
+            .IgnoreQueryFilters()
+            .Where(x => !x.IsDeleted
+                        && x.Status == WorkshopOrderStatus.PendingReview
+                        && (x.TestReportStatus == WorkshopTestReportStatus.NotReady
+                            || x.TestReportStatus == WorkshopTestReportStatus.Failed)
+                        && x.TestEndedAt.HasValue
+                        && x.TestEndedAt.Value >= earliestTestEndedAt
+                        && !fetchRecords.Any(record =>
+                            !record.IsDeleted
+                            && record.OrderId == x.Id
+                            && (record.Status == WorkshopTestReportFetchRecordStatus.Pending
+                                || record.Status == WorkshopTestReportFetchRecordStatus.Processing)))
+            .OrderBy(x => x.TestEndedAt)
+            .Take(maxResultCount)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<PagedResultDto<WorkshopOrder>> GetPagedListAsync(
         string orderNo = null,
         Guid? deviceId = null,

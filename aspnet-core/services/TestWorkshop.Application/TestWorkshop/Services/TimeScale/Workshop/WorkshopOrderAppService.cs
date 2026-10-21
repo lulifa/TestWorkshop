@@ -26,6 +26,7 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
     private readonly IWorkshopOrderManager _orderManager;
     private readonly IWorkshopOrderRepository _orderRepository;
     private readonly IRepository<WorkshopOrderAuditRecord, Guid> _auditRecordRepository;
+    private readonly IWorkshopOrderReportFetchRecordRepository _fetchRecordRepository;
     private readonly IWorkshopDeviceRepository _deviceRepository;
     private readonly IWorkshopTelemetryTaskRepository _taskRepository;
     private readonly IWorkshopDeviceTelemetryRepository _telemetryRepository;
@@ -41,6 +42,7 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
         IWorkshopOrderManager orderManager,
         IWorkshopOrderRepository orderRepository,
         IRepository<WorkshopOrderAuditRecord, Guid> auditRecordRepository,
+        IWorkshopOrderReportFetchRecordRepository fetchRecordRepository,
         IWorkshopDeviceRepository deviceRepository,
         IWorkshopTelemetryTaskRepository taskRepository,
         IWorkshopDeviceTelemetryRepository telemetryRepository,
@@ -55,6 +57,7 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
         _orderManager = orderManager;
         _orderRepository = orderRepository;
         _auditRecordRepository = auditRecordRepository;
+        _fetchRecordRepository = fetchRecordRepository;
         _deviceRepository = deviceRepository;
         _taskRepository = taskRepository;
         _telemetryRepository = telemetryRepository;
@@ -329,6 +332,27 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
             .ToList();
     }
 
+    public virtual async Task<List<WorkshopOrderReportFetchRecordDto>> GetTestReportFetchRecordsAsync(
+        Guid id)
+    {
+        var order = await _orderRepository.GetAsync(id);
+        await EnsureOrderAccessibleAsync(order);
+        var records = await _fetchRecordRepository.GetListByOrderIdAsync(id);
+        return records.Select(ToFetchRecordDto).ToList();
+    }
+
+    [Authorize(Roles = RoleConstants.admin + "," + RoleConstants.auditor)]
+    public virtual async Task<WorkshopOrderReportFetchRecordDto> RequestTestReportFetchAsync(
+        Guid id)
+    {
+        var order = await _orderRepository.GetAsync(id);
+        await EnsureOrderAccessibleAsync(order);
+        var record = await _orderManager.RequestManualTestReportFetchAsync(
+            id,
+            CurrentUser.GetId());
+        return ToFetchRecordDto(record);
+    }
+
     public virtual async Task<IRemoteStreamContent> PreviewTestReportFileAsync(Guid id, string fileKey)
     {
         await _orderRepository.GetAsync(id);
@@ -548,6 +572,30 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
             TestReportFileCount = testReportFileCount,
             CreationTime = order.CreationTime,
             LastModificationTime = order.LastModificationTime
+        };
+    }
+
+    private static WorkshopOrderReportFetchRecordDto ToFetchRecordDto(
+        WorkshopOrderReportFetchRecord record)
+    {
+        return new WorkshopOrderReportFetchRecordDto
+        {
+            Id = record.Id,
+            OrderId = record.OrderId,
+            TriggerType = record.TriggerType,
+            RequestedByUserId = record.RequestedByUserId,
+            Status = record.Status,
+            AttemptNo = record.AttemptNo,
+            ScheduledAt = record.ScheduledAt,
+            StartedAt = record.StartedAt,
+            CompletedAt = record.CompletedAt,
+            HttpStatusCode = record.HttpStatusCode,
+            ExternalReportId = record.ExternalReportId,
+            ErrorCode = record.ErrorCode,
+            ErrorMessage = record.ErrorMessage,
+            FileCount = record.FileCount,
+            IsRetryable = record.IsRetryable,
+            CreationTime = record.CreationTime
         };
     }
 

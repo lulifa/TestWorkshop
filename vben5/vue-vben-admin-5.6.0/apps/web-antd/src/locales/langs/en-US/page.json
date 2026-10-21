@@ -13,7 +13,23 @@
   "dashboard": {
     "title": "Dashboard",
     "analytics": "Analytics",
-    "workspace": "Workspace"
+    "workspace": "Workspace",
+    "realtimeTitle": "Realtime Analysis",
+    "realtimeSubtitle": "Live metrics and runtime for online devices",
+    "onlineDevices": "Online Devices",
+    "workshopCount": "Workshops",
+    "lastUpdated": "Last Updated",
+    "pressure": "Pressure",
+    "flow": "Flow",
+    "temperature": "Temperature",
+    "onlineDuration": "Online Duration",
+    "latestData": "Latest Data",
+    "noOnlineDevices": "No online devices",
+    "refresh": "Refresh",
+    "dataPending": "Waiting for data",
+    "autoRefreshHint": "Refreshes every minute",
+    "allWorkshops": "All Workshops",
+    "searchDevice": "Search device name or code"
   },
   "business": {
     "title": "Business",

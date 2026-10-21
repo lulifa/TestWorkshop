@@ -52,11 +52,6 @@ public class WorkshopOrder : FullAuditedAggregateRoot<Guid>, IMultiTenant
     public DateTime? TestReportFetchedAt { get; private set; }
 
     /// <summary>
-    /// 测试报告获取失败原因
-    /// </summary>
-    public string TestReportError { get; private set; }
-
-    /// <summary>
     /// 租户ID
     /// </summary>
     public Guid? TenantId { get; protected set; }
@@ -140,7 +135,6 @@ public class WorkshopOrder : FullAuditedAggregateRoot<Guid>, IMultiTenant
         TestEndedAt = endedAt;
         TestReportStatus = WorkshopTestReportStatus.NotReady;
         TestReportFetchedAt = null;
-        TestReportError = null;
     }
 
     /// <summary>
@@ -180,7 +174,6 @@ public class WorkshopOrder : FullAuditedAggregateRoot<Guid>, IMultiTenant
     {
         EnsureReportCanBeUpdated();
         TestReportStatus = WorkshopTestReportStatus.Fetching;
-        TestReportError = null;
     }
 
     /// <summary>
@@ -196,17 +189,24 @@ public class WorkshopOrder : FullAuditedAggregateRoot<Guid>, IMultiTenant
         EnsureReportCanBeUpdated();
         TestReportFetchedAt = DateTime.SpecifyKind(fetchedAt, DateTimeKind.Unspecified);
         TestReportStatus = WorkshopTestReportStatus.Ready;
-        TestReportError = null;
     }
 
     /// <summary>
     /// 标记测试报告获取失败。
     /// </summary>
-    public void MarkTestReportFetchFailed(string error)
+    public void MarkTestReportFetchFailed()
     {
         EnsureReportCanBeUpdated();
         TestReportStatus = WorkshopTestReportStatus.Failed;
-        TestReportError = error?.Trim();
+    }
+
+    /// <summary>
+    /// 接口暂无报告时保持未获取状态。
+    /// </summary>
+    public void MarkTestReportNotReady()
+    {
+        EnsureReportCanBeUpdated();
+        TestReportStatus = WorkshopTestReportStatus.NotReady;
     }
 
     /// <summary>
@@ -240,8 +240,7 @@ public class WorkshopOrder : FullAuditedAggregateRoot<Guid>, IMultiTenant
 
     private void EnsureReportCanBeUpdated()
     {
-        if (Status != WorkshopOrderStatus.PendingReview
-            && Status != WorkshopOrderStatus.ReviewRejected)
+        if (Status != WorkshopOrderStatus.PendingReview)
         {
             throw new UserFriendlyException("当前订单状态不允许更新测试报告");
         }
@@ -282,4 +281,5 @@ public class WorkshopOrder : FullAuditedAggregateRoot<Guid>, IMultiTenant
 
         RequiredCompletionTime = DateTime.SpecifyKind(requiredCompletionTime, DateTimeKind.Unspecified);
     }
+
 }

@@ -11,6 +11,7 @@ public class TestWorkshopDbContext : AbpDbContext<TestWorkshopDbContext>, ITenan
 
     public DbSet<WorkshopOrder> Orders { get; set; }
     public DbSet<WorkshopOrderAuditRecord> OrderAuditRecords { get; set; }
+    public DbSet<WorkshopOrderReportFetchRecord> OrderReportFetchRecords { get; set; }
     public DbSet<WorkshopTelemetryTask> TelemetryTasks { get; set; }
     public DbSet<WorkshopDeviceHeartbeat> DeviceHeartbeats { get; set; }
     public DbSet<WorkshopThresholdRule> ThresholdRules { get; set; }

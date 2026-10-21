@@ -93,6 +93,20 @@ public class WorkshopOrderController : TestWorkshopController
         return await _service.GetTestReportFilesAsync(id);
     }
 
+    [HttpGet("{id}/test-report-fetch-records")]
+    public virtual async Task<List<WorkshopOrderReportFetchRecordDto>> GetTestReportFetchRecordsAsync(
+        Guid id)
+    {
+        return await _service.GetTestReportFetchRecordsAsync(id);
+    }
+
+    [HttpPost("{id}/test-report/fetch")]
+    public virtual async Task<WorkshopOrderReportFetchRecordDto> RequestTestReportFetchAsync(
+        Guid id)
+    {
+        return await _service.RequestTestReportFetchAsync(id);
+    }
+
     [HttpGet("{id}/test-report-files/{fileKey}/preview")]
     public virtual async Task<IRemoteStreamContent> PreviewTestReportFileAsync(Guid id, string fileKey)
     {

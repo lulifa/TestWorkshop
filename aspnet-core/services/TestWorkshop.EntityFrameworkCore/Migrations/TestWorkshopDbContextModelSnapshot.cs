@@ -1078,11 +1078,6 @@ namespace TestWorkshop.Migrations
                         .HasColumnType("timestamp without time zone")
                         .HasComment("实际测试结束时间（本地时间）");
 
-                    b.Property<string>("TestReportError")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
-                        .HasComment("测试报告获取失败原因");
-
                     b.Property<DateTime?>("TestReportFetchedAt")
                         .HasColumnType("timestamp without time zone")
                         .HasComment("测试报告获取完成时间");
@@ -1110,6 +1105,8 @@ namespace TestWorkshop.Migrations
 
                     b.HasIndex("DeviceId", "CreationTime")
                         .HasDatabaseName("IX_AppWorkshopOrders_DeviceId_CreationTime");
+
+                    b.HasIndex("Status", "TestReportStatus");
 
                     b.HasIndex("Status", "TestStartedAt");
 
@@ -1188,6 +1185,134 @@ namespace TestWorkshop.Migrations
                     b.HasIndex("OrderId", "AuditedAt");
 
                     b.ToTable("AppWorkshopOrderAuditRecords", (string)null);
+                });
+
+            modelBuilder.Entity("TestWorkshop.TimeScale.WorkshopOrderReportFetchRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("AttemptNo")
+                        .HasColumnType("integer")
+                        .HasComment("请求序号");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("timestamp without time zone")
+                        .HasComment("请求完成时间");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("ConcurrencyStamp");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<Guid?>("DeleterId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("DeleterId");
+
+                    b.Property<DateTime?>("DeletionTime")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("DeletionTime");
+
+                    b.Property<string>("ErrorCode")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasComment("错误码");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasComment("错误信息");
+
+                    b.Property<string>("ExternalReportId")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasComment("外部报告ID（接口确定后使用）");
+
+                    b.Property<string>("ExtraProperties")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("ExtraProperties");
+
+                    b.Property<int>("FileCount")
+                        .HasColumnType("integer")
+                        .HasComment("本次获取的文件数量");
+
+                    b.Property<int?>("HttpStatusCode")
+                        .HasColumnType("integer")
+                        .HasComment("外部接口HTTP状态码");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("IsDeleted");
+
+                    b.Property<bool>("IsRetryable")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasComment("失败后是否允许自动重试");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("LastModificationTime");
+
+                    b.Property<Guid?>("LastModifierId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("LastModifierId");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid")
+                        .HasComment("订单ID");
+
+                    b.Property<Guid?>("RequestedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("ScheduledAt")
+                        .HasColumnType("timestamp without time zone")
+                        .HasComment("允许执行本次请求的时间");
+
+                    b.Property<DateTime?>("StartedAt")
+                        .HasColumnType("timestamp without time zone")
+                        .HasComment("开始请求时间");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasComment("请求状态 (0=排队中 1=获取中 2=无报告 3=成功 4=失败)");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("TenantId")
+                        .HasComment("租户ID");
+
+                    b.Property<int>("TriggerType")
+                        .HasColumnType("integer")
+                        .HasComment("触发方式 (0=自动 1=手动)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_AppWorkshopOrderReportFetchRecords_ActiveOrder")
+                        .HasFilter("\"Status\" IN (0, 1) AND \"IsDeleted\" = false");
+
+                    b.HasIndex("OrderId", "CreationTime")
+                        .HasDatabaseName("IX_AppWorkshopOrderReportFetchRecords_OrderId_CreationTime");
+
+                    b.HasIndex("Status", "ScheduledAt")
+                        .HasDatabaseName("IX_AppWorkshopOrderReportFetchRecords_Status_ScheduledAt");
+
+                    b.ToTable("AppWorkshopOrderReportFetchRecords", (string)null);
                 });
 
             modelBuilder.Entity("TestWorkshop.TimeScale.WorkshopRealtimeData", b =>
@@ -3322,6 +3447,15 @@ namespace TestWorkshop.Migrations
                         .WithMany()
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("TestWorkshop.TimeScale.WorkshopOrderReportFetchRecord", b =>
+                {
+                    b.HasOne("TestWorkshop.TimeScale.WorkshopOrder", null)
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 

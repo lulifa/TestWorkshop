@@ -36,7 +36,13 @@ public interface IWorkshopOrderManager
 
     Task<WorkshopOrder> SetTestReportReadyAsync(Guid id);
 
-    Task<WorkshopOrder> MarkTestReportFetchFailedAsync(Guid id, string error);
+    Task<WorkshopOrder> MarkTestReportFetchFailedAsync(Guid id);
+
+    Task<WorkshopOrder> MarkTestReportNotReadyAsync(Guid id);
+
+    Task<WorkshopOrderReportFetchRecord> RequestManualTestReportFetchAsync(
+        Guid id,
+        Guid requestedByUserId);
 
     Task DeleteAsync(Guid id);
 
