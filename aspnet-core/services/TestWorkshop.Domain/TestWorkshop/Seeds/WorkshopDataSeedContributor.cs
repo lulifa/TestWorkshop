@@ -17,9 +17,6 @@ public class WorkshopDataSeedContributor : IDataSeedContributor, ITransientDepen
     private static readonly Guid ShenzhenOrganizationUnitId =
         Guid.Parse("3a23e342-9f4b-4c51-8a67-1e2d3c4b5a60");
 
-    private static readonly Guid HuangdaoFivaDeviceId =
-        Guid.Parse("3a23e343-7306-67e3-7171-97055130f7aa");
-
     private static readonly Guid HuangdaoSupervisorUserId =
         Guid.Parse("3a243501-1d0e-4f2a-9a11-000000000001");
 
@@ -61,9 +58,9 @@ public class WorkshopDataSeedContributor : IDataSeedContributor, ITransientDepen
     private const string DefaultUserPassword = "1q2w3E*";
 
     /// <summary>
-    /// 车间种子定义：一个车间组织单元 + 它挂载的标准人员。
+    /// 车间种子定义：一个车间组织单元及其标准人员。
     /// 新增车间时，只需在下面的 <see cref="Workshops"/> 里加一条，
-    /// 组织单元、车间主管/大区负责人/测试工程师的账号与角色都会自动创建。
+    /// 组织单元和账号角色会自动创建。
     /// </summary>
     private sealed class WorkshopSeedDefinition
     {
@@ -114,6 +111,50 @@ public class WorkshopDataSeedContributor : IDataSeedContributor, ITransientDepen
             SupervisorUserId = ShenzhenSupervisorUserId,
             RegionalManagerUserId = ShenzhenRegionalManagerUserId,
             TesterUserId = ShenzhenTesterUserId
+        }
+    };
+
+    /// <summary>
+    /// 车间设备种子。后续一个车间有多台设备时，直接追加一条即可。
+    /// </summary>
+    private sealed class WorkshopDeviceSeedDefinition
+    {
+        public string DeviceCode { get; init; }
+
+        public Guid DeviceId { get; init; }
+
+        public string Name { get; init; }
+
+        public Guid OrganizationUnitId { get; init; }
+
+        public DeviceTypeEnum Type { get; init; }
+    }
+
+    private static readonly WorkshopDeviceSeedDefinition[] WorkshopDevices =
+    {
+        new()
+        {
+            DeviceId = Guid.Parse("3a23e343-7306-67e3-7171-97055130f7aa"),
+            DeviceCode = "HD-FIVA-001",
+            Name = "FIVA测试台",
+            OrganizationUnitId = HuangdaoOrganizationUnitId,
+            Type = DeviceTypeEnum.FIVA
+        },
+        new()
+        {
+            DeviceId = Guid.Parse("3a23e344-1b42-4d34-8f62-91f66d4f0002"),
+            DeviceCode = "NB-FIVA-001",
+            Name = "FIVA测试台",
+            OrganizationUnitId = NingboOrganizationUnitId,
+            Type = DeviceTypeEnum.FIVA
+        },
+        new()
+        {
+            DeviceId = Guid.Parse("3a245301-0000-0000-0000-000000000301"),
+            DeviceCode = "SZ-FIVA-001",
+            Name = "FIVA测试台",
+            OrganizationUnitId = ShenzhenOrganizationUnitId,
+            Type = DeviceTypeEnum.FIVA
         }
     };
 
@@ -168,13 +209,16 @@ public class WorkshopDataSeedContributor : IDataSeedContributor, ITransientDepen
                 businessCode: null,
                 tenantId: context.TenantId);
 
-            // 每个车间：建组织单元，并按约定挂上车间主管 / 大区负责人 / 测试工程师
+            // 每个车间：建组织单元、标准人员和一台 FIVA 测试台
             foreach (var workshop in Workshops)
             {
                 await EnsureWorkshopAsync(company.Id, workshop, context.TenantId);
             }
 
-            await EnsureWorkshopDeviceAsync(HuangdaoOrganizationUnitId, context.TenantId);
+            foreach (var workshopDevice in WorkshopDevices)
+            {
+                await EnsureWorkshopDeviceAsync(workshopDevice, context.TenantId);
+            }
 
             // 单船项目主管是订单上的必选人员，先给一个默认账号
             await EnsureUserAsync(
@@ -310,20 +354,28 @@ public class WorkshopDataSeedContributor : IDataSeedContributor, ITransientDepen
         return organizationUnit;
     }
 
-    private async Task EnsureWorkshopDeviceAsync(Guid organizationUnitId, Guid? tenantId)
+    private async Task EnsureWorkshopDeviceAsync(
+        WorkshopDeviceSeedDefinition workshopDevice,
+        Guid? tenantId)
     {
-        var device = await _workshopDeviceRepository.FindByCodeAsync("HD-FIVA-001");
+        var device = await _workshopDeviceRepository.FindByCodeAsync(
+            workshopDevice.DeviceCode);
         if (device != null)
         {
+            device.Name = workshopDevice.Name;
+            device.Type = workshopDevice.Type;
+            device.OrganizationUnitId = workshopDevice.OrganizationUnitId;
+            await _workshopDeviceRepository.UpdateAsync(device);
+            await _unitOfWorkManager.Current.SaveChangesAsync();
             return;
         }
 
-        device = new WorkshopDevice(HuangdaoFivaDeviceId)
+        device = new WorkshopDevice(workshopDevice.DeviceId)
         {
-            Code = "HD-FIVA-001",
-            Name = "FIVA测试台",
-            Type = DeviceTypeEnum.FIVA,
-            OrganizationUnitId = organizationUnitId,
+            Code = workshopDevice.DeviceCode,
+            Name = workshopDevice.Name,
+            Type = workshopDevice.Type,
+            OrganizationUnitId = workshopDevice.OrganizationUnitId,
             TenantId = tenantId
         };
 
