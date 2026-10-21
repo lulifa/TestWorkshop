@@ -13,7 +13,6 @@ public class WorkshopRealtimeDataAppService : TestWorkshopAppService, IWorkshopR
     private readonly IWorkshopDeviceRepository _deviceRepository;
     private readonly IWorkshopDeviceHeartbeatRepository _heartbeatRepository;
     private readonly IOrganizationUnitRepository _organizationUnitRepository;
-    private readonly IWorkshopOrganizationUnitAccessChecker _organizationUnitAccessChecker;
     private readonly IClock _clock;
     private readonly WorkshopAlarmOptions _alarmOptions;
     private readonly ILogger<WorkshopRealtimeDataAppService> _logger;
@@ -23,7 +22,6 @@ public class WorkshopRealtimeDataAppService : TestWorkshopAppService, IWorkshopR
         IWorkshopDeviceRepository deviceRepository,
         IWorkshopDeviceHeartbeatRepository heartbeatRepository,
         IOrganizationUnitRepository organizationUnitRepository,
-        IWorkshopOrganizationUnitAccessChecker organizationUnitAccessChecker,
         IClock clock,
         IOptions<WorkshopAlarmOptions> alarmOptions,
         ILogger<WorkshopRealtimeDataAppService> logger)
@@ -32,7 +30,6 @@ public class WorkshopRealtimeDataAppService : TestWorkshopAppService, IWorkshopR
         _deviceRepository = deviceRepository;
         _heartbeatRepository = heartbeatRepository;
         _organizationUnitRepository = organizationUnitRepository;
-        _organizationUnitAccessChecker = organizationUnitAccessChecker;
         _clock = clock;
         _alarmOptions = alarmOptions.Value;
         _logger = logger;
@@ -126,18 +123,10 @@ public class WorkshopRealtimeDataAppService : TestWorkshopAppService, IWorkshopR
             };
         }
 
-        var canViewAll = CurrentUser.IsInRole(RoleConstants.admin)
-                         || CurrentUser.IsInRole(RoleConstants.dispatcher)
-                         || CurrentUser.IsInRole(RoleConstants.auditor);
-        var accessibleOrganizationUnitIds = canViewAll
-            ? null
-            : await _organizationUnitAccessChecker.GetAccessibleOrganizationUnitIdsAsync();
         var devices = (await _deviceRepository.GetListAsync(
                 includeDetails: false,
                 cancellationToken: default))
             .Where(x => onlineDeviceIds.Contains(x.Id))
-            .Where(x => accessibleOrganizationUnitIds == null
-                        || accessibleOrganizationUnitIds.Contains(x.OrganizationUnitId))
             .ToList();
 
         if (devices.Count == 0)

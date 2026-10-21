@@ -119,11 +119,11 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
         dashboard.AddItem(
             new ApplicationMenu(
                 name: "Vben5Analysis",
-                displayName: "分析页",
+                displayName: "实时数据",
                 url: "/analytics",
                 component: "/dashboard/analytics/index",
-                icon: "lucide:area-chart",
-                description: "分析页")
+                icon: "lucide:activity",
+                description: "实时数据")
             .SetProperty("title", "page.dashboard.analytics")
          );
 

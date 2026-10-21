@@ -44,6 +44,9 @@ ON CONFLICT ("Id") DO UPDATE SET
     "OrganizationUnitId" = EXCLUDED."OrganizationUnitId",
     "IsDeleted" = false;
 
+-- Demo heartbeat times are intentionally set in the future so the dashboard
+-- keeps showing all devices. This blocks real heartbeat accumulation until the
+-- future time catches up. Reset LastHeartbeatAt to NOW() when testing runtime.
 INSERT INTO "AppWorkshopDeviceHeartbeats"
     ("Id", "DeviceId", "DeviceCode", "LastHeartbeatAt", "FirstHeartbeatAt",
      "TotalRuntimeSeconds")
