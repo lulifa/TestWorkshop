@@ -56,6 +56,11 @@ const previewFiles = ref<WorkshopOrderReportFileDto[]>([]);
 const previewFileId = ref<string>();
 const auditResult = ref<WorkshopOrderAuditResult>();
 const maintenanceSuggestion = ref('');
+const previewUrlWithPdfOptions = computed(() =>
+  previewUrl.value
+    ? `${previewUrl.value}#toolbar=0&navpanes=0&view=FitH&zoom=page-width`
+    : '',
+);
 
 const roles = computed(() => {
   return abpStore.application?.currentUser.roles ?? [];
@@ -468,7 +473,7 @@ function revokePreviewUrl() {
       <div class="h-[78vh]">
         <iframe
           v-if="previewUrl"
-          :src="previewUrl"
+          :src="previewUrlWithPdfOptions"
           class="h-full w-full border-0"
         ></iframe>
       </div>

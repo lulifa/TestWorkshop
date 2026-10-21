@@ -81,12 +81,6 @@ public class WorkshopOrderController : TestWorkshopController
         return await _service.DownloadTestReportAsync(id);
     }
 
-    [HttpGet("{id}/test-report/preview")]
-    public virtual async Task<IRemoteStreamContent> PreviewTestReportAsync(Guid id)
-    {
-        return await _service.PreviewTestReportAsync(id);
-    }
-
     [HttpGet("{id}/test-report-files")]
     public virtual async Task<List<WorkshopOrderReportFileDto>> GetTestReportFilesAsync(Guid id)
     {

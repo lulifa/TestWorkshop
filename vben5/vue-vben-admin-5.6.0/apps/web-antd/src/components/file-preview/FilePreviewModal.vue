@@ -67,6 +67,11 @@ const textPreviewSize = computed(() =>
 const isTextPreviewTruncated = computed(
   () => isText.value && fileSize.value > 0,
 );
+const pdfObjectUrl = computed(() =>
+  objectUrl.value
+    ? `${objectUrl.value}#view=FitH&zoom=page-width&navpanes=0`
+    : '',
+);
 const isVideo = computed(
   () =>
     contentType.value.startsWith('video/') ||
@@ -156,7 +161,8 @@ function revokeObjectUrl() {
         </Button>
       </div>
       <div
-        class="flex min-h-0 flex-1 items-center justify-center overflow-hidden p-4"
+        class="flex min-h-0 flex-1 items-center justify-center overflow-hidden"
+        :class="isPdf ? 'p-0' : 'p-4'"
       >
         <div v-if="loading">
           {{ $t('TestWorkshop.FileManager:LoadingPreview') }}
@@ -169,7 +175,8 @@ function revokeObjectUrl() {
         />
         <iframe
           v-else-if="isPdf"
-          :src="objectUrl"
+          :src="pdfObjectUrl"
+          :title="fileName"
           class="h-full w-full border-0"
         ></iframe>
         <video

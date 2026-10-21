@@ -124,12 +124,6 @@ export function useWorkshopOrderApi() {
     );
   }
 
-  function previewTestReportApi(id: string): Promise<Blob> {
-    return requestClient.download(
-      `/api/workshop/orders/${id}/test-report/preview`,
-    );
-  }
-
   function getTestReportFetchRecordsApi(
     id: string,
   ): Promise<WorkshopOrderReportFetchRecordDto[]> {
@@ -200,7 +194,6 @@ export function useWorkshopOrderApi() {
     getProjectSupervisorOptionsApi,
     getTestReportFetchRecordsApi,
     getTestReportFilesApi,
-    previewTestReportApi,
     previewTestReportFileApi,
     requestTestReportFetchApi,
     getTelemetryGraphApi,

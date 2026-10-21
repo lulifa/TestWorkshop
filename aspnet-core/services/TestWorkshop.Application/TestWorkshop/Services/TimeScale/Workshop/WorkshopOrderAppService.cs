@@ -312,6 +312,7 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
             .ToList();
     }
 
+    [Authorize(Roles = RoleConstants.admin + "," + RoleConstants.auditor)]
     public virtual async Task<List<WorkshopOrderReportFileDto>> GetTestReportFilesAsync(Guid id)
     {
         await _orderRepository.GetAsync(id);
@@ -351,6 +352,7 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
         return ToFetchRecordDto(record);
     }
 
+    [Authorize(Roles = RoleConstants.admin + "," + RoleConstants.auditor)]
     public virtual async Task<IRemoteStreamContent> PreviewTestReportFileAsync(Guid id, string fileKey)
     {
         await _orderRepository.GetAsync(id);
@@ -405,20 +407,6 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
             output,
             $"{order.OrderNo}-测试报告.zip",
             "application/zip");
-    }
-
-    [Authorize]
-    public virtual async Task<IRemoteStreamContent> PreviewTestReportAsync(Guid id)
-    {
-        await _orderRepository.GetAsync(id);
-        var files = await GetTestReportFileObjectsAsync(id);
-        var first = files.FirstOrDefault();
-        if (first == null)
-        {
-            throw new UserFriendlyException("测试报告文件不存在");
-        }
-
-        return await ReadFileAsync(first.Id);
     }
 
     public virtual async Task<PagedResultDto<WorkshopTelemetryTaskDto>> GetTelemetryTasksAsync(

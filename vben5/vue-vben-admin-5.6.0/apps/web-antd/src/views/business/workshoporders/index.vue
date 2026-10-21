@@ -243,13 +243,6 @@ const gridOptions: VxeGridProps<WorkshopOrderDto> = {
       title: $t('TestWorkshop.WorkshopOrder:Status'),
     },
     {
-      align: 'center',
-      field: 'testReportFileCount',
-      minWidth: 130,
-      slots: { default: 'testReport' },
-      title: $t('TestWorkshop.WorkshopOrder:TestReport'),
-    },
-    {
       field: 'requiredCompletionTime',
       formatter: ({ cellValue }) => {
         return cellValue ? formatToDateTime(cellValue) : '-';
@@ -362,12 +355,6 @@ const [WorkshopOrderAuditDrawer, workshopOrderAuditDrawerApi] = useVbenDrawer({
   ),
 });
 
-const [WorkshopOrderReportFilesDrawer, workshopOrderReportFilesDrawerApi] =
-  useVbenDrawer({
-    connectedComponent: defineAsyncComponent(
-      () => import('./WorkshopOrderReportFilesDrawer.vue'),
-    ),
-  });
 const [
   WorkshopOrderReportFetchRecordsDrawer,
   workshopOrderReportFetchRecordsDrawerApi,
@@ -400,11 +387,6 @@ function onViewGraph(row: WorkshopOrderDto) {
 function onAudit(row: WorkshopOrderDto) {
   workshopOrderAuditDrawerApi.setData(row);
   workshopOrderAuditDrawerApi.open();
-}
-
-function onPreviewReportFiles(row: WorkshopOrderDto) {
-  workshopOrderReportFilesDrawerApi.setData(row);
-  workshopOrderReportFilesDrawerApi.open();
 }
 
 function onViewReportFetchRecords(row: WorkshopOrderDto) {
@@ -645,20 +627,6 @@ onMounted(() => {
           {{ statusLabelMap[row.status] ?? row.statusName }}
         </Tag>
       </template>
-      <template #testReport="{ row }">
-        <Button
-          v-if="row.testReportFileCount > 0"
-          :icon="h(FileTextOutlined)"
-          size="small"
-          type="link"
-          @click="onPreviewReportFiles(row)"
-        >
-          {{ $t('TestWorkshop.WorkshopOrder:PreviewReport') }} ({{
-            row.testReportFileCount
-          }})
-        </Button>
-        <span v-else>-</span>
-      </template>
       <template #action="{ row }">
         <div class="flex flex-row items-center justify-center">
           <Space :size="4">
@@ -777,7 +745,6 @@ onMounted(() => {
     <WorkshopOrderTasksDrawer />
     <WorkshopOrderGraphDrawer />
     <WorkshopOrderAuditDrawer @change="() => gridApi.query()" />
-    <WorkshopOrderReportFilesDrawer />
     <WorkshopOrderReportFetchRecordsDrawer />
   </Page>
 </template>
