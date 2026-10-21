@@ -121,7 +121,6 @@ public class WorkshopDeviceAppService : TestWorkshopAppService, IWorkshopDeviceA
             Code = code,
             Name = input.Name.Trim(),
             Type = input.Type,
-            Model = input.Model.Trim(),
             OrganizationUnitId = input.OrganizationUnitId,
             TenantId = CurrentTenant.Id
         };
@@ -156,7 +155,6 @@ public class WorkshopDeviceAppService : TestWorkshopAppService, IWorkshopDeviceA
 
         device.Name = input.Name.Trim();
         device.Type = input.Type;
-        device.Model = input.Model.Trim();
         device.OrganizationUnitId = input.OrganizationUnitId;
 
         await WorkshopDeviceRepository.UpdateAsync(device);

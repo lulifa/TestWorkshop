@@ -323,7 +323,6 @@ public class WorkshopDataSeedContributor : IDataSeedContributor, ITransientDepen
             Code = "HD-FIVA-001",
             Name = "FIVA测试台",
             Type = DeviceTypeEnum.FIVA,
-            Model = "NAB-II-60",
             OrganizationUnitId = organizationUnitId,
             TenantId = tenantId
         };

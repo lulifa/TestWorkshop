@@ -90,12 +90,6 @@ const [Form, formApi] = useVbenForm({
       rules: 'selectRequired',
     },
     {
-      component: 'Input',
-      fieldName: 'model',
-      label: $t('TestWorkshop.DisplayName:Model'),
-      rules: 'required',
-    },
-    {
       component: 'ApiTreeSelect',
       componentProps: {
         allowClear: false,

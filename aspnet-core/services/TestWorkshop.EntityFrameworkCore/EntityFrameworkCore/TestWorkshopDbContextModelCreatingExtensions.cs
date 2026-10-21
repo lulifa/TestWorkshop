@@ -30,9 +30,6 @@ public static class TestWorkshopDbContextModelCreatingExtensions
             b.Property(p => p.Name)
                 .HasMaxLength(TestWorkshopConsts.MaxLength128)
                 .IsRequired();
-            b.Property(p => p.Model)
-                .HasMaxLength(TestWorkshopConsts.MaxLength64);
-
             b.ConfigureByConvention();
 
             b.HasIndex(x => new { x.TenantId, x.Code }).IsUnique();

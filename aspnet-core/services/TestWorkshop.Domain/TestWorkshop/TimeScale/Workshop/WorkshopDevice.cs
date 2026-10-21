@@ -21,11 +21,6 @@ public class WorkshopDevice : FullAuditedAggregateRoot<Guid>, IMultiTenant
     public DeviceTypeEnum Type { get; set; }
 
     /// <summary>
-    /// 测试台型号（如 NAB-II-60，系统初始化固定死，人工维护）
-    /// </summary>
-    public string Model { get; set; }
-
-    /// <summary>
     /// 关联车间
     /// </summary>
     public Guid OrganizationUnitId { get; set; }

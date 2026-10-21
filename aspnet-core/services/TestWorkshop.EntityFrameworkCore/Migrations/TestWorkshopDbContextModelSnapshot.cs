@@ -877,10 +877,6 @@ namespace TestWorkshop.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("LastModifierId");
 
-                    b.Property<string>("Model")
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(128)
