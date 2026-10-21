@@ -262,7 +262,6 @@ public class WorkshopTestReportPollingWorker : AsyncPeriodicBackgroundWorkerBase
                         order.Id,
                         result.Files,
                         fileManager,
-                        fileObjectRepository,
                         guidGenerator,
                         ct);
                     record.MarkSucceeded(
@@ -391,21 +390,10 @@ public class WorkshopTestReportPollingWorker : AsyncPeriodicBackgroundWorkerBase
         Guid orderId,
         List<WorkshopTestReportFileContent> files,
         IFileObjectManager fileManager,
-        IFileObjectRepository fileObjectRepository,
         IGuidGenerator guidGenerator,
         CancellationToken ct)
     {
         var ownerId = orderId.ToString();
-        var oldFiles = await fileObjectRepository.GetListAsync(
-            x => x.OwnerType == SystemFileTypes.WorkshopTestReport
-                 && x.OwnerId == ownerId);
-        foreach (var oldFile in oldFiles)
-        {
-            await fileManager.DeleteFilesAsync(
-                SystemFileTypes.WorkshopTestReportPreview,
-                oldFile.Id.ToString());
-        }
-
         await fileManager.DeleteFilesAsync(SystemFileTypes.WorkshopTestReport, ownerId);
 
         var savedCount = 0;
@@ -432,23 +420,6 @@ public class WorkshopTestReportPollingWorker : AsyncPeriodicBackgroundWorkerBase
             }
 
             savedCount++;
-
-            if (file.PreviewContent != null
-                && !file.PreviewFileName.IsNullOrWhiteSpace())
-            {
-                await using (var normalizedPreview = await NormalizeContentStreamAsync(
-                                 file.PreviewContent,
-                                 _options.MaxFileSizeBytes,
-                                 ct))
-                {
-                    await fileManager.AppendAsync(
-                        normalizedPreview,
-                        file.PreviewFileName,
-                        SystemFileTypes.WorkshopTestReportPreview,
-                        rawFileId.ToString(),
-                        file.PreviewContentType);
-                }
-            }
         }
 
         return savedCount;

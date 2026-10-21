@@ -45,10 +45,7 @@ public class PlaceholderWorkshopTestReportFetcher : IWorkshopTestReportFetcher
                 {
                     FileName = $"{request.OrderNo}-mock-report.txt",
                     ContentType = "text/plain",
-                    Content = new MemoryStream(bytes, writable: false),
-                    PreviewFileName = $"{request.OrderNo}-mock-preview.txt",
-                    PreviewContentType = "text/plain",
-                    PreviewContent = new MemoryStream(bytes, writable: false)
+                    Content = new MemoryStream(bytes, writable: false)
                 }
             ]
         });

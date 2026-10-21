@@ -316,8 +316,6 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
     {
         await _orderRepository.GetAsync(id);
         var files = await GetTestReportFileObjectsAsync(id);
-        var previewFileIds = await GetPreviewFileIdsAsync(
-            files.Select(x => x.Id).ToList());
 
         return files
             .Select(x => new WorkshopOrderReportFileDto
@@ -326,7 +324,7 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
                 FileName = x.FileName,
                 FileSize = x.FileSize,
                 ContentType = x.ContentType,
-                HasPreview = previewFileIds.Contains(x.Id),
+                HasPreview = IsBrowserPreviewable(x.ContentType, x.FileName),
                 CreationTime = x.CreationTime
             })
             .ToList();
@@ -363,15 +361,7 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
             throw new UserFriendlyException("测试报告文件不存在");
         }
 
-        var previewFile = await _fileObjectManager.GetFileObjectByOwnerAsync(
-            SystemFileTypes.WorkshopTestReportPreview,
-            file.Id.ToString());
-        if (previewFile == null)
-        {
-            throw new UserFriendlyException("该报告暂无可预览内容");
-        }
-
-        return await ReadFileAsync(previewFile.Id);
+        return await ReadFileAsync(file.Id);
     }
 
     [Authorize(
@@ -428,15 +418,7 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
             throw new UserFriendlyException("测试报告文件不存在");
         }
 
-        var previewFile = await _fileObjectManager.GetFileObjectByOwnerAsync(
-            SystemFileTypes.WorkshopTestReportPreview,
-            first.Id.ToString());
-        if (previewFile == null)
-        {
-            throw new UserFriendlyException("该报告暂无可预览内容");
-        }
-
-        return await ReadFileAsync(previewFile.Id);
+        return await ReadFileAsync(first.Id);
     }
 
     public virtual async Task<PagedResultDto<WorkshopTelemetryTaskDto>> GetTelemetryTasksAsync(
@@ -620,28 +602,33 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
             x => x.CreationTime);
     }
 
-    private async Task<HashSet<Guid>> GetPreviewFileIdsAsync(List<Guid> reportFileIds)
+    private static bool IsBrowserPreviewable(string contentType, string fileName)
     {
-        if (reportFileIds.Count == 0)
+        if (contentType?.StartsWith("image/", StringComparison.OrdinalIgnoreCase) == true
+            || contentType?.StartsWith("text/", StringComparison.OrdinalIgnoreCase) == true
+            || string.Equals(contentType, "application/pdf", StringComparison.OrdinalIgnoreCase))
         {
-            return [];
+            return true;
         }
 
-        var ownerIds = reportFileIds.Select(x => x.ToString()).ToList();
-        var previewFiles = await _fileObjectRepository.GetListAsync(
-            x => x.OwnerType == SystemFileTypes.WorkshopTestReportPreview
-                 && ownerIds.Contains(x.OwnerId));
-
-        var result = new HashSet<Guid>();
-        foreach (var previewFile in previewFiles)
-        {
-            if (Guid.TryParse(previewFile.OwnerId, out var originalFileId))
-            {
-                result.Add(originalFileId);
-            }
-        }
-
-        return result;
+        var extension = Path.GetExtension(fileName).ToLowerInvariant();
+        return extension is ".bmp"
+            or ".csv"
+            or ".gif"
+            or ".ico"
+            or ".jpeg"
+            or ".jpg"
+            or ".json"
+            or ".log"
+            or ".md"
+            or ".pdf"
+            or ".png"
+            or ".svg"
+            or ".txt"
+            or ".webp"
+            or ".xml"
+            or ".yaml"
+            or ".yml";
     }
 
     private static string BuildReportFileKey(Guid orderId, Guid fileId)

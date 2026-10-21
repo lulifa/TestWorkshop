@@ -102,14 +102,10 @@ async function loadAntdLocale(lang: SupportedLanguagesType) {
 async function loadAbpLocale(lang: SupportedLanguagesType) {
   const abpStore = useAbpStore();
   const { getLocalizationApi } = useApplicationLocalizationsApi();
-  let localization = abpStore.localization;
-
-  if (lang !== localization?.currentCulture.cultureName) {
-    localization = await getLocalizationApi({
-      cultureName: lang,
-      onlyDynamics: false,
-    });
-  }
+  const localization = await getLocalizationApi({
+    cultureName: lang,
+    onlyDynamics: false,
+  });
   abpStore.setLocalization(localization);
   const locales = abpStore.getI18nLocales();
   return locales;

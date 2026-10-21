@@ -16,6 +16,9 @@ public class WorkshopOrderReportFileDto
 
     public string ContentType { get; set; }
 
+    /// <summary>
+    /// 当前文件类型是否支持浏览器预览
+    /// </summary>
     public bool HasPreview { get; set; }
 
     public DateTime CreationTime { get; set; }

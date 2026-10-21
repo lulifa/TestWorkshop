@@ -11,7 +11,7 @@ import { useFileApi } from '@abp/core';
 import { DownloadOutlined } from '@ant-design/icons-vue';
 import { Button } from 'ant-design-vue';
 
-const MAX_TEXT_PREVIEW_BYTES = 200 * 1024;
+const TEXT_PREVIEW_RATIO = 0.2;
 
 const blob = ref<Blob>();
 const contentType = ref('');
@@ -61,7 +61,12 @@ const isJson = computed(
   () =>
     contentType.value === 'application/json' || /\.json$/i.test(fileName.value),
 );
-const isLargeText = computed(() => fileSize.value > MAX_TEXT_PREVIEW_BYTES);
+const textPreviewSize = computed(() =>
+  Math.ceil(fileSize.value * TEXT_PREVIEW_RATIO),
+);
+const isTextPreviewTruncated = computed(
+  () => isText.value && fileSize.value > 0,
+);
 const isVideo = computed(
   () =>
     contentType.value.startsWith('video/') ||
@@ -71,7 +76,7 @@ const displayText = computed(() => {
   if (!isJson.value || !textContent.value) {
     return textContent.value;
   }
-  if (isLargeText.value) {
+  if (isTextPreviewTruncated.value) {
     return textContent.value;
   }
   try {
@@ -101,10 +106,7 @@ const [Modal, modalApi] = useVbenModal({
       blob.value = data;
       objectUrl.value = URL.createObjectURL(data);
       if (isText.value) {
-        const previewBlob =
-          fileSize.value > MAX_TEXT_PREVIEW_BYTES
-            ? data.slice(0, MAX_TEXT_PREVIEW_BYTES)
-            : data;
+        const previewBlob = data.slice(0, textPreviewSize.value);
         textContent.value = await previewBlob.text();
       }
       modalApi.setState({ title: row.fileName });
@@ -182,7 +184,7 @@ function revokeObjectUrl() {
             <pre
               class="min-h-0 flex-1 overflow-auto"
               :class="
-                isLargeText
+                isTextPreviewTruncated
                   ? 'whitespace-pre'
                   : 'whitespace-pre-wrap break-words'
               "
@@ -190,7 +192,7 @@ function revokeObjectUrl() {
               {{ displayText }}
             </pre>
             <div
-              v-if="isLargeText"
+              v-if="isTextPreviewTruncated"
               class="shrink-0 border-t px-4 py-2 text-xs opacity-70"
             >
               {{ $t('TestWorkshop.FileManager:LargeFilePreviewNotice') }}

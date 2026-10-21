@@ -9,6 +9,8 @@ import { $t } from '@vben/locales';
 import { formatToDateTime, useWorkshopOrderApi } from '@abp/core';
 import { Empty, Spin } from 'ant-design-vue';
 
+const TEXT_PREVIEW_RATIO = 0.2;
+
 const { getTestReportFilesApi, previewTestReportFileApi } =
   useWorkshopOrderApi();
 
@@ -20,6 +22,7 @@ const previewing = ref(false);
 const previewUrl = ref('');
 const previewContentType = ref('');
 const textContent = ref('');
+const isTextPreviewTruncated = ref(false);
 
 const isImage = computed(() => {
   const contentType =
@@ -96,7 +99,9 @@ async function selectFile(file: WorkshopOrderReportFileDto) {
     previewContentType.value = blob.type || file.contentType || '';
     previewUrl.value = URL.createObjectURL(blob);
     if (isText.value) {
-      textContent.value = await blob.text();
+      const previewSize = Math.ceil(blob.size * TEXT_PREVIEW_RATIO);
+      textContent.value = await blob.slice(0, previewSize).text();
+      isTextPreviewTruncated.value = blob.size > 0;
     }
   } finally {
     previewing.value = false;
@@ -110,6 +115,7 @@ function revokePreview() {
   }
   textContent.value = '';
   previewContentType.value = '';
+  isTextPreviewTruncated.value = false;
 }
 </script>
 
@@ -175,11 +181,21 @@ function revokePreview() {
             :src="previewUrl"
             class="h-full w-full border-0"
           ></iframe>
-          <pre
+          <div
             v-else-if="previewUrl && isText"
-            class="h-full w-full overflow-auto whitespace-pre-wrap break-words p-4 text-sm"
-            >{{ textContent }}
-          </pre>
+            class="flex h-full w-full flex-col"
+          >
+            <pre
+              class="min-h-0 flex-1 overflow-auto whitespace-pre-wrap break-words p-4 text-sm"
+              >{{ textContent }}
+            </pre>
+            <div
+              v-if="isTextPreviewTruncated"
+              class="shrink-0 border-t px-4 py-2 text-xs opacity-70"
+            >
+              {{ $t('TestWorkshop.FileManager:LargeFilePreviewNotice') }}
+            </div>
+          </div>
           <Empty
             v-else-if="selectedFile"
             :description="

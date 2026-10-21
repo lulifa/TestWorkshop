@@ -382,7 +382,7 @@
     "FileManager:PendingUpload": "Pending upload",
     "FileManager:ClearAll": "Clear all",
     "FileManager:LoadingPreview": "Loading preview...",
-    "FileManager:LargeFilePreviewNotice": "The file is large. Only the first 200KB is previewed. Download the file to view the full content.",
+    "FileManager:LargeFilePreviewNotice": "Only the first 20% of the file is previewed. Download the file to view the full content.",
     "FileManager:PreviewNotSupported": "This format cannot be previewed in the browser. Download the file to view it.",
     "FileManager:PleaseSelectFile": "Please select a file to upload first.",
     "FileManager:OwnerTypeRequired": "Please provide the business type through the business object.",

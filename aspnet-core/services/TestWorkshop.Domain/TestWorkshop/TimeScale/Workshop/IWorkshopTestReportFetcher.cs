@@ -66,10 +66,4 @@ public class WorkshopTestReportFileContent
     public string ContentType { get; set; }
 
     public Stream Content { get; set; }
-
-    public string PreviewFileName { get; set; }
-
-    public string PreviewContentType { get; set; }
-
-    public Stream PreviewContent { get; set; }
 }
