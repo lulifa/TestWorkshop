@@ -43,6 +43,16 @@ public class WorkshopDeviceController : TestWorkshopController
         return await Service.GetTypesAsync();
     }
 
+    /// <summary>
+    /// 创建车间并初始化车间人员账号
+    /// </summary>
+    [HttpPost("initialize-workshop")]
+    public virtual async Task<InitializeWorkshopResultDto> InitializeWorkshopAsync(
+        InitializeWorkshopInput input)
+    {
+        return await Service.InitializeWorkshopAsync(input);
+    }
+
     [HttpGet("{id}")]
     public virtual async Task<WorkshopDeviceDto> GetAsync(Guid id)
     {

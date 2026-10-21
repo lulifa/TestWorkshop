@@ -36,4 +36,9 @@ public interface IWorkshopDeviceAppService : IApplicationService
     /// 获取设备类型选项
     /// </summary>
     Task<ListResultDto<WorkshopDeviceTypeDto>> GetTypesAsync();
+
+    /// <summary>
+    /// 创建车间组织单元，并初始化车间主管、区域负责人和测试工程师账号
+    /// </summary>
+    Task<InitializeWorkshopResultDto> InitializeWorkshopAsync(InitializeWorkshopInput input);
 }

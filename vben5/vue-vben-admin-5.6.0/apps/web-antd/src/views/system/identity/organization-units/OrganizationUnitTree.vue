@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { OrganizationUnitDto } from '@abp/core';
 import type {
   AntTreeNodeDropEvent,
   DataNode,
@@ -47,7 +48,6 @@ const PermissionsOutlined = createIconifyIcon('icon-park-outline:permissions');
 const OrganizationUnitModal = defineAsyncComponent(
   () => import('./OrganizationUnitModal.vue'),
 );
-
 interface ContextMenuActionMap {
   [key: string]: (id: string) => Promise<void> | void;
 }
@@ -61,6 +61,7 @@ const actionsMap: ContextMenuActionMap = {
 
 const organizationUnits = ref<DataNode[]>([]);
 const loadedKeys = ref<string[]>([]);
+const expandedKeys = ref<string[]>([]);
 const selectedKey = ref<string>();
 
 const [OrganizationUnitEditModal, editModalApi] = useVbenModal({
@@ -74,39 +75,38 @@ const [OrganizationUnitPermissionModal, permissionModalApi] = useVbenModal({
 async function onRefresh() {
   loadedKeys.value = [];
   const { items } = await getRootListApi();
-  organizationUnits.value = items.map((item) => {
-    return {
-      isLeaf: false,
-      key: item.id,
-      title:
-        item.displayName +
-        (item.extraProperties?.BusinessCode
-          ? ` (${item.extraProperties.BusinessCode})`
-          : ''),
-      children: [],
-    };
-  });
+  organizationUnits.value = items.map((item) =>
+    toOrganizationUnitTreeNode(item),
+  );
 }
 
 /** 加载组织机构树节点 */
 async function onLoad(node: EventDataNode) {
+  await loadChildren(node.dataRef!);
+}
+
+async function loadChildren(node: DataNode) {
   const nodeKey = String(node.key);
   const { items } = await getChildrenApi({ id: nodeKey });
-  node.dataRef!.isLeaf = items.length === 0;
-  node.dataRef!.children = items.map((item): DataNode => {
-    return {
-      isLeaf: false,
-      key: item.id,
-      title:
-        item.displayName +
-        (item.extraProperties?.BusinessCode
-          ? ` (${item.extraProperties.BusinessCode})`
-          : ''),
-      children: [],
-    };
-  });
+  node.isLeaf = items.length === 0;
+  node.children = items.map((item) => toOrganizationUnitTreeNode(item));
   organizationUnits.value = [...organizationUnits.value];
-  loadedKeys.value.push(nodeKey);
+  if (!loadedKeys.value.includes(nodeKey)) {
+    loadedKeys.value.push(nodeKey);
+  }
+}
+
+function toOrganizationUnitTreeNode(item: OrganizationUnitDto): DataNode {
+  return {
+    children: [],
+    isLeaf: false,
+    key: item.id,
+    title:
+      item.displayName +
+      (item.extraProperties?.BusinessCode
+        ? ` (${item.extraProperties.BusinessCode})`
+        : ''),
+  };
 }
 
 /** 右键点击事件 */
@@ -118,6 +118,46 @@ function onRightClick() {
 function onCreate(parentId?: string) {
   editModalApi.setData({ parentId });
   editModalApi.open();
+}
+
+async function onOrganizationUnitChanged(result: {
+  id: string;
+  parentId?: string;
+}) {
+  const parentId = result.parentId;
+  if (!parentId) {
+    await onRefresh();
+    return;
+  }
+
+  const parentNode = findOrganizationUnitNode(
+    organizationUnits.value,
+    parentId,
+  );
+  if (!parentNode) {
+    await onRefresh();
+    return;
+  }
+
+  await loadChildren(parentNode);
+  selectedKey.value = result.id;
+  expandedKeys.value = [...new Set([parentId, ...expandedKeys.value])];
+}
+
+function findOrganizationUnitNode(
+  nodes: DataNode[],
+  id: string,
+): DataNode | undefined {
+  for (const node of nodes) {
+    if (String(node.key) === id) {
+      return node;
+    }
+
+    const childNode = findOrganizationUnitNode(node.children ?? [], id);
+    if (childNode) {
+      return childNode;
+    }
+  }
 }
 
 /** 编辑组织机构树 */
@@ -166,6 +206,10 @@ function onSelectChange(selectedKeys: Key[]) {
   selectedKey.value = String(selectedKeys[0]);
 }
 
+function onExpand(keys: Key[]) {
+  expandedKeys.value = keys.map(String);
+}
+
 /** 组织机构节点拖动事件 */
 function onDrop(info: AntTreeNodeDropEvent) {
   if (!info.dragNode.eventKey) {
@@ -194,12 +238,15 @@ watchEffect(() => {
       </Button>
     </template>
     <Tree
+      :expanded-keys="expandedKeys"
       :load-data="onLoad"
       :loaded-keys="loadedKeys"
+      :selected-keys="selectedKey ? [selectedKey] : []"
       :tree-data="organizationUnits"
       block-node
       draggable
       @drop="onDrop"
+      @expand="onExpand"
       @right-click="onRightClick"
       @select="onSelectChange"
     >
@@ -229,7 +276,7 @@ watchEffect(() => {
       </template>
     </Tree>
   </Card>
-  <OrganizationUnitEditModal @change="onRefresh" />
+  <OrganizationUnitEditModal @change="onOrganizationUnitChanged" />
   <OrganizationUnitPermissionModal />
 </template>
 

@@ -9,6 +9,7 @@ public class WorkshopDeviceAppService : TestWorkshopAppService, IWorkshopDeviceA
     protected IWorkshopDeviceRepository WorkshopDeviceRepository { get; }
     protected IOrganizationUnitRepository OrganizationUnitRepository { get; }
     protected IWorkshopDeviceHeartbeatRepository HeartbeatRepository { get; }
+    protected WorkshopProvisioner WorkshopProvisioner { get; }
     protected IWorkshopOrganizationUnitAccessChecker OrganizationUnitAccessChecker { get; }
     protected IAsyncQueryableExecuter AsyncQueryableExecuter { get; }
 
@@ -16,12 +17,14 @@ public class WorkshopDeviceAppService : TestWorkshopAppService, IWorkshopDeviceA
         IWorkshopDeviceRepository workshopDeviceRepository,
         IOrganizationUnitRepository organizationUnitRepository,
         IWorkshopDeviceHeartbeatRepository heartbeatRepository,
+        WorkshopProvisioner workshopProvisioner,
         IWorkshopOrganizationUnitAccessChecker organizationUnitAccessChecker,
         IAsyncQueryableExecuter asyncQueryableExecuter)
     {
         WorkshopDeviceRepository = workshopDeviceRepository;
         OrganizationUnitRepository = organizationUnitRepository;
         HeartbeatRepository = heartbeatRepository;
+        WorkshopProvisioner = workshopProvisioner;
         OrganizationUnitAccessChecker = organizationUnitAccessChecker;
         AsyncQueryableExecuter = asyncQueryableExecuter;
     }
@@ -229,6 +232,37 @@ public class WorkshopDeviceAppService : TestWorkshopAppService, IWorkshopDeviceA
             .ToList();
 
         return Task.FromResult(new ListResultDto<WorkshopDeviceTypeDto>(types));
+    }
+
+    [Authorize(Roles = RoleConstants.admin)]
+    public virtual async Task<InitializeWorkshopResultDto> InitializeWorkshopAsync(
+        InitializeWorkshopInput input)
+    {
+        var result = await WorkshopProvisioner.ProvisionAsync(new WorkshopProvisionRequest
+        {
+            DisplayName = input.DisplayName,
+            BusinessCode = input.BusinessCode,
+            AccountPrefix = input.AccountPrefix,
+            InitialPassword = input.InitialPassword,
+            ParentOrganizationUnitId = input.ParentOrganizationUnitId
+        });
+
+        return new InitializeWorkshopResultDto
+        {
+            OrganizationUnitId = result.OrganizationUnitId,
+            ParentOrganizationUnitId = result.ParentOrganizationUnitId,
+            DisplayName = result.DisplayName,
+            BusinessCode = result.BusinessCode,
+            Accounts = result.Accounts
+                .Select(x => new InitializeWorkshopAccountDto
+                {
+                    UserId = x.UserId,
+                    UserName = x.UserName,
+                    DisplayName = x.DisplayName,
+                    RoleName = x.RoleName
+                })
+                .ToList()
+        };
     }
 
     // 车间可见性统一走共享的 OrganizationUnitAccessChecker，这里只保留设备自己的提示文案

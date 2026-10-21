@@ -38,6 +38,10 @@
     "projectSupervisor": "单船项目主管",
     "requiredCompletionTime": "要求完成时间",
     "lastHeartbeat": "最后心跳",
-    "totalRuntime": "运行总时长"
+    "totalRuntime": "运行总时长",
+    "businessCode": "业务编码",
+    "initialPassword": "初始密码",
+    "initializeWorkshopPersonnel": "初始化车间人员",
+    "businessCodeRequired": "初始化车间人员时必须填写业务编码"
   }
 }

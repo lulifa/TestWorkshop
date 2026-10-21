@@ -43,10 +43,36 @@ interface WorkshopDeviceTypeDto {
   value: DeviceType;
 }
 
+interface InitializeWorkshopInput {
+  accountPrefix?: string;
+  businessCode: string;
+  displayName: string;
+  initialPassword: string;
+  parentOrganizationUnitId?: string;
+}
+
+interface InitializeWorkshopResultDto {
+  accounts: InitializeWorkshopAccountDto[];
+  businessCode: string;
+  displayName: string;
+  organizationUnitId: string;
+  parentOrganizationUnitId?: string;
+}
+
+interface InitializeWorkshopAccountDto {
+  displayName: string;
+  roleName: string;
+  userId: string;
+  userName: string;
+}
+
 export { DeviceType };
 
 export type {
   GetWorkshopDeviceListInput,
+  InitializeWorkshopAccountDto,
+  InitializeWorkshopInput,
+  InitializeWorkshopResultDto,
   WorkshopDeviceCreateDto,
   WorkshopDeviceDto,
   WorkshopDeviceTypeDto,

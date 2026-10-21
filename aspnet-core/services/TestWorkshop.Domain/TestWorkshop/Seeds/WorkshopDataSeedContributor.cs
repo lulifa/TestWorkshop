@@ -14,6 +14,9 @@ public class WorkshopDataSeedContributor : IDataSeedContributor, ITransientDepen
     private static readonly Guid NingboOrganizationUnitId =
         Guid.Parse("3a23e342-24be-80f4-d036-8aeb3cf29fb2");
 
+    private static readonly Guid ShenzhenOrganizationUnitId =
+        Guid.Parse("3a23e342-9f4b-4c51-8a67-1e2d3c4b5a60");
+
     private static readonly Guid HuangdaoFivaDeviceId =
         Guid.Parse("3a23e343-7306-67e3-7171-97055130f7aa");
 
@@ -37,6 +40,15 @@ public class WorkshopDataSeedContributor : IDataSeedContributor, ITransientDepen
 
     private static readonly Guid NingboTesterUserId =
         Guid.Parse("3a243507-1d0e-4f2a-9a11-000000000007");
+
+    private static readonly Guid ShenzhenSupervisorUserId =
+        Guid.Parse("3a243510-1d0e-4f2a-9a11-000000000010");
+
+    private static readonly Guid ShenzhenRegionalManagerUserId =
+        Guid.Parse("3a243511-1d0e-4f2a-9a11-000000000011");
+
+    private static readonly Guid ShenzhenTesterUserId =
+        Guid.Parse("3a243512-1d0e-4f2a-9a11-000000000012");
 
     private static readonly Guid DispatcherUserId =
         Guid.Parse("3a243508-1d0e-4f2a-9a11-000000000008");
@@ -92,6 +104,16 @@ public class WorkshopDataSeedContributor : IDataSeedContributor, ITransientDepen
             SupervisorUserId = NingboSupervisorUserId,
             RegionalManagerUserId = NingboRegionalManagerUserId,
             TesterUserId = NingboTesterUserId
+        },
+        new()
+        {
+            OrganizationUnitId = ShenzhenOrganizationUnitId,
+            DisplayName = "深圳车间",
+            BusinessCode = "SZ",
+            AccountPrefix = "sz",
+            SupervisorUserId = ShenzhenSupervisorUserId,
+            RegionalManagerUserId = ShenzhenRegionalManagerUserId,
+            TesterUserId = ShenzhenTesterUserId
         }
     };
 
@@ -99,6 +121,7 @@ public class WorkshopDataSeedContributor : IDataSeedContributor, ITransientDepen
     private readonly IOrganizationUnitRepository _organizationUnitRepository;
     private readonly OrganizationUnitManager _organizationUnitManager;
     private readonly IWorkshopDeviceRepository _workshopDeviceRepository;
+    private readonly WorkshopProvisioner _workshopProvisioner;
     private readonly IUnitOfWorkManager _unitOfWorkManager;
     private readonly IdentityUserManager _identityUserManager;
     private readonly IdentityRoleManager _identityRoleManager;
@@ -110,6 +133,7 @@ public class WorkshopDataSeedContributor : IDataSeedContributor, ITransientDepen
         IOrganizationUnitRepository organizationUnitRepository,
         OrganizationUnitManager organizationUnitManager,
         IWorkshopDeviceRepository workshopDeviceRepository,
+        WorkshopProvisioner workshopProvisioner,
         IUnitOfWorkManager unitOfWorkManager,
         IdentityUserManager identityUserManager,
         IdentityRoleManager identityRoleManager,
@@ -120,6 +144,7 @@ public class WorkshopDataSeedContributor : IDataSeedContributor, ITransientDepen
         _organizationUnitRepository = organizationUnitRepository;
         _organizationUnitManager = organizationUnitManager;
         _workshopDeviceRepository = workshopDeviceRepository;
+        _workshopProvisioner = workshopProvisioner;
         _unitOfWorkManager = unitOfWorkManager;
         _identityUserManager = identityUserManager;
         _identityRoleManager = identityRoleManager;
@@ -177,25 +202,18 @@ public class WorkshopDataSeedContributor : IDataSeedContributor, ITransientDepen
         WorkshopSeedDefinition workshop,
         Guid? tenantId)
     {
-        var organizationUnit = await EnsureOrganizationUnitAsync(
-            id: workshop.OrganizationUnitId,
-            displayName: workshop.DisplayName,
-            parentId: parentOrganizationUnitId,
-            businessCode: workshop.BusinessCode,
-            tenantId: tenantId);
-
-        var prefix = workshop.AccountPrefix;
-        var emailDomain = "@testworkshop.local";
-
-        await EnsureUserAsync(
-            workshop.SupervisorUserId, $"{prefix}.supervisor", $"{workshop.DisplayName}主管",
-            $"{prefix}.supervisor{emailDomain}", RoleConstants.supervisor, organizationUnit.Id, tenantId);
-        await EnsureUserAsync(
-            workshop.RegionalManagerUserId, $"{prefix}.regional", $"{workshop.DisplayName}大区负责人",
-            $"{prefix}.regional{emailDomain}", RoleConstants.regionalManager, organizationUnit.Id, tenantId);
-        await EnsureUserAsync(
-            workshop.TesterUserId, $"{prefix}.tester", $"{workshop.DisplayName}测试工程师",
-            $"{prefix}.tester{emailDomain}", RoleConstants.tester, organizationUnit.Id, tenantId);
+        await _workshopProvisioner.ProvisionAsync(new WorkshopProvisionRequest
+        {
+            OrganizationUnitId = workshop.OrganizationUnitId,
+            ParentOrganizationUnitId = parentOrganizationUnitId,
+            DisplayName = workshop.DisplayName,
+            BusinessCode = workshop.BusinessCode,
+            AccountPrefix = workshop.AccountPrefix,
+            InitialPassword = DefaultUserPassword,
+            SupervisorUserId = workshop.SupervisorUserId,
+            RegionalManagerUserId = workshop.RegionalManagerUserId,
+            TesterUserId = workshop.TesterUserId
+        });
     }
 
     private async Task EnsureUserAsync(

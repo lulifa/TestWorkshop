@@ -8,13 +8,19 @@ import type {
 import { useVbenForm, useVbenModal } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 
-import { useOrganizationUnitsApi } from '@abp/core';
+import { useOrganizationUnitsApi, useWorkshopDeviceApi } from '@abp/core';
+import { message } from 'ant-design-vue';
+
+interface OrganizationUnitChangeResult {
+  id: string;
+  parentId?: string;
+}
 
 defineOptions({
   name: 'OrganizationUnitModal',
 });
 const emits = defineEmits<{
-  (event: 'change', data: OrganizationUnitDto): void;
+  (event: 'change', data: OrganizationUnitChangeResult): void;
 }>();
 
 const defaultModel = {
@@ -23,6 +29,7 @@ const defaultModel = {
 } as OrganizationUnitDto;
 
 const { cancel, createApi, getApi, updateApi } = useOrganizationUnitsApi();
+const { initializeWorkshopApi } = useWorkshopDeviceApi();
 const [Form, formApi] = useVbenForm({
   handleSubmit: onSubmit,
   schema: [
@@ -61,6 +68,28 @@ const [Form, formApi] = useVbenForm({
       fieldName: 'extraProperties.BusinessCode',
       label: $t('AbpIdentity.OrganizationUnit:BusinessCode'),
     },
+    {
+      component: 'Checkbox',
+      dependencies: {
+        if: (values) => !values?.id,
+        triggerFields: ['id'],
+      },
+      fieldName: 'initializeWorkshopPersonnel',
+      label: $t('page.business.initializeWorkshopPersonnel'),
+    },
+    {
+      component: 'InputPassword',
+      componentProps: {
+        autocomplete: 'new-password',
+      },
+      dependencies: {
+        if: (values) => !values?.id && values?.initializeWorkshopPersonnel,
+        triggerFields: ['id', 'initializeWorkshopPersonnel'],
+      },
+      fieldName: 'initialPassword',
+      label: $t('page.business.initialPassword'),
+      rules: 'required',
+    },
   ],
   showDefaultActions: false,
 });
@@ -81,6 +110,7 @@ const [Modal, modalApi] = useVbenModal({
   },
   async onOpenChange(isOpen: boolean) {
     if (isOpen) {
+      await formApi.resetForm();
       const { id, parentId } = modalApi.getData<Record<string, any>>();
       if (id) {
         modalApi.setState({ loading: true });
@@ -97,6 +127,8 @@ const [Modal, modalApi] = useVbenModal({
       }
       formApi.setValues({
         ...defaultModel,
+        initialPassword: '1q2w3E*',
+        initializeWorkshopPersonnel: Boolean(parentId),
         parentId,
       });
       modalApi.setState({
@@ -108,14 +140,48 @@ const [Modal, modalApi] = useVbenModal({
 });
 
 async function onSubmit(input: Record<string, any>) {
+  const isUpdate = Boolean(input.id);
+  const initializePersonnel =
+    !isUpdate && Boolean(input.initializeWorkshopPersonnel);
+  const businessCode = String(input.extraProperties?.BusinessCode ?? '').trim();
+  if (initializePersonnel && !businessCode) {
+    message.warning($t('page.business.businessCodeRequired'));
+    return;
+  }
+
   try {
     modalApi.setState({
       submitting: true,
     });
-    const dto = input.id
-      ? await updateApi(input.id, input as OrganizationUnitUpdateDto)
-      : await createApi(input as OrganizationUnitCreateDto);
-    emits('change', dto);
+
+    let result: OrganizationUnitChangeResult;
+    if (isUpdate) {
+      const dto = await updateApi(input.id, {
+        displayName: input.displayName,
+        extraProperties: input.extraProperties,
+      } as OrganizationUnitUpdateDto);
+      result = { id: dto.id, parentId: dto.parentId };
+    } else if (initializePersonnel) {
+      const workshop = await initializeWorkshopApi({
+        businessCode,
+        displayName: input.displayName,
+        initialPassword: input.initialPassword,
+        parentOrganizationUnitId: input.parentId,
+      });
+      result = {
+        id: workshop.organizationUnitId,
+        parentId: workshop.parentOrganizationUnitId ?? input.parentId,
+      };
+    } else {
+      const dto = await createApi({
+        displayName: input.displayName,
+        extraProperties: input.extraProperties,
+        parentId: input.parentId,
+      } as OrganizationUnitCreateDto);
+      result = { id: dto.id, parentId: dto.parentId };
+    }
+
+    emits('change', result);
     modalApi.close();
   } finally {
     modalApi.setState({

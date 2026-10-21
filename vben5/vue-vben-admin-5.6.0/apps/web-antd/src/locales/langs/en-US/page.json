@@ -38,6 +38,10 @@
     "projectSupervisor": "Project Supervisor",
     "requiredCompletionTime": "Required Completion",
     "lastHeartbeat": "Last Heartbeat",
-    "totalRuntime": "Total Runtime"
+    "totalRuntime": "Total Runtime",
+    "businessCode": "Business Code",
+    "initialPassword": "Initial Password",
+    "initializeWorkshopPersonnel": "Initialize Workshop Personnel",
+    "businessCodeRequired": "Business code is required when initializing workshop personnel"
   }
 }

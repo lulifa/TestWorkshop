@@ -6,6 +6,8 @@ import type {
 
 import type {
   GetWorkshopDeviceListInput,
+  InitializeWorkshopInput,
+  InitializeWorkshopResultDto,
   WorkshopDeviceCreateDto,
   WorkshopDeviceDto,
   WorkshopDeviceTypeDto,
@@ -77,6 +79,18 @@ export function useWorkshopDeviceApi() {
     });
   }
 
+  function initializeWorkshopApi(
+    input: InitializeWorkshopInput,
+  ): Promise<InitializeWorkshopResultDto> {
+    return request<InitializeWorkshopResultDto>(
+      '/api/workshop/device/initialize-workshop',
+      {
+        data: input,
+        method: 'POST',
+      },
+    );
+  }
+
   return {
     cancel,
     createApi,
@@ -85,6 +99,7 @@ export function useWorkshopDeviceApi() {
     getListApi,
     getOrganizationUnitsApi,
     getTypesApi,
+    initializeWorkshopApi,
     updateApi,
   };
 }
