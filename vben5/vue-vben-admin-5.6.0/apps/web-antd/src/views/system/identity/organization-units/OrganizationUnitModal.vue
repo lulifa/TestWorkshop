@@ -65,6 +65,11 @@ const [Form, formApi] = useVbenForm({
       componentProps: {
         autocomplete: 'off',
       },
+      dependencies: {
+        required: (values) =>
+          !values?.id && Boolean(values?.initializeWorkshopPersonnel),
+        triggerFields: ['id', 'initializeWorkshopPersonnel'],
+      },
       fieldName: 'extraProperties.BusinessCode',
       label: $t('AbpIdentity.OrganizationUnit:BusinessCode'),
     },
