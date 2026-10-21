@@ -201,7 +201,9 @@ async function onInit() {
   // 编辑模式无需使用前缀
   await onParentIdChange(undefined);
   onInitMetaFormValues(dto.meta);
-  drawerApi.setState({ title: `${$t('TestWorkshop.Menu:Edit')} - ${dto.name}` });
+  drawerApi.setState({
+    title: `${$t('TestWorkshop.Menu:Edit')} - ${dto.name}`,
+  });
 }
 
 async function onParentIdChange(menuId?: string) {
@@ -302,9 +304,13 @@ function onInitMetaFormSchemas() {
         }
         case DataValueType.Numeic: {
           component = 'InputNumber';
-          defaultValue = dataItem.defaultValue
-            ? Number(dataItem.defaultValue)
-            : undefined;
+          if (dataItem.name === 'order') {
+            defaultValue = 1000;
+          } else {
+            defaultValue = dataItem.defaultValue
+              ? Number(dataItem.defaultValue)
+              : undefined;
+          }
           break;
         }
         case DataValueType.String: {

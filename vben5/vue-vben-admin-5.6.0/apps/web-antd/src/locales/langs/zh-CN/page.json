@@ -12,7 +12,7 @@
   },
   "dashboard": {
     "title": "仪表盘",
-    "analytics": "实时数据",
+    "analytics": "实时监控",
     "workspace": "工作台",
     "realtimeTitle": "实时运行分析",
     "realtimeSubtitle": "在线设备实时指标与运行时长",

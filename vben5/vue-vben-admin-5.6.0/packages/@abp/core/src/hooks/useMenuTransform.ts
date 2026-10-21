@@ -15,7 +15,7 @@ export function useMenuTransform() {
     return typeof meta[key] === 'string' ? meta[key] : String(meta[key]);
   }
   function mapMetaNumber(meta: Record<string, any>, key: string) {
-    if (!meta[key]) {
+    if (meta[key] === undefined || meta[key] === null || meta[key] === '') {
       return undefined;
     }
     return typeof meta[key] === 'number' ? meta[key] : Number(meta[key]);

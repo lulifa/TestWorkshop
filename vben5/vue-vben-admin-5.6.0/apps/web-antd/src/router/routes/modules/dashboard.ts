@@ -19,6 +19,7 @@ const routes: RouteRecordRaw[] = [
         meta: {
           affixTab: true,
           icon: 'lucide:activity',
+          order: 0,
           title: $t('page.dashboard.analytics'),
         },
       },
@@ -28,6 +29,7 @@ const routes: RouteRecordRaw[] = [
         component: () => import('#/views/dashboard/workspace/index.vue'),
         meta: {
           icon: 'carbon:workspace',
+          order: 1,
           title: $t('page.dashboard.workspace'),
         },
       },

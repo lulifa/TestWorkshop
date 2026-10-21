@@ -48,6 +48,7 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
               url: "/business/workshoporders",
               component: "/business/workshoporders/index",
               icon: "lucide:clipboard-list",
+              order: 1,
               description: "订单管理")
             .SetProperty("title", "page.business.workshoporders"));
         business.AddItem(
@@ -57,6 +58,7 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
               url: "/business/alarms",
               component: "/business/alarms/index",
               icon: "lucide:bell-ring",
+              order: 2,
               description: "报警管理")
             .SetProperty("title", "page.business.alarms"));
         business.AddItem(
@@ -66,6 +68,7 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
               url: "/business/notifications/my-message",
               component: "/business/notifications/my-message/index",
               icon: "lucide:mail-open",
+              order: 3,
               description: "我的消息")
             .SetProperty("title", "page.business.notifications.message"));
         business.AddItem(
@@ -75,6 +78,7 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
               url: "/business/workshopdevices",
               component: "/business/workshopdevices/index",
               icon: "mdi:factory",
+              order: 4,
               description: "车间设备")
             .SetProperty("title", "page.business.workshopdevices"));
         business.AddItem(
@@ -84,6 +88,7 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
               url: "/business/notifications/my-broadcast",
               component: "/business/notifications/my-broadcast/index",
               icon: "lucide:megaphone",
+              order: 5,
               description: "我的通告")
             .SetProperty("title", "page.business.notifications.broadcast"));
         return
@@ -105,27 +110,29 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
             .SetProperty("title", "page.dashboard.title");
 
         dashboard.AddItem(
+            new ApplicationMenu(
+                name: "Vben5Analysis",
+                displayName: "实时监控",
+                url: "/analytics",
+                component: "/dashboard/analytics/index",
+                icon: "lucide:activity",
+                order: 0,
+                description: "实时监控")
+            .SetProperty("title", "page.dashboard.analytics")
+         );
+
+        dashboard.AddItem(
            new ApplicationMenu(
                name: "Vben5Workbench",
                displayName: "工作台",
                url: "/workspace",
                component: "/dashboard/workspace/index",
                icon: "carbon:workspace",
+               order: 1,
                description: "工作台")
            .SetProperty("affixTab", "true")
            .SetProperty("title", "page.dashboard.workspace")
         );
-
-        dashboard.AddItem(
-            new ApplicationMenu(
-                name: "Vben5Analysis",
-                displayName: "实时数据",
-                url: "/analytics",
-                component: "/dashboard/analytics/index",
-                icon: "lucide:activity",
-                description: "实时数据")
-            .SetProperty("title", "page.dashboard.analytics")
-         );
 
         var about = new ApplicationMenu(
             name: "VbenAbout",
@@ -174,6 +181,7 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
               url: "/modules/platform/telemetry",
               component: "/modules/platform/telemetry/index",
               icon: "mdi:file-cloud",
+              order: 1,
               description: "遥测任务")
             .SetProperty("title", "TestWorkshop.Telemetry:Title"));
         modules.AddItem(
@@ -183,6 +191,7 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
               url: "/modules/platform/thresholds",
               component: "/modules/platform/thresholds/index",
               icon: "lucide:sliders-horizontal",
+              order: 2,
               description: "阈值管理")
             .SetProperty("title", "page.business.thresholds"));
         modules.AddItem(
@@ -192,6 +201,7 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
               url: "/modules/platform/files",
               component: "/modules/platform/files/index",
               icon: "mdi-light:file",
+              order: 3,
               description: "文件管理")
             .SetProperty("title", "abp.modules.platform.files"));
         modules.AddItem(
@@ -201,6 +211,7 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
               url: "/modules/platform/notifications/message",
               component: "/modules/platform/notifications/message/index",
               icon: "lucide:mail-open",
+              order: 4,
               description: "消息管理")
             .SetProperty("title", "abp.modules.platform.notifications.message"));
         modules.AddItem(
@@ -210,6 +221,7 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
               url: "/modules/platform/notifications/broadcast",
               component: "/modules/platform/notifications/broadcast/index",
               icon: "lucide:megaphone",
+              order: 5,
               description: "通告管理")
             .SetProperty("title", "abp.modules.platform.notifications.broadcast"));
         modules.AddItem(
@@ -219,6 +231,7 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
               url: "/modules/platform/menus",
               component: "/modules/platform/menus/index",
               icon: "material-symbols-light:menu",
+              order: 6,
               description: "菜单管理")
             .SetProperty("title", "abp.modules.platform.menus"));
         modules.AddItem(
@@ -228,6 +241,7 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
               url: "/modules/platform/layouts",
               component: "/modules/platform/layouts/index",
               icon: "material-symbols-light:responsive-layout",
+              order: 7,
               description: "布局管理")
             .SetProperty("title", "abp.modules.platform.layouts"));
         modules.AddItem(
@@ -237,6 +251,7 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
               url: "/modules/platform/data-dictionaries",
               component: "/modules/platform/data-dictionaries/index",
               icon: "material-symbols:dictionary-outline",
+              order: 8,
               description: "数据字典")
             .SetProperty("title", "abp.modules.platform.dataDictionaries"));
 
@@ -266,6 +281,7 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
               url: "/system/tenants",
               component: "/system/tenants/index",
               icon: "arcticons:tenantcloud-pro",
+              order: 1,
               description: "租户管理",
               multiTenancySides: MultiTenancySides.Host)
             .SetProperty("title", "abp.system.tenants"));
@@ -277,6 +293,7 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
               url: "/system/identity/securitylogs",
               component: "/system/identity/securitylogs/index",
               icon: "carbon:security",
+              order: 2,
               description: "安全日志",
               multiTenancySides: MultiTenancySides.Host)
             .SetProperty("title", "abp.system.securitylogs"));
@@ -287,6 +304,7 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
                url: "/system/identity/auditlogs",
                component: "/system/identity/auditlogs/index",
                icon: "fluent-mdl2:compliance-audit",
+               order: 3,
                description: "审计日志")
             .SetProperty("title", "abp.system.auditlogs"));
 
@@ -297,6 +315,7 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
               url: "/system/identity/users",
               component: "/system/identity/users/index",
               icon: "mdi:user-outline",
+              order: 4,
               description: "用户管理")
           .SetProperty("title", "abp.system.identity.users"));
         system.AddItem(
@@ -306,6 +325,7 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
               url: "/system/identity/roles",
               component: "/system/identity/roles/index",
               icon: "carbon:user-role",
+              order: 5,
               description: "角色管理")
           .SetProperty("title", "abp.system.identity.roles"));
         system.AddItem(
@@ -315,6 +335,7 @@ public class Vben5NavigationManager : IVben5NavigationManager, ISingletonDepende
               url: "/system/identity/organization-units",
               component: "/system/identity/organization-units/index",
               icon: "clarity:organization-line",
+              order: 6,
               description: "组织机构")
           .SetProperty("title", "abp.system.identity.organizationUnits"));
 

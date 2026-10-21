@@ -283,9 +283,9 @@ public class Vben5NavigationSeedContributor : IDataSeedContributor, ITransientDe
             GuidGenerator,
             "order",
             "页面排序",
-            "0",
+            "1000",
             ValueType.Numeic,
-            "用于配置页面的排序，用于路由到菜单排序。注意: 排序仅针对一级菜单有效，二级菜单的排序需要在对应的一级菜单中按代码顺序设置。",
+            "用于配置页面的排序，数值越小越靠前。建议为同级菜单设置唯一排序值。",
             isStatic: true);
         data.AddItem(
             GuidGenerator,
