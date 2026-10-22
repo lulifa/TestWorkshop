@@ -448,6 +448,10 @@ public static class TestWorkshopDbContextModelCreatingExtensions
 
             // 列表页：按车间 + 状态 + 时间查询
             b.HasIndex(x => new { x.OrganizationUnitId, x.Status, x.StartedAt });
+
+            // 保留清理：按状态和恢复时间批量删除历史报警
+            b.HasIndex(x => new { x.Status, x.ClearedAt })
+                .HasDatabaseName("IX_AppWorkshopAlarms_Status_ClearedAt");
         });
     }
 

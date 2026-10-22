@@ -815,6 +815,9 @@ namespace TestWorkshop.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Status", "ClearedAt")
+                        .HasDatabaseName("IX_AppWorkshopAlarms_Status_ClearedAt");
+
                     b.HasIndex("AlarmType", "DeviceId", "DataItemType")
                         .IsUnique()
                         .HasDatabaseName("UX_AppWorkshopAlarms_Active")

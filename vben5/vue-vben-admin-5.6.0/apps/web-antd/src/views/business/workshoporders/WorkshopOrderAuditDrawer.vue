@@ -31,6 +31,8 @@ import {
   Tag,
 } from 'ant-design-vue';
 
+import PdfPreview from '#/components/file-preview/PdfPreview.vue';
+
 const emits = defineEmits<{
   (event: 'change', data: WorkshopOrderDto): void;
 }>();
@@ -52,14 +54,18 @@ const submitting = ref(false);
 const previewing = ref(false);
 const previewVisible = ref(false);
 const previewUrl = ref('');
+const previewContentType = ref('');
 const previewFiles = ref<WorkshopOrderReportFileDto[]>([]);
 const previewFileId = ref<string>();
 const auditResult = ref<WorkshopOrderAuditResult>();
 const maintenanceSuggestion = ref('');
-const previewUrlWithPdfOptions = computed(() =>
-  previewUrl.value
-    ? `${previewUrl.value}#toolbar=0&navpanes=0&view=FitH&zoom=page-width`
-    : '',
+const isPreviewPdf = computed(
+  () =>
+    previewContentType.value === 'application/pdf' ||
+    previewFiles.value
+      .find((file) => file.key === previewFileId.value)
+      ?.fileName.toLowerCase()
+      .endsWith('.pdf'),
 );
 
 const roles = computed(() => {
@@ -79,14 +85,7 @@ const canSubmitAudit = computed(() => {
   );
 });
 const canPreviewReport = computed(() => {
-  return (
-    canAudit.value &&
-    !!order.value?.hasTestReport &&
-    [
-      WorkshopOrderStatus.PendingReview,
-      WorkshopOrderStatus.ReviewRejected,
-    ].includes(order.value.status)
-  );
+  return !!order.value?.hasTestReport;
 });
 
 const statusLabelMap: Record<WorkshopOrderStatus, string> = {
@@ -149,6 +148,13 @@ const columns = [
     width: 130,
   },
   {
+    align: 'center' as const,
+    dataIndex: 'reportFileCount',
+    key: 'reportFileCount',
+    title: $t('TestWorkshop.WorkshopOrder:FetchFileCount'),
+    width: 110,
+  },
+  {
     dataIndex: 'auditedAt',
     key: 'auditedAt',
     title: $t('TestWorkshop.WorkshopOrder:AuditedAt'),
@@ -162,10 +168,10 @@ const columns = [
 ];
 
 const [Drawer, drawerApi] = useVbenDrawer({
-  class: 'w-[760px] max-w-[96vw]',
+  class: 'w-[1100px] max-w-[96vw]',
   onOpenChange: async (isOpen: boolean) => {
     if (!isOpen) {
-      closePreview();
+      resetPreview();
       return;
     }
     order.value = drawerApi.getData<WorkshopOrderDto>();
@@ -186,14 +192,15 @@ async function loadDetail() {
   }
   loading.value = true;
   try {
-    const [detail, auditRecords, reportFiles] = await Promise.all([
+    const [detail, auditRecords] = await Promise.all([
       getApi(order.value.id),
       getAuditRecordsApi(order.value.id),
-      getTestReportFilesApi(order.value.id),
     ]);
     order.value = detail;
     records.value = auditRecords ?? [];
-    previewFiles.value = reportFiles ?? [];
+    if (detail.hasTestReport) {
+      previewFiles.value = await getTestReportFilesApi(order.value.id);
+    }
   } finally {
     loading.value = false;
   }
@@ -248,14 +255,19 @@ async function selectPreviewFile(file: WorkshopOrderReportFileDto) {
   previewFileId.value = file.key;
   revokePreviewUrl();
   const blob = await previewTestReportFileApi(order.value.id, file.key);
+  previewContentType.value = blob.type || file.contentType || '';
   previewUrl.value = URL.createObjectURL(blob);
 }
 
 function closePreview() {
   previewVisible.value = false;
   revokePreviewUrl();
-  previewFiles.value = [];
   previewFileId.value = undefined;
+}
+
+function resetPreview() {
+  closePreview();
+  previewFiles.value = [];
 }
 
 function revokePreviewUrl() {
@@ -263,6 +275,7 @@ function revokePreviewUrl() {
     URL.revokeObjectURL(previewUrl.value);
     previewUrl.value = '';
   }
+  previewContentType.value = '';
 }
 </script>
 
@@ -270,36 +283,56 @@ function revokePreviewUrl() {
   <Drawer>
     <Spin :spinning="loading">
       <div v-if="order" class="flex flex-col gap-4">
-        <div class="rounded-md border border-border px-4 py-3">
-          <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="rounded-md border border-border bg-muted/20 p-4">
+          <div class="flex items-start justify-between gap-4">
             <div class="min-w-0">
-              <div class="truncate text-base font-semibold">
-                {{ order.orderNo }}
+              <div class="text-xs text-muted-foreground">
+                {{ $t('TestWorkshop.WorkshopOrder:OrderNo') }}
               </div>
-              <div class="mt-1 text-sm text-gray-500">
-                {{ order.deviceCode ?? '-' }}
-                <span v-if="order.deviceName">· {{ order.deviceName }}</span>
+              <div class="mt-1 truncate text-lg font-semibold">
+                {{ order.orderNo }}
               </div>
             </div>
             <Tag :color="statusColorMap[order.status]">
               {{ statusLabelMap[order.status] ?? order.statusName }}
             </Tag>
           </div>
-          <div class="mt-3 grid grid-cols-2 gap-2 text-sm text-gray-500">
-            <span>
-              {{ $t('page.business.projectSupervisor') }}:
-              <span class="text-foreground">
+
+          <div
+            class="mt-4 grid grid-cols-1 gap-4 border-t border-border pt-3 sm:grid-cols-3"
+          >
+            <div class="min-w-0">
+              <div class="text-xs text-muted-foreground">
+                {{ $t('TestWorkshop.WorkshopOrder:Device') }}
+              </div>
+              <div class="mt-1 truncate text-sm font-medium">
+                {{ order.deviceCode ?? '-' }}
+              </div>
+              <div
+                v-if="order.deviceName"
+                class="mt-0.5 truncate text-xs text-muted-foreground"
+              >
+                {{ order.deviceName }}
+              </div>
+            </div>
+            <div class="min-w-0">
+              <div class="text-xs text-muted-foreground">
+                {{ $t('page.business.projectSupervisor') }}
+              </div>
+              <div class="mt-1 truncate text-sm font-medium">
                 {{ order.projectSupervisorName || '-' }}
-              </span>
-            </span>
-            <span>
-              {{ $t('TestWorkshop.WorkshopOrder:TestEndedAt') }}:
-              <span class="text-foreground">
+              </div>
+            </div>
+            <div class="min-w-0">
+              <div class="text-xs text-muted-foreground">
+                {{ $t('TestWorkshop.WorkshopOrder:TestEndedAt') }}
+              </div>
+              <div class="mt-1 truncate text-sm font-medium">
                 {{
                   order.testEndedAt ? formatToDateTime(order.testEndedAt) : '-'
                 }}
-              </span>
-            </span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -309,6 +342,9 @@ function revokePreviewUrl() {
               <span class="text-sm font-medium">
                 {{ $t('TestWorkshop.WorkshopOrder:TestReport') }}
               </span>
+              <Tag color="blue">
+                {{ previewFiles.length }}
+              </Tag>
               <Tag
                 :color="
                   reportStatusColorMap[order.testReportStatus] ?? 'default'
@@ -446,6 +482,9 @@ function revokePreviewUrl() {
               <template v-else-if="column.key === 'auditorName'">
                 {{ record.auditorName || '-' }}
               </template>
+              <template v-else-if="column.key === 'reportFileCount'">
+                {{ record.reportFileCount }}
+              </template>
             </template>
           </Table>
         </div>
@@ -456,26 +495,48 @@ function revokePreviewUrl() {
       :footer="null"
       :open="previewVisible"
       :title="$t('TestWorkshop.WorkshopOrder:PreviewReport')"
-      width="90vw"
+      width="94vw"
       @cancel="closePreview"
     >
-      <div v-if="previewFiles.length > 1" class="mb-2 flex flex-wrap gap-2">
-        <Button
-          v-for="file in previewFiles"
-          :key="file.key"
-          :type="previewFileId === file.key ? 'primary' : 'default'"
-          size="small"
-          @click="selectPreviewFile(file)"
+      <div class="flex h-[78vh] min-h-0 flex-col gap-3 md:flex-row">
+        <aside
+          class="max-h-44 shrink-0 overflow-y-auto rounded-md border border-border p-2 md:max-h-none md:w-64"
         >
-          {{ file.fileName }}
-        </Button>
-      </div>
-      <div class="h-[78vh]">
-        <iframe
-          v-if="previewUrl"
-          :src="previewUrlWithPdfOptions"
-          class="h-full w-full border-0"
-        ></iframe>
+          <button
+            v-for="file in previewFiles"
+            :key="file.key"
+            class="mb-2 w-full rounded-md border px-3 py-2 text-left transition-colors last:mb-0"
+            :class="
+              previewFileId === file.key
+                ? 'border-primary bg-primary/5'
+                : 'border-transparent hover:bg-muted'
+            "
+            type="button"
+            @click="selectPreviewFile(file)"
+          >
+            <div class="truncate text-sm font-medium" :title="file.fileName">
+              {{ file.fileName }}
+            </div>
+            <Tag v-if="!file.hasPreview" class="mt-1" color="default">
+              {{ $t('TestWorkshop.WorkshopOrder:NoPreviewContent') }}
+            </Tag>
+          </button>
+        </aside>
+        <div
+          class="min-h-0 min-w-0 flex-1 overflow-hidden rounded-md border border-border bg-muted/20"
+        >
+          <PdfPreview v-if="previewUrl && isPreviewPdf" :src="previewUrl" />
+          <iframe
+            v-else-if="previewUrl"
+            :src="previewUrl"
+            class="h-full w-full border-0"
+          ></iframe>
+          <Empty
+            v-else
+            class="flex h-full items-center justify-center"
+            :description="$t('TestWorkshop.WorkshopOrder:NoPreviewContent')"
+          />
+        </div>
       </div>
     </Modal>
   </Drawer>

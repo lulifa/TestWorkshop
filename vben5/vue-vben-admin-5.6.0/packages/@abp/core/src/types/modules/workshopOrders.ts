@@ -76,6 +76,7 @@ interface GetWorkshopOrderListInput extends PagedAndSortedResultRequestDto {
   endTime?: string;
   isPaged?: boolean;
   orderNo?: string;
+  organizationUnitId?: string;
   startTime?: string;
   status?: WorkshopOrderStatus;
 }

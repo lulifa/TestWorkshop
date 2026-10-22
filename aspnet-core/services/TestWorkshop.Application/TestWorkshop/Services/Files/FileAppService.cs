@@ -20,13 +20,19 @@ public class FileAppService : ApplicationService, IFileAppService
 
         using var stream = file.GetStream();
 
-        var fileObject = await _fileObjectManager.UploadAsync(
-            stream: stream,
-            fileName: file.FileName,
-            ownerType: input.OwnerType,
-            ownerId: input.OwnerId,
-            contentType: file.ContentType
-        );
+        var fileObject = input.OwnerType == SystemFileTypes.WorkshopTestReport
+            ? await _fileObjectManager.AppendAsync(
+                stream: stream,
+                fileName: file.FileName,
+                ownerType: input.OwnerType,
+                ownerId: input.OwnerId,
+                contentType: file.ContentType)
+            : await _fileObjectManager.UploadAsync(
+                stream: stream,
+                fileName: file.FileName,
+                ownerType: input.OwnerType,
+                ownerId: input.OwnerId,
+                contentType: file.ContentType);
 
         return ObjectMapper.Map<FileObject, FileObjectDto>(fileObject);
     }
@@ -51,11 +57,27 @@ public class FileAppService : ApplicationService, IFileAppService
         if (fileTuples.Count == 0)
             throw new UserFriendlyException("没有有效的文件");
 
-        var fileObjects = await _fileObjectManager.BatchUploadAsync(
-            files: fileTuples,
-            ownerType: input.OwnerType,
-            ownerId: input.OwnerId
-        );
+        List<FileObject> fileObjects;
+        if (input.OwnerType == SystemFileTypes.WorkshopTestReport)
+        {
+            fileObjects = new List<FileObject>();
+            foreach (var file in fileTuples)
+            {
+                fileObjects.Add(await _fileObjectManager.AppendAsync(
+                    stream: file.Stream,
+                    fileName: file.FileName,
+                    ownerType: input.OwnerType,
+                    ownerId: input.OwnerId,
+                    contentType: file.ContentType));
+            }
+        }
+        else
+        {
+            fileObjects = await _fileObjectManager.BatchUploadAsync(
+                files: fileTuples,
+                ownerType: input.OwnerType,
+                ownerId: input.OwnerId);
+        }
 
         if (input.OwnerType == SystemFileTypes.UserAvatar)
         {

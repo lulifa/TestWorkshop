@@ -47,6 +47,7 @@
     "ant-design-vue": "catalog:",
     "dayjs": "catalog:",
     "lodash.clonedeep": "catalog:",
+    "pdfjs-dist": "6.4.299",
     "pinia": "catalog:",
     "universal-cookie": "catalog:",
     "vue": "catalog:",

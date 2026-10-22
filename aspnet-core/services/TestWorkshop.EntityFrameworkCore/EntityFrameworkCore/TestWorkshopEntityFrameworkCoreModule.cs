@@ -28,6 +28,7 @@ public class TestWorkshopEntityFrameworkCoreModule : AbpModule
         Configure<WorkshopTelemetryOptions>(configuration.GetSection("WorkshopTelemetry"));
         Configure<WorkshopAlarmOptions>(configuration.GetSection("WorkshopAlarm"));
         Configure<WorkshopTestReportOptions>(configuration.GetSection("WorkshopTestReport"));
+        Configure<DataRetentionOptions>(configuration.GetSection(DataRetentionOptions.SectionName));
         context.Services.AddTransient<
             IWorkshopTestReportFetcher,
             PlaceholderWorkshopTestReportFetcher>();
@@ -79,7 +80,7 @@ public class TestWorkshopEntityFrameworkCoreModule : AbpModule
 
     public override void OnApplicationInitialization(ApplicationInitializationContext context)
     {
-        context.AddBackgroundWorkerAsync<LogCleanupBackgroundWorker>();
+        context.AddBackgroundWorkerAsync<DataRetentionCleanupWorker>();
         context.AddBackgroundWorkerAsync<WorkshopTelemetryWorker>();
         context.AddBackgroundWorkerAsync<WorkshopTelemetryFileCleanupWorker>();
         context.AddBackgroundWorkerAsync<WorkshopDeviceHeartbeatMonitorWorker>();

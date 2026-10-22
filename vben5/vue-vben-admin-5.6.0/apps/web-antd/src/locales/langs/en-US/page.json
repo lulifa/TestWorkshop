@@ -59,5 +59,9 @@
     "initialPassword": "Initial Password",
     "initializeWorkshopPersonnel": "Initialize Workshop Personnel",
     "businessCodeRequired": "Business code is required when initializing workshop personnel"
+  },
+  "fileManager": {
+    "textPreviewNotice": "Only the first 30% of the file is previewed. Download the file to view the full content.",
+    "pdfPreviewNotice": "Only page 1 of {0} is previewed. Download the file to view the full content."
   }
 }

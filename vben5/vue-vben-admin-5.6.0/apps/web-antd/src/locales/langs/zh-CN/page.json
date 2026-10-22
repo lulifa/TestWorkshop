@@ -59,5 +59,9 @@
     "initialPassword": "初始密码",
     "initializeWorkshopPersonnel": "初始化车间人员",
     "businessCodeRequired": "初始化车间人员时必须填写业务编码"
+  },
+  "fileManager": {
+    "textPreviewNotice": "当前仅预览文件前 30% 的内容，完整内容请下载查看。",
+    "pdfPreviewNotice": "当前仅预览第 1 页，共 {0} 页。完整内容请下载查看。"
   }
 }

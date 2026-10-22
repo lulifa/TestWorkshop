@@ -60,7 +60,8 @@ const {
   requestTestReportFetchApi,
   startTestApi,
 } = useWorkshopOrderApi();
-const { getListApi: getDeviceListApi } = useWorkshopDeviceApi();
+const { getListApi: getDeviceListApi, getOrganizationUnitsApi } =
+  useWorkshopDeviceApi();
 const MenuItem = Menu.Item;
 const abpStore = useAbpStore();
 
@@ -158,6 +159,35 @@ const formOptions: VbenFormProps = {
     },
   },
   schema: [
+    {
+      component: 'ApiSelect',
+      componentProps: {
+        afterFetch: (result: {
+          items: Array<{
+            displayName: string;
+            extraProperties?: Record<string, any>;
+            id: string;
+          }>;
+        }) => {
+          return result.items
+            .filter((item) => item.extraProperties?.BusinessCode)
+            .map((item) => ({
+              label: `${item.displayName} (${item.extraProperties?.BusinessCode})`,
+              value: item.id,
+            }));
+        },
+        allowClear: true,
+        api: getOrganizationUnitsApi,
+        labelField: 'label',
+        optionFilterProp: 'label',
+        placeholder: '全部车间',
+        showSearch: true,
+        valueField: 'value',
+      },
+      fieldName: 'organizationUnitId',
+      formItemClass: 'col-span-1 items-baseline',
+      label: $t('TestWorkshop.DisplayName:OrganizationUnit'),
+    },
     {
       component: 'Input',
       componentProps: {
@@ -285,6 +315,7 @@ const gridOptions: VxeGridProps<WorkshopOrderDto> = {
           deviceId: values?.deviceId,
           maxResultCount: page.pageSize,
           orderNo: values?.orderNo,
+          organizationUnitId: values?.organizationUnitId,
           skipCount: (page.currentPage - 1) * page.pageSize,
           sorting: sort.order ? `${sort.field} ${sort.order}` : undefined,
           status: values?.status,
@@ -298,6 +329,7 @@ const gridOptions: VxeGridProps<WorkshopOrderDto> = {
           deviceId: values?.deviceId,
           isPaged: false,
           orderNo: values?.orderNo,
+          organizationUnitId: values?.organizationUnitId,
           sorting: sort.order ? `${sort.field} ${sort.order}` : undefined,
           status: values?.status,
         });

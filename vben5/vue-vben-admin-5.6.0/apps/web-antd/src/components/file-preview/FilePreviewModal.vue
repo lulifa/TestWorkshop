@@ -11,7 +11,9 @@ import { useFileApi } from '@abp/core';
 import { DownloadOutlined } from '@ant-design/icons-vue';
 import { Button } from 'ant-design-vue';
 
-const TEXT_PREVIEW_RATIO = 0.2;
+import PdfPreview from './PdfPreview.vue';
+
+const TEXT_PREVIEW_RATIO = 0.3;
 
 const blob = ref<Blob>();
 const contentType = ref('');
@@ -66,11 +68,6 @@ const textPreviewSize = computed(() =>
 );
 const isTextPreviewTruncated = computed(
   () => isText.value && fileSize.value > 0,
-);
-const pdfObjectUrl = computed(() =>
-  objectUrl.value
-    ? `${objectUrl.value}#view=FitH&zoom=page-width&navpanes=0`
-    : '',
 );
 const isVideo = computed(
   () =>
@@ -173,12 +170,7 @@ function revokeObjectUrl() {
           alt=""
           class="max-h-[calc(80vh-130px)] max-w-full object-contain"
         />
-        <iframe
-          v-else-if="isPdf"
-          :src="pdfObjectUrl"
-          :title="fileName"
-          class="h-full w-full border-0"
-        ></iframe>
+        <PdfPreview v-else-if="isPdf" :src="objectUrl" />
         <video
           v-else-if="isVideo"
           :src="objectUrl"
@@ -202,7 +194,7 @@ function revokeObjectUrl() {
               v-if="isTextPreviewTruncated"
               class="shrink-0 border-t px-4 py-2 text-xs opacity-70"
             >
-              {{ $t('TestWorkshop.FileManager:LargeFilePreviewNotice') }}
+              {{ $t('page.fileManager.textPreviewNotice') }}
             </div>
           </div>
         </template>

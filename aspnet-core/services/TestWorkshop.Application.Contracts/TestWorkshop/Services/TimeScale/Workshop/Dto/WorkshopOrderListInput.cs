@@ -15,5 +15,10 @@ public class WorkshopOrderListInput : PagedAndSortedResultRequestDto, IEnablePag
 
     public DateTime? EndTime { get; set; }
 
+    /// <summary>
+    /// 按设备所属车间过滤
+    /// </summary>
+    public Guid? OrganizationUnitId { get; set; }
+
     public bool IsPaged { get; set; } = true;
 }

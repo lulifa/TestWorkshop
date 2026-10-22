@@ -27,6 +27,7 @@ public interface IWorkshopOrderRepository : IRepository<WorkshopOrder, Guid>
         WorkshopOrderStatus? status = null,
         DateTime? startTime = null,
         DateTime? endTime = null,
+        Guid? organizationUnitId = null,
         ICollection<Guid> organizationUnitIds = null,
         Guid? projectSupervisorUserId = null,
         int skipCount = 0,

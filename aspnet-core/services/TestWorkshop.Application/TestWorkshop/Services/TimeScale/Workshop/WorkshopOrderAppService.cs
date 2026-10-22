@@ -87,6 +87,7 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
             input.Status,
             input.StartTime,
             input.EndTime,
+            input.OrganizationUnitId,
             organizationUnitIds,
             projectSupervisorUserId,
             input.SkipCount,
@@ -312,10 +313,10 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
             .ToList();
     }
 
-    [Authorize(Roles = RoleConstants.admin + "," + RoleConstants.auditor)]
     public virtual async Task<List<WorkshopOrderReportFileDto>> GetTestReportFilesAsync(Guid id)
     {
-        await _orderRepository.GetAsync(id);
+        var order = await _orderRepository.GetAsync(id);
+        await EnsureOrderAccessibleAsync(order);
         var files = await GetTestReportFileObjectsAsync(id);
 
         return files
@@ -352,10 +353,10 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
         return ToFetchRecordDto(record);
     }
 
-    [Authorize(Roles = RoleConstants.admin + "," + RoleConstants.auditor)]
     public virtual async Task<IRemoteStreamContent> PreviewTestReportFileAsync(Guid id, string fileKey)
     {
-        await _orderRepository.GetAsync(id);
+        var order = await _orderRepository.GetAsync(id);
+        await EnsureOrderAccessibleAsync(order);
         var files = await GetTestReportFileObjectsAsync(id);
         var file = files.FirstOrDefault(x => BuildReportFileKey(id, x.Id) == fileKey);
         if (file == null)

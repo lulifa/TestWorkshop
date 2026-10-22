@@ -13,6 +13,7 @@ import { $t } from '@vben/locales';
 import {
   formatToDateTime,
   useWorkshopAlarmApi,
+  useWorkshopDeviceApi,
   WorkshopAlarmStatus,
   WorkshopAlarmType,
 } from '@abp/core';
@@ -25,6 +26,7 @@ defineOptions({
 });
 
 const { getListApi } = useWorkshopAlarmApi();
+const { getOrganizationUnitsApi } = useWorkshopDeviceApi();
 
 const alarmTypeOptions = [
   { label: '阈值报警', value: WorkshopAlarmType.Threshold },
@@ -54,6 +56,35 @@ const formOptions: VbenFormProps = {
     },
   },
   schema: [
+    {
+      component: 'ApiSelect',
+      componentProps: {
+        afterFetch: (result: {
+          items: Array<{
+            displayName: string;
+            extraProperties?: Record<string, any>;
+            id: string;
+          }>;
+        }) => {
+          return result.items
+            .filter((item) => item.extraProperties?.BusinessCode)
+            .map((item) => ({
+              label: `${item.displayName} (${item.extraProperties?.BusinessCode})`,
+              value: item.id,
+            }));
+        },
+        allowClear: true,
+        api: getOrganizationUnitsApi,
+        labelField: 'label',
+        optionFilterProp: 'label',
+        placeholder: '全部车间',
+        showSearch: true,
+        valueField: 'value',
+      },
+      fieldName: 'organizationUnitId',
+      formItemClass: 'col-span-1 items-baseline',
+      label: $t('TestWorkshop.DisplayName:OrganizationUnit'),
+    },
     {
       component: 'Select',
       componentProps: {
@@ -88,7 +119,7 @@ const formOptions: VbenFormProps = {
   ],
   showCollapseButton: false,
   submitOnEnter: true,
-  wrapperClass: 'grid-cols-3',
+  wrapperClass: 'grid-cols-4',
 };
 
 const gridOptions: VxeGridProps<WorkshopAlarmDto> = {
@@ -148,6 +179,7 @@ const gridOptions: VxeGridProps<WorkshopAlarmDto> = {
           alarmType: values?.alarmType,
           endTime: timeRange?.[1],
           maxResultCount: page.pageSize,
+          organizationUnitId: values?.organizationUnitId,
           skipCount: (page.currentPage - 1) * page.pageSize,
           startTime: timeRange?.[0],
           status: values?.status,

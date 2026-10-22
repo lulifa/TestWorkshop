@@ -85,6 +85,7 @@ public class EfCoreWorkshopOrderRepository :
         WorkshopOrderStatus? status = null,
         DateTime? startTime = null,
         DateTime? endTime = null,
+        Guid? organizationUnitId = null,
         ICollection<Guid> organizationUnitIds = null,
         Guid? projectSupervisorUserId = null,
         int skipCount = 0,
@@ -119,6 +120,16 @@ public class EfCoreWorkshopOrderRepository :
         {
             query = query.Where(
                 x => x.TestStartedAt.HasValue && x.TestStartedAt.Value <= endTime.Value);
+        }
+
+        if (organizationUnitId.HasValue)
+        {
+            var deviceSet = (await GetDbContextAsync()).Set<WorkshopDevice>();
+            var selectedOrganizationUnitId = organizationUnitId.Value;
+            query = query.Where(order =>
+                deviceSet.Any(device =>
+                    device.Id == order.DeviceId
+                    && device.OrganizationUnitId == selectedOrganizationUnitId));
         }
 
         // 可见性：订单没存车间，通过设备归属过滤；另外单船项目主管能看到"自己负责"的订单。

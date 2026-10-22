@@ -382,7 +382,6 @@
     "FileManager:PendingUpload": "待上传",
     "FileManager:ClearAll": "清空",
     "FileManager:LoadingPreview": "正在加载预览...",
-    "FileManager:LargeFilePreviewNotice": "当前仅预览文件前 20% 的内容，完整内容请下载查看。",
     "FileManager:PreviewNotSupported": "当前格式暂不支持浏览器在线预览，可以下载后查看。",
     "FileManager:PleaseSelectFile": "请先选择要上传的文件",
     "FileManager:OwnerTypeRequired": "请通过业务对象传入业务类型",
