@@ -28,6 +28,11 @@ public class WorkshopTelemetryTaskListInput : PagedAndSortedResultRequestDto, IE
     public bool? HasOrder { get; set; }
 
     /// <summary>
+    /// 按测试台所属车间过滤
+    /// </summary>
+    public Guid? OrganizationUnitId { get; set; }
+
+    /// <summary>
     /// 状态过滤。0=待处理，1=处理中，2=成功（不含已替换），3=失败，4=已替换（界面虚拟状态）
     /// </summary>
     public int? Status { get; set; }

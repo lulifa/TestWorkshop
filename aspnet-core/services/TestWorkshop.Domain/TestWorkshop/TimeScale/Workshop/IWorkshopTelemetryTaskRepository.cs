@@ -22,6 +22,7 @@ public interface IWorkshopTelemetryTaskRepository : IRepository<WorkshopTelemetr
         DateTime? endTime = null,
         string testedDeviceCode = null,
         bool? hasOrder = null,
+        Guid? organizationUnitId = null,
         int skipCount = 0,
         int maxResultCount = 10);
 
@@ -33,7 +34,16 @@ public interface IWorkshopTelemetryTaskRepository : IRepository<WorkshopTelemetr
     /// <summary>
     /// 获取统计信息
     /// </summary>
-    Task<(int TotalFiles, long TotalSize, int PendingCount, int ProcessingCount, int SuccessCount, int FailedCount, int ReplacedCount, int UnmatchedOrderCount, long TotalRecords)> GetStatisticsDataAsync();
+    Task<(int TotalFiles, long TotalSize, int PendingCount, int ProcessingCount, int SuccessCount, int FailedCount, int ReplacedCount, int UnmatchedOrderCount, long TotalRecords)> GetStatisticsDataAsync(
+        Guid? orderId = null,
+        string orderNo = null,
+        string fileName = null,
+        int? status = null,
+        DateTime? startTime = null,
+        DateTime? endTime = null,
+        string testedDeviceCode = null,
+        bool? hasOrder = null,
+        Guid? organizationUnitId = null);
 
     /// <summary>
     /// 获取已过期且可清理的任务（返回 Task + FileObject）

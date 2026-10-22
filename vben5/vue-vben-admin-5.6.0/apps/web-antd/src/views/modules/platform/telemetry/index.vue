@@ -11,9 +11,8 @@ import type { VxeGridListeners, VxeGridProps } from '#/adapter/vxe-table';
 
 import { computed, defineAsyncComponent, h, onMounted, ref } from 'vue';
 
-import { Page, useVbenDrawer, useVbenModal } from '@vben/common-ui';
+import { Page, useVbenDrawer } from '@vben/common-ui';
 import { $t } from '@vben/locales';
-import { downloadFileFromBlob } from '@vben/utils';
 
 import {
   formatToDateTime,
@@ -23,16 +22,15 @@ import {
 } from '@abp/core';
 import {
   DeleteOutlined,
-  DownloadOutlined,
   EyeOutlined,
   InfoCircleOutlined,
   RedoOutlined,
-  UploadOutlined,
 } from '@ant-design/icons-vue';
 import { Button, message, Modal, Space, Tag, Tooltip } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useFilePreview } from '#/components/file-preview';
+import { WorkshopSelect } from '#/components/workshop-select';
 
 defineOptions({
   name: 'WorkshopTelemetryManagement',
@@ -146,6 +144,18 @@ const formOptions: VbenFormProps = {
     ],
   ],
   schema: [
+    {
+      component: WorkshopSelect,
+      componentProps: {
+        allowClear: true,
+        mode: 'tree',
+        placeholder: '全部车间',
+      },
+      fieldName: 'organizationUnitId',
+      formItemClass: 'col-span-1 items-baseline',
+      label: $t('TestWorkshop.DisplayName:OrganizationUnit'),
+      modelPropName: 'modelValue',
+    },
     {
       component: 'Input',
       componentProps: {
@@ -344,6 +354,7 @@ const gridOptions: VxeGridProps<WorkshopTelemetryTaskDto> = {
           hasOrder: values?.hasOrder,
           maxResultCount: page.pageSize,
           orderNo: values?.orderNo,
+          organizationUnitId: values?.organizationUnitId,
           skipCount: (page.currentPage - 1) * page.pageSize,
           sorting,
           startTime: values?.startTime,
@@ -362,6 +373,7 @@ const gridOptions: VxeGridProps<WorkshopTelemetryTaskDto> = {
           hasOrder: values?.hasOrder,
           isPaged: false,
           orderNo: values?.orderNo,
+          organizationUnitId: values?.organizationUnitId,
           sorting,
           startTime: values?.startTime,
           status: values?.status,
@@ -370,6 +382,7 @@ const gridOptions: VxeGridProps<WorkshopTelemetryTaskDto> = {
       },
       querySuccess: () => {
         selectedRows.value = [];
+        void loadStatistics();
       },
     },
     response: {
@@ -428,12 +441,6 @@ function getTestedDeviceLabel(row: WorkshopTelemetryTaskDto) {
   return name ? `${code} · ${name}` : String(code);
 }
 
-const [TelemetryUploadModal, telemetryUploadModalApi] = useVbenModal({
-  connectedComponent: defineAsyncComponent(
-    () => import('./TelemetryUploadModal.vue'),
-  ),
-});
-
 const [TelemetryDetailDrawer, telemetryDetailDrawerApi] = useVbenDrawer({
   connectedComponent: defineAsyncComponent(
     () => import('./TelemetryDetailDrawer.vue'),
@@ -443,22 +450,17 @@ const [TelemetryDetailDrawer, telemetryDetailDrawerApi] = useVbenDrawer({
 const { PreviewModal, openFilePreview } = useFilePreview();
 
 async function loadStatistics() {
-  statistics.value = await getStatisticsApi();
-}
-
-function onDownloadTemplate() {
-  const template = ['0,20', '1,20', '2,20', '3,20'].join('\n');
-  const blob = new Blob([template], {
-    type: 'text/csv;charset=utf-8',
+  const values = (await gridApi.formApi.getValues()) as Record<string, any>;
+  statistics.value = await getStatisticsApi({
+    endTime: values?.endTime,
+    fileName: values?.fileName,
+    hasOrder: values?.hasOrder,
+    orderNo: values?.orderNo,
+    organizationUnitId: values?.organizationUnitId,
+    startTime: values?.startTime,
+    status: values?.status,
+    testedDeviceCode: values?.testedDeviceCode,
   });
-  downloadFileFromBlob({
-    fileName: 'telemetry-template.csv',
-    source: blob,
-  });
-}
-
-function onUploadCsv() {
-  telemetryUploadModalApi.open();
 }
 
 async function onPreviewCsv(row: WorkshopTelemetryTaskDto) {
@@ -469,10 +471,6 @@ async function onPreviewCsv(row: WorkshopTelemetryTaskDto) {
 function onDetail(row: WorkshopTelemetryTaskDto) {
   telemetryDetailDrawerApi.setData(row);
   telemetryDetailDrawerApi.open();
-}
-
-async function onUploadChange() {
-  await Promise.all([gridApi.query(), loadStatistics()]);
 }
 
 function formatFileSize(size: number) {
@@ -498,7 +496,7 @@ function onRetry(row: WorkshopTelemetryTaskDto) {
         gridApi.setLoading(true);
         await retryApi(row.id);
         message.success($t('AbpUi.SavedSuccessfully'));
-        await Promise.all([gridApi.query(), loadStatistics()]);
+        await gridApi.query();
       } finally {
         gridApi.setLoading(false);
       }
@@ -516,7 +514,7 @@ function onDelete(row: WorkshopTelemetryTaskDto) {
         gridApi.setLoading(true);
         await deleteApi(row.id);
         message.success($t('AbpUi.DeletedSuccessfully'));
-        await Promise.all([gridApi.query(), loadStatistics()]);
+        await gridApi.query();
       } finally {
         gridApi.setLoading(false);
       }
@@ -540,7 +538,7 @@ function onBatchDelete() {
         gridApi.setLoading(true);
         await deleteManyApi(selectedRows.value.map((item) => item.id));
         message.success($t('AbpUi.DeletedSuccessfully'));
-        await Promise.all([gridApi.query(), loadStatistics()]);
+        await gridApi.query();
       } finally {
         gridApi.setLoading(false);
       }
@@ -550,7 +548,6 @@ function onBatchDelete() {
 }
 
 onMounted(async () => {
-  await loadStatistics();
   await gridApi.query();
 });
 </script>
@@ -583,12 +580,6 @@ onMounted(async () => {
             @click="onBatchDelete"
           >
             {{ $t('TestWorkshop.Telemetry:BatchDelete') }}
-          </Button>
-          <Button :icon="h(UploadOutlined)" type="primary" @click="onUploadCsv">
-            {{ $t('TestWorkshop.Telemetry:UploadCsv') }}
-          </Button>
-          <Button :icon="h(DownloadOutlined)" @click="onDownloadTemplate">
-            {{ $t('TestWorkshop.Telemetry:DownloadTemplate') }}
           </Button>
         </Space>
       </template>
@@ -689,7 +680,6 @@ onMounted(async () => {
     </Grid>
     <PreviewModal />
     <TelemetryDetailDrawer />
-    <TelemetryUploadModal @change="onUploadChange" />
   </Page>
 </template>
 

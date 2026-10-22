@@ -213,6 +213,7 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
             input.EndTime,
             input.TestedDeviceCode,
             input.HasOrder,
+            input.OrganizationUnitId,
             input.SkipCount,
             input.MaxResultCount);
 
@@ -260,10 +261,19 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
     /// <summary>
     /// 获取统计信息
     /// </summary>
-    public async Task<WorkshopTelemetryStatisticsDto> GetStatisticsAsync()
+    public async Task<WorkshopTelemetryStatisticsDto> GetStatisticsAsync(WorkshopTelemetryTaskListInput input)
     {
         var (totalFiles, totalSize, pendingCount, processingCount, successCount, failedCount, replacedCount, unmatchedOrderCount, totalRecords)
-            = await _taskRepository.GetStatisticsDataAsync();
+            = await _taskRepository.GetStatisticsDataAsync(
+                input.OrderId,
+                input.OrderNo,
+                input.FileName,
+                input.Status,
+                input.StartTime,
+                input.EndTime,
+                input.TestedDeviceCode,
+                input.HasOrder,
+                input.OrganizationUnitId);
 
         return new WorkshopTelemetryStatisticsDto
         {

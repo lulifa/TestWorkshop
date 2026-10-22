@@ -37,10 +37,13 @@ export function useWorkshopTelemetryApi() {
     );
   }
 
-  function getStatisticsApi(): Promise<WorkshopTelemetryStatisticsDto> {
+  function getStatisticsApi(
+    input?: WorkshopTelemetryTaskListInput,
+  ): Promise<WorkshopTelemetryStatisticsDto> {
     return request<WorkshopTelemetryStatisticsDto>(
       '/api/workshop/telemetry/statistics',
       {
+        params: input,
         method: 'GET',
       },
     );

@@ -432,6 +432,7 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
             input.EndTime,
             input.TestedDeviceCode,
             input.HasOrder,
+            null,
             input.SkipCount,
             input.MaxResultCount);
 
@@ -475,6 +476,7 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
             null,
             null,
             TelemetryTaskStatusSuccess,
+            null,
             null,
             null,
             null,

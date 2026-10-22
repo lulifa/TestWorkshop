@@ -34,6 +34,7 @@ interface WorkshopTelemetryTaskListInput extends PagedAndSortedResultRequestDto 
   hasOrder?: boolean;
   isPaged?: boolean;
   orderNo?: string;
+  organizationUnitId?: string;
   startTime?: string;
   status?: number;
   testedDeviceCode?: string;

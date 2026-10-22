@@ -25,7 +25,7 @@ public interface IWorkshopTelemetryAppService : IApplicationService
     /// <summary>
     /// 获取统计信息
     /// </summary>
-    Task<WorkshopTelemetryStatisticsDto> GetStatisticsAsync();
+    Task<WorkshopTelemetryStatisticsDto> GetStatisticsAsync(WorkshopTelemetryTaskListInput input);
 
     /// <summary>
     /// 删除任务（物理删除）

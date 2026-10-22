@@ -55,9 +55,9 @@ public class WorkshopTelemetryController : TestWorkshopController
     /// 获取统计信息
     /// </summary>
     [HttpGet("statistics")]
-    public async Task<WorkshopTelemetryStatisticsDto> GetStatisticsAsync()
+    public async Task<WorkshopTelemetryStatisticsDto> GetStatisticsAsync(WorkshopTelemetryTaskListInput input)
     {
-        return await Service.GetStatisticsAsync();
+        return await Service.GetStatisticsAsync(input);
     }
 
     /// <summary>
