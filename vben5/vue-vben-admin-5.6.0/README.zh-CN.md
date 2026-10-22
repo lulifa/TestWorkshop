@@ -14,7 +14,7 @@
 
 **中文** | [English](./README.md) | [日本語](./README.ja-JP.md)
 
-> 本项目相关记录：[认证令牌（access_token / refresh_token）有效期记录](./auth-token-lifetime.md)
+> 本项目相关记录：[认证令牌（access_token / refresh_token）有效期记录](./auth-token-lifetime.md) | [服务端配置说明](../../docs/配置说明.md)
 
 ## 简介
 
