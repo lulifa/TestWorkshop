@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { WorkshopDeviceDto, WorkshopOrderDto } from '@abp/core';
+import type { WorkshopOrderDto } from '@abp/core';
 import type { MenuInfo } from 'ant-design-vue/es/menu/src/interface';
 
 import type { VbenFormProps } from '@vben/common-ui';
@@ -15,7 +15,6 @@ import { downloadFileFromBlob } from '@vben/utils';
 import {
   formatToDateTime,
   useAbpStore,
-  useWorkshopDeviceApi,
   useWorkshopOrderApi,
   WorkshopOrderStatus,
   WorkshopTestReportStatus,
@@ -61,7 +60,6 @@ const {
   requestTestReportFetchApi,
   startTestApi,
 } = useWorkshopOrderApi();
-const { getListApi: getDeviceListApi } = useWorkshopDeviceApi();
 const MenuItem = Menu.Item;
 const abpStore = useAbpStore();
 
@@ -181,30 +179,6 @@ const formOptions: VbenFormProps = {
       label: $t('TestWorkshop.WorkshopOrder:OrderNo'),
     },
     {
-      component: 'ApiSelect',
-      componentProps: {
-        afterFetch: (result: { items: WorkshopDeviceDto[] }) => {
-          return result.items.map((item) => ({
-            label: `${item.code} - ${item.name}`,
-            value: item.id,
-          }));
-        },
-        allowClear: true,
-        api: getDeviceListApi,
-        labelField: 'label',
-        optionFilterProp: 'label',
-        params: {
-          isPaged: false,
-          maxResultCount: 1000,
-        },
-        showSearch: true,
-        valueField: 'value',
-      },
-      fieldName: 'deviceId',
-      formItemClass: 'col-span-1 items-baseline',
-      label: $t('TestWorkshop.WorkshopOrder:Device'),
-    },
-    {
       component: 'Select',
       componentProps: {
         allowClear: true,
@@ -217,7 +191,7 @@ const formOptions: VbenFormProps = {
   ],
   showCollapseButton: false,
   submitOnEnter: true,
-  wrapperClass: 'grid-cols-4',
+  wrapperClass: 'grid-cols-3',
 };
 
 const gridOptions: VxeGridProps<WorkshopOrderDto> = {
@@ -295,7 +269,6 @@ const gridOptions: VxeGridProps<WorkshopOrderDto> = {
       query: async ({ page, sort }, formValues) => {
         const values = formValues as Record<string, any>;
         return await getListApi({
-          deviceId: values?.deviceId,
           maxResultCount: page.pageSize,
           orderNo: values?.orderNo,
           organizationUnitId: values?.organizationUnitId,
@@ -309,7 +282,6 @@ const gridOptions: VxeGridProps<WorkshopOrderDto> = {
         const values = formValues as Record<string, any>;
         const { sort } = params;
         return await getListApi({
-          deviceId: values?.deviceId,
           isPaged: false,
           orderNo: values?.orderNo,
           organizationUnitId: values?.organizationUnitId,
