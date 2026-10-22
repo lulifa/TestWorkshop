@@ -136,7 +136,7 @@ public class WorkshopDataSeedContributor : IDataSeedContributor, ITransientDepen
         {
             DeviceId = Guid.Parse("3a23e343-7306-67e3-7171-97055130f7aa"),
             DeviceCode = "HD-FIVA-001",
-            Name = "FIVA测试台",
+            Name = "黄岛FIVA测试台",
             OrganizationUnitId = HuangdaoOrganizationUnitId,
             Type = DeviceTypeEnum.FIVA
         },
@@ -144,7 +144,7 @@ public class WorkshopDataSeedContributor : IDataSeedContributor, ITransientDepen
         {
             DeviceId = Guid.Parse("3a23e344-1b42-4d34-8f62-91f66d4f0002"),
             DeviceCode = "NB-FIVA-001",
-            Name = "FIVA测试台",
+            Name = "宁波FIVA测试台",
             OrganizationUnitId = NingboOrganizationUnitId,
             Type = DeviceTypeEnum.FIVA
         },
@@ -152,7 +152,7 @@ public class WorkshopDataSeedContributor : IDataSeedContributor, ITransientDepen
         {
             DeviceId = Guid.Parse("3a245301-0000-0000-0000-000000000301"),
             DeviceCode = "SZ-FIVA-001",
-            Name = "FIVA测试台",
+            Name = "深圳FIVA测试台",
             OrganizationUnitId = ShenzhenOrganizationUnitId,
             Type = DeviceTypeEnum.FIVA
         }

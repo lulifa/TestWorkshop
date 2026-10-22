@@ -7,7 +7,7 @@ INSERT INTO "AppWorkshopDevices"
     ("Id", "Code", "Name", "Type", "OrganizationUnitId", "TenantId",
      "ExtraProperties", "ConcurrencyStamp", "CreationTime", "IsDeleted")
 VALUES
-    ('3a23e343-7306-67e3-7171-97055130f7aa', 'HD-FIVA-001', 'FIVA测试台', 1,
+    ('3a23e343-7306-67e3-7171-97055130f7aa', 'HD-FIVA-001', '黄岛FIVA测试台', 1,
      '3a23e341-f6ed-c532-6f66-c7df2c72cc31', NULL, '{}', gen_random_uuid()::text, NOW(), false),
     ('3a245101-0000-0000-0000-000000000101', 'HD-PUMP-002', '黄岛水泵测试台', 2,
      '3a23e341-f6ed-c532-6f66-c7df2c72cc31', NULL, '{}', gen_random_uuid()::text, NOW(), false),
@@ -15,7 +15,7 @@ VALUES
      '3a23e341-f6ed-c532-6f66-c7df2c72cc31', NULL, '{}', gen_random_uuid()::text, NOW(), false),
     ('3a24503a-dd6c-f2ae-e894-96f39d149b9c', 'SIM-NB-SENSOR-133418', '宁波传感器', 4,
      '3a23e342-24be-80f4-d036-8aeb3cf29fb2', NULL, '{}', gen_random_uuid()::text, NOW(), false),
-    ('3a23e344-1b42-4d34-8f62-91f66d4f0002', 'NB-FIVA-001', 'FIVA测试台', 1,
+    ('3a23e344-1b42-4d34-8f62-91f66d4f0002', 'NB-FIVA-001', '宁波FIVA测试台', 1,
      '3a23e342-24be-80f4-d036-8aeb3cf29fb2', NULL, '{}', gen_random_uuid()::text, NOW(), false),
     ('3a245202-0000-0000-0000-000000000202', 'NB-ICU-003', '宁波ICU测试台', 3,
      '3a23e342-24be-80f4-d036-8aeb3cf29fb2', NULL, '{}', gen_random_uuid()::text, NOW(), false),
