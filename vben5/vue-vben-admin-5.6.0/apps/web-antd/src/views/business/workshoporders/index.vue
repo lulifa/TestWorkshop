@@ -46,6 +46,7 @@ import {
 } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { WorkshopSelect } from '#/components/workshop-select';
 
 defineOptions({
   name: 'WorkshopOrderManagement',
@@ -60,8 +61,7 @@ const {
   requestTestReportFetchApi,
   startTestApi,
 } = useWorkshopOrderApi();
-const { getListApi: getDeviceListApi, getOrganizationUnitsApi } =
-  useWorkshopDeviceApi();
+const { getListApi: getDeviceListApi } = useWorkshopDeviceApi();
 const MenuItem = Menu.Item;
 const abpStore = useAbpStore();
 
@@ -160,33 +160,16 @@ const formOptions: VbenFormProps = {
   },
   schema: [
     {
-      component: 'ApiSelect',
+      component: WorkshopSelect,
       componentProps: {
-        afterFetch: (result: {
-          items: Array<{
-            displayName: string;
-            extraProperties?: Record<string, any>;
-            id: string;
-          }>;
-        }) => {
-          return result.items
-            .filter((item) => item.extraProperties?.BusinessCode)
-            .map((item) => ({
-              label: `${item.displayName} (${item.extraProperties?.BusinessCode})`,
-              value: item.id,
-            }));
-        },
         allowClear: true,
-        api: getOrganizationUnitsApi,
-        labelField: 'label',
-        optionFilterProp: 'label',
+        mode: 'tree',
         placeholder: '全部车间',
-        showSearch: true,
-        valueField: 'value',
       },
       fieldName: 'organizationUnitId',
       formItemClass: 'col-span-1 items-baseline',
       label: $t('TestWorkshop.DisplayName:OrganizationUnit'),
+      modelPropName: 'modelValue',
     },
     {
       component: 'Input',

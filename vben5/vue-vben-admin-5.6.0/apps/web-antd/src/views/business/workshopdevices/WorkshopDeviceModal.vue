@@ -1,44 +1,30 @@
 <script lang="ts" setup>
 import type {
-  OrganizationUnitDto,
   WorkshopDeviceCreateDto,
   WorkshopDeviceDto,
   WorkshopDeviceTypeDto,
   WorkshopDeviceUpdateDto,
 } from '@abp/core';
 
+import type { VbenFormProps } from '@vben/common-ui';
+
 import { useVbenForm, useVbenModal } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 
-import { DeviceType, listToTree, useWorkshopDeviceApi } from '@abp/core';
+import { DeviceType, useWorkshopDeviceApi } from '@abp/core';
 import { message } from 'ant-design-vue';
+
+import { WorkshopSelect } from '#/components/workshop-select';
+
+import { toWorkshopDeviceTypeOptions } from './device-type-options';
 
 const emits = defineEmits<{
   (event: 'change', data: WorkshopDeviceDto): void;
 }>();
 
-const { createApi, getApi, getOrganizationUnitsApi, getTypesApi, updateApi } =
-  useWorkshopDeviceApi();
+const { createApi, getApi, getTypesApi, updateApi } = useWorkshopDeviceApi();
 
-function toOrganizationTree(items: OrganizationUnitDto[]) {
-  const tree = listToTree(items, {
-    id: 'id',
-    pid: 'parentId',
-  });
-  return tree.map((node) => toTreeNode(node));
-}
-
-function toTreeNode(node: any): any {
-  const children = (node.children ?? []).map((child: any) => toTreeNode(child));
-  return {
-    children,
-    disabled: children.length > 0,
-    label: node.displayName,
-    value: node.id,
-  };
-}
-
-const [Form, formApi] = useVbenForm({
+const formOptions: VbenFormProps = {
   commonConfig: {
     componentProps: {
       class: 'w-full',
@@ -76,10 +62,7 @@ const [Form, formApi] = useVbenForm({
       component: 'ApiSelect',
       componentProps: {
         afterFetch: (result: { items: WorkshopDeviceTypeDto[] }) => {
-          return result.items.map((item) => ({
-            label: item.displayName || item.name,
-            value: item.value,
-          }));
+          return toWorkshopDeviceTypeOptions(result.items);
         },
         api: getTypesApi,
         labelField: 'label',
@@ -90,24 +73,22 @@ const [Form, formApi] = useVbenForm({
       rules: 'selectRequired',
     },
     {
-      component: 'ApiTreeSelect',
+      component: WorkshopSelect,
       componentProps: {
         allowClear: false,
-        api: async () => {
-          const { items } = await getOrganizationUnitsApi();
-          return toOrganizationTree(items);
-        },
-        childrenField: 'children',
-        labelField: 'label',
-        valueField: 'value',
+        mode: 'tree',
+        placeholder: '请选择车间',
       },
       fieldName: 'organizationUnitId',
       label: $t('TestWorkshop.DisplayName:OrganizationUnit'),
+      modelPropName: 'modelValue',
       rules: 'selectRequired',
     },
   ],
   showDefaultActions: false,
-});
+};
+
+const [Form, formApi] = useVbenForm(formOptions);
 
 const [Modal, modalApi] = useVbenModal({
   // 表单弹窗不允许点遮罩关闭，避免误点丢失已填内容

@@ -19,7 +19,6 @@ import { $t } from '@vben/locales';
 import {
   DeviceType,
   formatToDateTime,
-  listToTree,
   useAbpStore,
   useWorkshopDeviceApi,
 } from '@abp/core';
@@ -31,6 +30,9 @@ import {
 import { Button, Card, message, Modal, Space, Tag, Tree } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import { WorkshopSelect } from '#/components/workshop-select';
+
+import { toWorkshopDeviceTypeOptions } from './device-type-options';
 
 defineOptions({
   name: 'WorkshopDeviceManagement',
@@ -59,24 +61,6 @@ const typeLabelMap = computed(
     new Map(deviceTypes.value.map((item) => [item.value, item.displayName])),
 );
 
-function toOrganizationTree(items: OrganizationUnitDto[]) {
-  const tree = listToTree(items, {
-    id: 'id',
-    pid: 'parentId',
-  });
-  return tree.map((node) => toTreeNode(node));
-}
-
-function toTreeNode(node: any): any {
-  const children = (node.children ?? []).map((child: any) => toTreeNode(child));
-  return {
-    children,
-    disabled: children.length > 0,
-    label: node.displayName,
-    value: node.id,
-  };
-}
-
 const formOptions: VbenFormProps = {
   collapsed: false,
   commonConfig: {
@@ -96,10 +80,7 @@ const formOptions: VbenFormProps = {
       component: 'ApiSelect',
       componentProps: {
         afterFetch: (result: { items: WorkshopDeviceTypeDto[] }) => {
-          return result.items.map((item) => ({
-            label: item.displayName || item.name,
-            value: item.value,
-          }));
+          return toWorkshopDeviceTypeOptions(result.items);
         },
         allowClear: true,
         api: getTypesApi,
@@ -111,24 +92,19 @@ const formOptions: VbenFormProps = {
       label: $t('TestWorkshop.DisplayName:Type'),
     },
     {
-      component: 'ApiTreeSelect',
+      component: WorkshopSelect,
       componentProps: {
         allowClear: true,
-        api: async () => {
-          const { items } = await getOrganizationUnitsApi();
-          return toOrganizationTree(items);
-        },
-        childrenField: 'children',
-        labelField: 'label',
+        mode: 'tree',
         onChange: (value: string) => {
           selectedOrganizationUnitId.value = value;
           gridApi.query();
         },
-        valueField: 'value',
       },
       fieldName: 'organizationUnitId',
       formItemClass: 'col-span-1 items-baseline',
       label: $t('TestWorkshop.DisplayName:OrganizationUnit'),
+      modelPropName: 'modelValue',
     },
   ],
   showCollapseButton: false,
