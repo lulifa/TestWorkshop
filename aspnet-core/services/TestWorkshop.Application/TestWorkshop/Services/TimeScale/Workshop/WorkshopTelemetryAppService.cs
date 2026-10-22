@@ -80,7 +80,7 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
         {
             heartbeat.RecordHeartbeat(
                 now,
-                TimeSpan.FromSeconds(_alarmOptions.RuntimeGapToleranceSeconds));
+                TimeSpan.FromSeconds(_alarmOptions.CommunicationTimeoutSeconds));
             await _heartbeatRepository.UpdateAsync(heartbeat);
         }
 

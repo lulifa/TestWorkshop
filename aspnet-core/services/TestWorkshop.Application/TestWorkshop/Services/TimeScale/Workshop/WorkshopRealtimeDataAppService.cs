@@ -106,7 +106,7 @@ public class WorkshopRealtimeDataAppService : TestWorkshopAppService, IWorkshopR
             includeDetails: false,
             cancellationToken: default);
         var onlineHeartbeats = heartbeats
-            .Where(x => x.LastHeartbeatAt >= onlineThreshold)
+            .Where(x => x.LastHeartbeatAt > onlineThreshold)
             .GroupBy(x => x.DeviceId)
             .Select(group => group.OrderByDescending(x => x.LastHeartbeatAt).First())
             .ToList();

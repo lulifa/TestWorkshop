@@ -50,7 +50,7 @@ public class WorkshopDeviceHeartbeat : Entity<Guid>
     /// <summary>
     /// 收到心跳，刷新最近心跳时间
     /// </summary>
-    public void RecordHeartbeat(DateTime heartbeatAt, TimeSpan onlineGapTolerance)
+    public void RecordHeartbeat(DateTime heartbeatAt, TimeSpan heartbeatTimeout)
     {
         if (heartbeatAt <= LastHeartbeatAt)
         {
@@ -58,7 +58,7 @@ public class WorkshopDeviceHeartbeat : Entity<Guid>
         }
 
         var gap = heartbeatAt - LastHeartbeatAt;
-        if (gap <= onlineGapTolerance)
+        if (gap < heartbeatTimeout)
         {
             TotalRuntimeSeconds += (long)Math.Round(gap.TotalSeconds);
         }
