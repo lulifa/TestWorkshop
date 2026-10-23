@@ -45,11 +45,9 @@ CSV 不再包含设备、通道、测试信息等列，文件内容只有：
 - `FileName`、`FileSize`、`ContentType`
 - `ExtraProperties`：保存接口接收到的全部遥测参数
 
-所有业务文件统一存放在 `business/{OwnerType}/{OwnerId}/` 下。文件生命周期分为两类：
-
-- 普通业务文件允许覆盖，使用 `UploadAsync`。
-- `WorkshopTelemetryTask` 和 `WorkshopTestReport` 标记为只追加，只能使用 `AppendAsync`；
-  覆盖上传会直接抛出业务异常。
+所有业务文件统一存放在 `business/{OwnerType}/{OwnerId}/` 下。
+文件是否覆盖由调用方法决定：`UploadAsync`/`BatchUploadAsync` 为覆盖模式，
+`AppendAsync` 为追加上传模式，不维护额外的文件类型策略表。
 
 `ExtraProperties` 使用统一前缀 `TelemetryInput.`，例如：
 

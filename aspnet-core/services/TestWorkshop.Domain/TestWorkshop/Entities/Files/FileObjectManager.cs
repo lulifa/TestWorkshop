@@ -60,7 +60,6 @@ public class FileObjectManager : DomainService, IFileObjectManager
     {
         Check.NotNullOrWhiteSpace(ownerType, nameof(ownerType));
         Check.NotNullOrWhiteSpace(ownerId, nameof(ownerId));
-        EnsureReplacementAllowed(ownerType);
 
         if (files == null || !files.Any())
         {
@@ -260,11 +259,6 @@ public class FileObjectManager : DomainService, IFileObjectManager
         Check.NotNullOrWhiteSpace(fileName, nameof(fileName));
         Check.NotNullOrWhiteSpace(ownerType, nameof(ownerType));
 
-        if (deleteOld)
-        {
-            EnsureReplacementAllowed(ownerType);
-        }
-
         var actualFileId = fileId ?? _guidGenerator.Create();
         var fileSize = stream.Length;
         var ext = Path.GetExtension(fileName).ToLowerInvariant();
@@ -340,15 +334,6 @@ public class FileObjectManager : DomainService, IFileObjectManager
 
         // ===== 业务文件：ownerId 有值 =====
         return $"business/{lowerType}/{ownerId}/{fileId:N}{ext}";
-    }
-
-    private static void EnsureReplacementAllowed(string ownerType)
-    {
-        if (FileOwnerPolicies.IsAppendOnly(ownerType))
-        {
-            throw new BusinessException(
-                $"业务文件类型 {ownerType} 只允许追加，不能覆盖已有文件");
-        }
     }
 
     /// <summary>
