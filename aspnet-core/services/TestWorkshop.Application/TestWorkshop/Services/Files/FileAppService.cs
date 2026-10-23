@@ -20,7 +20,7 @@ public class FileAppService : ApplicationService, IFileAppService
 
         using var stream = file.GetStream();
 
-        var fileObject = input.OwnerType == SystemFileTypes.WorkshopTestReport
+        var fileObject = FileOwnerPolicies.IsAppendOnly(input.OwnerType)
             ? await _fileObjectManager.AppendAsync(
                 stream: stream,
                 fileName: file.FileName,
@@ -58,7 +58,7 @@ public class FileAppService : ApplicationService, IFileAppService
             throw new UserFriendlyException("没有有效的文件");
 
         List<FileObject> fileObjects;
-        if (input.OwnerType == SystemFileTypes.WorkshopTestReport)
+        if (FileOwnerPolicies.IsAppendOnly(input.OwnerType))
         {
             fileObjects = new List<FileObject>();
             foreach (var file in fileTuples)
