@@ -24,7 +24,7 @@ async function initApplication() {
     },
     theme: {
       builtinType: 'deep-blue',
-      colorPrimary: 'hsl(214 92% 52%)',
+      colorPrimary: '#1677ff',
       mode: 'light',
       semiDarkHeader: false,
       semiDarkSidebar: false,

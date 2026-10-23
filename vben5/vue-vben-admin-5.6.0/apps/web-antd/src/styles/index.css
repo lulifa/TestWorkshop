@@ -1,12 +1,12 @@
 :root {
-  --background-deep: 216 33% 96%;
+  --background-deep: 210 42% 97%;
   --border: 214 28% 89%;
   --font-family:
     'Noto Sans SC', 'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif;
-  --primary: 214 92% 52%;
+  --primary: 215 100% 54%;
   --primary-foreground: 0 0% 100%;
   --radius: 0.5rem;
-  --ring: 214 92% 52%;
+  --ring: 215 100% 54%;
 }
 
 body {
@@ -16,17 +16,17 @@ body {
 
 aside.bg-sidebar,
 aside.bg-sidebar-deep {
-  --accent: 219deg 77% 39%;
+  --accent: 216deg 69% 34%;
   --accent-foreground: 0deg 0% 100%;
-  --border: 219deg 77% 39%;
+  --border: 216deg 69% 45%;
   --foreground: 0deg 0% 100%;
-  --menu: 224deg 86% 30%;
-  --sidebar: 224deg 86% 30%;
-  --sidebar-deep: 224deg 88% 25%;
+  --menu: 216deg 70% 39%;
+  --sidebar: 216deg 70% 39%;
+  --sidebar-deep: 216deg 72% 34%;
 
-  background: #0b318f !important;
-  border-right-color: #1746b0 !important;
-  box-shadow: 8px 0 28px hsl(224deg 86% 18% / 18%);
+  background: #1e5aa8 !important;
+  border-right-color: #2e6dbf !important;
+  box-shadow: 7px 0 26px hsl(216deg 70% 24% / 16%);
 }
 
 .ant-app aside .vben-menu {
@@ -35,28 +35,29 @@ aside.bg-sidebar-deep {
 
 .ant-app aside .vben-menu-item,
 .ant-app aside .vben-sub-menu-content {
-  color: hsl(210deg 100% 97% / 82%);
+  color: hsl(210deg 100% 97% / 84%);
 }
 
 .ant-app aside .vben-menu-item:not(.is-active):hover,
 .ant-app aside .vben-sub-menu-content:hover {
   color: #fff !important;
-  background: #1746b0 !important;
+  background: hsl(0deg 0% 100% / 10%) !important;
 }
 
 .ant-app aside .vben-menu-item.is-active {
-  color: #fff !important;
-  background: hsl(213deg 94% 68% / 22%) !important;
-  border: 1px solid hsl(213deg 94% 78% / 20%);
-  box-shadow: 0 6px 18px hsl(221deg 83% 18% / 12%);
+  color: #1d4ed8 !important;
+  background: #eaf3ff !important;
+  border: 1px solid hsl(0deg 0% 100% / 70%);
+  box-shadow: 0 6px 18px hsl(216deg 70% 20% / 18%);
 }
 
 .ant-app aside .vben-menu-item.is-active .vben-menu__icon,
 .ant-app aside .vben-sub-menu.is-active > .vben-sub-menu-content {
-  color: #fff !important;
+  color: #1d4ed8 !important;
 }
 
 .ant-app aside .vben-sub-menu.is-active > .vben-sub-menu-content {
+  color: #fff !important;
   background: hsl(0deg 0% 100% / 8%);
 }
 
@@ -77,56 +78,56 @@ aside.bg-sidebar-deep {
 }
 
 .ant-app header.bg-header {
-  --accent: 219deg 77% 39%;
-  --accent-foreground: 0deg 0% 100%;
-  --border: 219deg 77% 39%;
-  --foreground: 0deg 0% 100%;
+  --accent: 211deg 82% 91%;
+  --accent-foreground: 218deg 58% 24%;
+  --border: 210deg 56% 88%;
+  --foreground: 217deg 52% 21%;
 
-  background: #0b318f !important;
-  border-bottom-color: #1746b0 !important;
-  box-shadow: 0 6px 22px hsl(224deg 86% 18% / 16%);
+  background: #f8fbff !important;
+  border-bottom-color: #d8e5f4 !important;
+  box-shadow: 0 6px 20px hsl(216deg 55% 38% / 8%);
   backdrop-filter: blur(14px);
 }
 
 .ant-app header [class~='text-foreground/80'] {
-  color: hsl(0deg 0% 100% / 86%);
+  color: hsl(216deg 42% 34%);
 }
 
 .ant-app header [class*='md:bg-accent'] {
-  color: #fff;
-  background: hsl(0deg 0% 100% / 12%) !important;
-  border: 1px solid hsl(0deg 0% 100% / 14%);
+  color: #315477;
+  background: hsl(0deg 0% 100% / 82%) !important;
+  border: 1px solid #d5e5f8;
 }
 
 .ant-app header [class*='md:bg-accent']:hover {
-  background: hsl(0deg 0% 100% / 18%) !important;
+  background: #fff !important;
 }
 
 .ant-app header [class*='md:bg-accent'] [class~='text-muted-foreground'],
 .ant-app header [class*='md:bg-accent'] kbd {
-  color: hsl(0deg 0% 100% / 82%) !important;
+  color: #47678f !important;
 }
 
 .ant-app header [class*='md:bg-accent'] .bg-background {
-  color: #fff !important;
-  background: hsl(0deg 0% 100% / 14%) !important;
-  border-color: hsl(0deg 0% 100% / 26%) !important;
+  color: #315477 !important;
+  background: #edf5ff !important;
+  border-color: #c9dcf2 !important;
 }
 
 .ant-app header .lucide-search {
-  color: hsl(0deg 0% 100% / 88%) !important;
+  color: #315477 !important;
 }
 
 .ant-app header .bell-button .bg-primary {
-  background: hsl(180deg 100% 65%) !important;
-  box-shadow: 0 0 0 2px #0b318f;
+  background: #2563eb !important;
+  box-shadow: 0 0 0 2px #e8f2ff;
 }
 
 .ant-app header .vben-breadcrumb ol {
   padding: 5px 10px;
-  color: hsl(0deg 0% 100% / 78%);
-  background: hsl(0deg 0% 100% / 8%);
-  border: 1px solid hsl(0deg 0% 100% / 12%);
+  color: #5b789a;
+  background: hsl(0deg 0% 100% / 62%);
+  border: 1px solid #d5e5f8;
   border-radius: 8px;
 }
 
@@ -136,16 +137,16 @@ aside.bg-sidebar-deep {
 }
 
 .ant-app header .vben-breadcrumb li:hover {
-  color: #fff;
+  color: #1d4ed8;
 }
 
 .ant-app header .vben-breadcrumb [aria-current='page'] {
   font-weight: 600;
-  color: #fff !important;
+  color: #163a66 !important;
 }
 
 .ant-app header .vben-breadcrumb svg {
-  color: hsl(0deg 0% 100% / 62%);
+  color: #8ca6c4;
 }
 
 .ant-app section.bg-background {
@@ -206,7 +207,7 @@ aside.bg-sidebar-deep {
 .vxe-table .vxe-header--column {
   font-weight: 600;
   color: hsl(216deg 26% 35%);
-  background: hsl(214deg 50% 98%);
+  background: #eff6ff;
 }
 
 .vxe-table .vxe-body--row:hover {

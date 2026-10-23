@@ -34,7 +34,7 @@ export const overridesPreferences = defineOverridesPreferences({
   },
   theme: {
     builtinType: 'deep-blue',
-    colorPrimary: 'hsl(214 92% 52%)',
+    colorPrimary: '#1677ff',
     mode: 'light',
     radius: '0.5',
     semiDarkSidebar: false,
