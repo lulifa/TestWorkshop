@@ -515,6 +515,7 @@ function canFetchReport(row: WorkshopOrderDto) {
     canAudit.value &&
     row.status === WorkshopOrderStatus.PendingReview &&
     [
+      WorkshopTestReportStatus.Expired,
       WorkshopTestReportStatus.Failed,
       WorkshopTestReportStatus.NotReady,
     ].includes(row.testReportStatus)

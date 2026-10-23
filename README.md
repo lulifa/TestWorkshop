@@ -68,8 +68,8 @@
 - 后台处理链路：上传文件后创建遥测任务，后台 Worker 定时认领并解析 `index,value` 文件，汇总为波形数组写入 TimescaleDB
 - 参数管理：接口参数写入 `FileObject.ExtraProperties`，任务页面可查看参数详情并复制为 JSON
 - 数据存储：设备遥测写入 `WorkshopDeviceTelemetries` 超级表，按 `DeviceId + Timestamp + ChannelType` 建立主键
-- 可靠性处理：任务处理中卡死自动恢复，失败任务指数退避重试，过期任务和物理文件定时清理
-- 数据保留清理：审计日志和安全日志默认保留 365 天，已恢复报警默认保留 180 天，统一分批清理
+- 可靠性处理：任务处理中卡死自动恢复，失败任务指数退避重试，过期任务、CSV 和设备遥测分块定时清理
+- 数据保留清理：设备遥测数据和测试报告默认保留 3 年，实时数据保留 3 个月；审计日志和安全日志默认保留 365 天，已恢复报警默认保留 180 天
 
 ### 报警管理
 
@@ -88,7 +88,7 @@
 - 下位机接口：`POST /api/workshop/realtime-data` 推送测试台实时数据（设备编码 + 时间戳 + 物理量字典 + 急停标记）
 - 物理量固定 5 个：压力、流量、温度、扭矩、振动，入口按编码或中文名归一化
 - 数据存储：写入 `AppWorkshopRealtimeData` 超级表，主键为 `DeviceId + Timestamp`，同一时间点重复推送覆盖
-- 当前限制：没有页面展示，也没有保留 / 压缩策略，相关需求待确认（见 `docs/需求与实现说明.md` 第 10.4 节）
+- 数据保留：后台 Worker 每小时清理 3 个月以前的 TimescaleDB 时间分块；压缩策略尚未配置
 
 ## 配置说明
 
@@ -199,8 +199,12 @@ pnpm dev:antd
 - `Redis:IsEnabled`：是否启用 Redis，未安装时可设为 `false`
 - `Redis:Configuration`：Redis 连接配置
 - `Blob:Path`：文件物理存储目录，例如 Linux 下的 `/data/telemetry`，Windows 本地可改为 `D:\\data\\telemetry`，并确保目录可写
-- `WorkshopTelemetry:RetentionDays`：遥测任务、FileObject 和原始 CSV 的统一保留天数，默认 1095 天（3 年）
-- `WorkshopTelemetry:FileCleanupIntervalMinutes`：过期遥测文件清理频率，默认 60 分钟
+- `WorkshopTelemetry:RetentionDays`：遥测任务、FileObject、原始 CSV 和设备遥测超级表数据的统一保留天数，默认 1095 天（3 年）
+- `WorkshopTelemetry:FileCleanupIntervalMinutes`：过期遥测任务、文件和设备遥测分块的清理频率，默认 60 分钟
+- `WorkshopRealtimeData:RetentionMonths`：实时数据保留月数，默认 3 个月
+- `WorkshopRealtimeData:CleanupIntervalMinutes`：实时数据分块清理频率，默认 60 分钟
+- `WorkshopTestReport:FileRetentionDays`：订单测试报告文件保留天数，默认 1095 天（3 年）
+- `WorkshopTestReport:FileCleanupIntervalMinutes`：过期测试报告清理频率，默认 60 分钟
 - `AuthServer:Authority`：认证中心地址
 - `App:CorsOrigins`：前端跨域地址
 - `App:VueUrl`：OIDC 登录完成后回跳的前端地址
@@ -249,7 +253,7 @@ pnpm test:unit
 | 审计日志、安全日志、租户管理     | 已实现                                                   |
 | 车间设备管理、遥测任务           | 已实现，包含 CSV 上传、后台解析、重试和 TimescaleDB 写入 |
 | 报警管理（阈值 / 设备 / 通信）   | 已实现；10 秒即时检测、全员可见、不发送人员通知          |
-| 实时数据接收（下位机接口）       | 已实现接收与入库；无页面展示、无保留 / 压缩策略          |
+| 实时数据接收（下位机接口）       | 已实现接收、仪表盘展示和 3 个月保留清理；压缩策略未配置  |
 | 三方登录                         | 预留，未启用                                             |
 | 待办事项                         | 占位                                                     |
 
@@ -260,7 +264,7 @@ pnpm test:unit
 - 消息、通告通过 SignalR 实时推送，同时持久化到数据库，右上角下拉和工作台会同步刷新。
 - 开发配置中的连接字符串、客户端密钥、证书口令等仅用于本地环境，部署前必须替换。
 - 遥测文件默认保存在后端配置的 `Blob:Path` 下，数据库只保存文件对象元数据；迁移或扩容时需要同步处理文件存储。
-- 遥测任务和原始 CSV 使用同一保留周期；当前默认保留 1095 天（3 年）。`WorkshopDeviceTelemetries` 和 `AppWorkshopRealtimeData` 超级表不会被任务清理自动删除，实时数据目前也没有保留 / 压缩策略，长期归档和 `drop_chunks` 需要单独执行。
+- 遥测任务、原始 CSV 和 `WorkshopDeviceTelemetries` 超级表默认保留 1095 天（3 年）；`AppWorkshopRealtimeData` 默认保留 3 个自然月；订单测试报告文件默认保留 1095 天。三类数据均使用独立 Worker 清理，时间分块通过 `drop_chunks` 删除。
 
 ## 当前设计图
 
