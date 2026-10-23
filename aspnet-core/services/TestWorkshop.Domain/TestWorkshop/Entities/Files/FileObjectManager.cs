@@ -262,7 +262,9 @@ public class FileObjectManager : DomainService, IFileObjectManager
         var actualFileId = fileId ?? _guidGenerator.Create();
         var fileSize = stream.Length;
         var ext = Path.GetExtension(fileName).ToLowerInvariant();
-        var finalContentType = contentType ?? GetContentTypeByExtension(ext);
+        var finalContentType = contentType.IsNullOrWhiteSpace()
+            ? GetContentTypeByExtension(ext)
+            : contentType;
 
         var blobPath = GenerateBlobPath(ownerType, ownerId, actualFileId, ext);
 

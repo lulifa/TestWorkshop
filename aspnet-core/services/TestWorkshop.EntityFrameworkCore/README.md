@@ -381,6 +381,10 @@ RetentionDays 到 RetentionDays + FileCleanupIntervalMinutes
 都超过保留期时，才先把订单的报告状态标记为 `Expired`，再删除该订单的全部
 报告文件和 Blob。删除失败时文件记录仍然保留，下一轮会继续重试。
 
+外部接口返回报告文件时，按订单整体替换：先校验并保存本次返回的全部文件，
+全部成功后再删除旧报告。任意新文件保存失败时保留旧报告，避免出现旧文件已删、
+新文件不完整的中间状态。
+
 ## 七、超级表数据清理
 
 `WorkshopTelemetryFileCleanupWorker` 已通过 TimescaleDB `drop_chunks` 自动清理

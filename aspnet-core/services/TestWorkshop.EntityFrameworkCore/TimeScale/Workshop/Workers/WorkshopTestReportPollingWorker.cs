@@ -253,7 +253,7 @@ public class WorkshopTestReportPollingWorker : AsyncPeriodicBackgroundWorkerBase
 
                 if (result.Status == WorkshopTestReportFetchResultStatus.Ready)
                 {
-                    if (result.Files.Count == 0)
+                    if (result.Files == null || result.Files.Count == 0)
                     {
                         throw new UserFriendlyException("外部接口返回报告已就绪，但没有文件");
                     }
@@ -262,7 +262,6 @@ public class WorkshopTestReportPollingWorker : AsyncPeriodicBackgroundWorkerBase
                         order.Id,
                         result.Files,
                         fileManager,
-                        guidGenerator,
                         ct);
                     record.MarkSucceeded(
                         now,
@@ -390,39 +389,53 @@ public class WorkshopTestReportPollingWorker : AsyncPeriodicBackgroundWorkerBase
         Guid orderId,
         List<WorkshopTestReportFileContent> files,
         IFileObjectManager fileManager,
-        IGuidGenerator guidGenerator,
         CancellationToken ct)
     {
-        var ownerId = orderId.ToString();
-        await fileManager.DeleteFilesAsync(SystemFileTypes.WorkshopTestReport, ownerId);
-
-        var savedCount = 0;
-        foreach (var file in files)
+        if (files == null || files.Count == 0)
         {
-            if (file.Content == null || file.FileName.IsNullOrWhiteSpace())
-            {
-                continue;
-            }
-
-            var rawFileId = guidGenerator.Create();
-            await using (var normalizedContent = await NormalizeContentStreamAsync(
-                             file.Content,
-                             _options.MaxFileSizeBytes,
-                             ct))
-            {
-                await fileManager.AppendAsync(
-                    normalizedContent,
-                    file.FileName,
-                    SystemFileTypes.WorkshopTestReport,
-                    ownerId,
-                    file.ContentType,
-                    rawFileId);
-            }
-
-            savedCount++;
+            throw new UserFriendlyException("外部接口返回报告已就绪，但没有文件");
         }
 
-        return savedCount;
+        if (files.Any(file =>
+                file.Content == null
+                || file.FileName.IsNullOrWhiteSpace()))
+        {
+            throw new UserFriendlyException("外部接口返回的报告文件缺少内容或文件名");
+        }
+
+        var normalizedStreams = new List<Stream>(files.Count);
+        try
+        {
+            var uploadFiles = new List<(Stream Stream, string FileName, string ContentType)>(
+                files.Count);
+
+            foreach (var file in files)
+            {
+                var normalizedContent = await NormalizeContentStreamAsync(
+                    file.Content,
+                    _options.MaxFileSizeBytes,
+                    ct);
+                normalizedStreams.Add(normalizedContent);
+                uploadFiles.Add((
+                    normalizedContent,
+                    file.FileName,
+                    file.ContentType));
+            }
+
+            var savedFiles = await fileManager.BatchUploadAsync(
+                uploadFiles,
+                SystemFileTypes.WorkshopTestReport,
+                orderId.ToString());
+
+            return savedFiles.Count;
+        }
+        finally
+        {
+            foreach (var stream in normalizedStreams)
+            {
+                await stream.DisposeAsync();
+            }
+        }
     }
 
     private static async Task<Stream> NormalizeContentStreamAsync(
