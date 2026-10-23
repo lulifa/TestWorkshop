@@ -1,0 +1,220 @@
+:root {
+  --background-deep: 216 33% 96%;
+  --border: 214 28% 89%;
+  --font-family:
+    'Noto Sans SC', 'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif;
+  --primary: 214 92% 52%;
+  --primary-foreground: 0 0% 100%;
+  --radius: 0.5rem;
+  --ring: 214 92% 52%;
+}
+
+body {
+  font-family: var(--font-family);
+  text-rendering: optimizelegibility;
+}
+
+aside.bg-sidebar,
+aside.bg-sidebar-deep {
+  --accent: 219deg 77% 39%;
+  --accent-foreground: 0deg 0% 100%;
+  --border: 219deg 77% 39%;
+  --foreground: 0deg 0% 100%;
+  --menu: 224deg 86% 30%;
+  --sidebar: 224deg 86% 30%;
+  --sidebar-deep: 224deg 88% 25%;
+
+  background: #0b318f !important;
+  border-right-color: #1746b0 !important;
+  box-shadow: 8px 0 28px hsl(224deg 86% 18% / 18%);
+}
+
+.ant-app aside .vben-menu {
+  background: transparent;
+}
+
+.ant-app aside .vben-menu-item,
+.ant-app aside .vben-sub-menu-content {
+  color: hsl(210deg 100% 97% / 82%);
+}
+
+.ant-app aside .vben-menu-item:not(.is-active):hover,
+.ant-app aside .vben-sub-menu-content:hover {
+  color: #fff !important;
+  background: #1746b0 !important;
+}
+
+.ant-app aside .vben-menu-item.is-active {
+  color: #fff !important;
+  background: hsl(213deg 94% 68% / 22%) !important;
+  border: 1px solid hsl(213deg 94% 78% / 20%);
+  box-shadow: 0 6px 18px hsl(221deg 83% 18% / 12%);
+}
+
+.ant-app aside .vben-menu-item.is-active .vben-menu__icon,
+.ant-app aside .vben-sub-menu.is-active > .vben-sub-menu-content {
+  color: #fff !important;
+}
+
+.ant-app aside .vben-sub-menu.is-active > .vben-sub-menu-content {
+  background: hsl(0deg 0% 100% / 8%);
+}
+
+.ant-app aside .vben-menu-item.is-active::before {
+  position: absolute;
+  top: 10px;
+  left: 0;
+  width: 3px;
+  height: 20px;
+  content: '';
+  background: #38bdf8;
+  border-radius: 0 4px 4px 0;
+  box-shadow: 0 0 10px hsl(199deg 95% 60% / 72%);
+}
+
+.ant-app aside .vben-logo span {
+  color: #fff;
+}
+
+.ant-app header.bg-header {
+  --accent: 219deg 77% 39%;
+  --accent-foreground: 0deg 0% 100%;
+  --border: 219deg 77% 39%;
+  --foreground: 0deg 0% 100%;
+
+  background: #0b318f !important;
+  border-bottom-color: #1746b0 !important;
+  box-shadow: 0 6px 22px hsl(224deg 86% 18% / 16%);
+  backdrop-filter: blur(14px);
+}
+
+.ant-app header [class~='text-foreground/80'] {
+  color: hsl(0deg 0% 100% / 86%);
+}
+
+.ant-app header [class*='md:bg-accent'] {
+  color: #fff;
+  background: hsl(0deg 0% 100% / 12%) !important;
+  border: 1px solid hsl(0deg 0% 100% / 14%);
+}
+
+.ant-app header [class*='md:bg-accent']:hover {
+  background: hsl(0deg 0% 100% / 18%) !important;
+}
+
+.ant-app header [class*='md:bg-accent'] [class~='text-muted-foreground'],
+.ant-app header [class*='md:bg-accent'] kbd {
+  color: hsl(0deg 0% 100% / 82%) !important;
+}
+
+.ant-app header [class*='md:bg-accent'] .bg-background {
+  color: #fff !important;
+  background: hsl(0deg 0% 100% / 14%) !important;
+  border-color: hsl(0deg 0% 100% / 26%) !important;
+}
+
+.ant-app header .lucide-search {
+  color: hsl(0deg 0% 100% / 88%) !important;
+}
+
+.ant-app header .bell-button .bg-primary {
+  background: hsl(180deg 100% 65%) !important;
+  box-shadow: 0 0 0 2px #0b318f;
+}
+
+.ant-app header .vben-breadcrumb ol {
+  padding: 5px 10px;
+  color: hsl(0deg 0% 100% / 78%);
+  background: hsl(0deg 0% 100% / 8%);
+  border: 1px solid hsl(0deg 0% 100% / 12%);
+  border-radius: 8px;
+}
+
+.ant-app header .vben-breadcrumb a,
+.ant-app header .vben-breadcrumb li {
+  color: inherit;
+}
+
+.ant-app header .vben-breadcrumb li:hover {
+  color: #fff;
+}
+
+.ant-app header .vben-breadcrumb [aria-current='page'] {
+  font-weight: 600;
+  color: #fff !important;
+}
+
+.ant-app header .vben-breadcrumb svg {
+  color: hsl(0deg 0% 100% / 62%);
+}
+
+.ant-app section.bg-background {
+  background: hsl(210deg 40% 99%) !important;
+}
+
+.tabs-chrome__item.is-active .tabs-chrome__background-content {
+  background: hsl(var(--primary) / 12%) !important;
+}
+
+.tabs-chrome__item.is-active .tabs-chrome__background-before,
+.tabs-chrome__item.is-active .tabs-chrome__background-after {
+  fill: hsl(var(--primary) / 12%) !important;
+}
+
+.tabs-chrome__item.is-active .tabs-chrome__item-main {
+  font-weight: 600;
+  color: hsl(var(--primary)) !important;
+}
+
+.ant-app main.bg-background-deep {
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      hsl(212deg 100% 70% / 8%),
+      transparent 28rem
+    ),
+    hsl(var(--background-deep));
+}
+
+.card-box,
+.ant-card {
+  border-color: hsl(214deg 30% 90%);
+  box-shadow: 0 12px 34px hsl(215deg 45% 24% / 5%);
+}
+
+.ant-btn-primary {
+  box-shadow: 0 6px 16px hsl(var(--primary) / 20%);
+}
+
+.ant-input,
+.ant-input-affix-wrapper,
+.ant-select-selector,
+.ant-picker {
+  border-radius: 8px !important;
+}
+
+.ant-form-item-label > label {
+  font-weight: 500;
+}
+
+.vxe-table {
+  --vxe-font-family: var(--font-family);
+  --vxe-ui-font-color: hsl(216deg 24% 28%);
+  --vxe-ui-table-border-color: hsl(214deg 30% 91%);
+}
+
+.vxe-table .vxe-header--column {
+  font-weight: 600;
+  color: hsl(216deg 26% 35%);
+  background: hsl(214deg 50% 98%);
+}
+
+.vxe-table .vxe-body--row:hover {
+  background: hsl(214deg 100% 98%);
+}
+
+@media (max-width: 768px) {
+  .ant-app main.bg-background-deep {
+    background: hsl(var(--background-deep));
+  }
+}

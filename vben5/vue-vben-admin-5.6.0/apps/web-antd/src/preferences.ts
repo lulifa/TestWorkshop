@@ -15,12 +15,34 @@ export const overridesPreferences = defineOverridesPreferences({
     defaultHomePath: '/workspace',
     enablePreferences: false,
   },
+  copyright: {
+    companyName: 'TestWorkshop',
+    date: '2026',
+  },
+  header: {
+    height: 56,
+  },
+  logo: {
+    source: '/logo-testworkshop.svg',
+    sourceDark: '/logo-testworkshop.svg',
+  },
+  sidebar: {
+    width: 232,
+  },
+  tabbar: {
+    height: 40,
+  },
   theme: {
-    mode: 'auto',
-    radius: '0.25',
+    builtinType: 'deep-blue',
+    colorPrimary: 'hsl(214 92% 52%)',
+    mode: 'light',
+    radius: '0.5',
+    semiDarkSidebar: false,
   },
   widget: {
+    languageToggle: false,
     notification: true,
+    themeToggle: false,
     timezone: false,
     fullscreen: false,
   },

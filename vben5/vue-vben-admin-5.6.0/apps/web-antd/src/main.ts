@@ -1,4 +1,4 @@
-import { initPreferences } from '@vben/preferences';
+import { initPreferences, updatePreferences } from '@vben/preferences';
 import { unmountGlobalLoading } from '@vben/utils';
 
 import { overridesPreferences } from './preferences';
@@ -17,6 +17,21 @@ async function initApplication() {
   await initPreferences({
     namespace,
     overrides: overridesPreferences,
+  });
+  updatePreferences({
+    app: {
+      enablePreferences: false,
+    },
+    theme: {
+      builtinType: 'deep-blue',
+      colorPrimary: 'hsl(214 92% 52%)',
+      mode: 'light',
+      semiDarkHeader: false,
+      semiDarkSidebar: false,
+    },
+    widget: {
+      themeToggle: false,
+    },
   });
 
   // 启动应用并挂载

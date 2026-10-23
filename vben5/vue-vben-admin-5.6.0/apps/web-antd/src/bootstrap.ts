@@ -10,6 +10,7 @@ import '@vben/styles/antd';
 import { useTitle } from '@vueuse/core';
 
 import { $t, setupI18n } from '#/locales';
+import './styles/index.css';
 
 import { initComponentAdapter } from './adapter/component';
 import { initSetupVbenForm } from './adapter/form';
