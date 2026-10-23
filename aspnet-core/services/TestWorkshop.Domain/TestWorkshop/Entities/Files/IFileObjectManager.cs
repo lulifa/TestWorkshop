@@ -50,7 +50,10 @@ public interface IFileObjectManager
     /// <summary>
     /// 按 ownerType + ownerId 删除文件
     /// </summary>
-    Task DeleteFilesAsync(string ownerType, string ownerId);
+    Task DeleteFilesAsync(
+        string ownerType,
+        string ownerId,
+        bool throwOnPhysicalDeleteFailure = false);
 
     /// <summary>
     /// 删除单个文件

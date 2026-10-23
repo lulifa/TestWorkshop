@@ -39,6 +39,28 @@ public class EfCoreFileObjectRepository :
     }
 
     /// <summary>
+    /// 跨租户查询指定业务类型下超过保留期的文件。
+    /// </summary>
+    public async Task<List<FileObject>> GetExpiredByOwnerTypeAsync(
+        string ownerType,
+        DateTime cutoff,
+        int maxResultCount,
+        CancellationToken cancellationToken = default)
+    {
+        var dbSet = await GetDbSetAsync();
+
+        return await dbSet
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .Where(f => !f.IsDeleted
+                        && f.OwnerType == ownerType
+                        && f.CreationTime < cutoff)
+            .OrderBy(f => f.CreationTime)
+            .Take(maxResultCount)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <summary>
     /// 统一分页查询（多条件过滤）
     /// </summary>
     public async Task<PagedResultDto<FileObject>> GetListAsync(

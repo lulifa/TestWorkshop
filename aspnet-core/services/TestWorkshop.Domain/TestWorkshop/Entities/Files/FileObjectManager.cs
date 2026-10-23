@@ -131,7 +131,10 @@ public class FileObjectManager : DomainService, IFileObjectManager
     /// 按 ownerType + ownerId 删除文件
     /// </summary>
     [UnitOfWork]
-    public virtual async Task DeleteFilesAsync(string ownerType, string ownerId)
+    public virtual async Task DeleteFilesAsync(
+        string ownerType,
+        string ownerId,
+        bool throwOnPhysicalDeleteFailure = false)
     {
         Check.NotNullOrWhiteSpace(ownerType, nameof(ownerType));
         Check.NotNullOrWhiteSpace(ownerId, nameof(ownerId));
@@ -144,6 +147,7 @@ public class FileObjectManager : DomainService, IFileObjectManager
             return;
         }
 
+        Exception firstPhysicalDeleteError = null;
         foreach (var file in files)
         {
             try
@@ -152,8 +156,16 @@ public class FileObjectManager : DomainService, IFileObjectManager
             }
             catch (Exception ex)
             {
+                firstPhysicalDeleteError ??= ex;
                 _logger.LogWarning(ex, "删除物理文件失败: {BlobPath}", file.BlobPath);
             }
+        }
+
+        if (throwOnPhysicalDeleteFailure && firstPhysicalDeleteError != null)
+        {
+            throw new InvalidOperationException(
+                $"删除 {ownerType}/{ownerId} 的物理文件失败，保留文件记录等待重试",
+                firstPhysicalDeleteError);
         }
 
         await _fileObjectRepository.HardDeleteAsync(files, true);

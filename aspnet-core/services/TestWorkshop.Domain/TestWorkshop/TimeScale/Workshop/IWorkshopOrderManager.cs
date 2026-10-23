@@ -40,6 +40,8 @@ public interface IWorkshopOrderManager
 
     Task<WorkshopOrder> MarkTestReportNotReadyAsync(Guid id);
 
+    Task MarkTestReportExpiredAsync(Guid id);
+
     Task<WorkshopOrderReportFetchRecord> RequestManualTestReportFetchAsync(
         Guid id,
         Guid requestedByUserId);

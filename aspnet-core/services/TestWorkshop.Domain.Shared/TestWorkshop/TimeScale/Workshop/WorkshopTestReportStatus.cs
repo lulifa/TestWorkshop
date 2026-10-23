@@ -24,5 +24,10 @@ public enum WorkshopTestReportStatus
     /// <summary>
     /// 报告获取失败
     /// </summary>
-    Failed = 3
+    Failed = 3,
+
+    /// <summary>
+    /// 报告文件已超过保留期并清理
+    /// </summary>
+    Expired = 4
 }

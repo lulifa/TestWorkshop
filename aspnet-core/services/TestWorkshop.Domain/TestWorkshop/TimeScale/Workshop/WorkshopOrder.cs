@@ -210,6 +210,19 @@ public class WorkshopOrder : FullAuditedAggregateRoot<Guid>, IMultiTenant
     }
 
     /// <summary>
+    /// 标记测试报告文件已超过保留期并清理。
+    /// </summary>
+    public void MarkTestReportExpired()
+    {
+        if (TestReportStatus != WorkshopTestReportStatus.Ready)
+        {
+            return;
+        }
+
+        TestReportStatus = WorkshopTestReportStatus.Expired;
+    }
+
+    /// <summary>
     /// 提交报告审核。审核不通过后仍可再次审核，审核通过后锁定。
     /// </summary>
     public void Audit(WorkshopOrderAuditResult result)

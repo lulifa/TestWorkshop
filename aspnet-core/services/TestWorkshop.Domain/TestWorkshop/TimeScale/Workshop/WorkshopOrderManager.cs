@@ -200,6 +200,23 @@ public class WorkshopOrderManager : DomainService, IWorkshopOrderManager
         return order;
     }
 
+    public virtual async Task MarkTestReportExpiredAsync(Guid id)
+    {
+        var order = await _orderRepository.FindAsync(id);
+        if (order == null || order.TestReportStatus != WorkshopTestReportStatus.Ready)
+        {
+            return;
+        }
+
+        order.MarkTestReportExpired();
+        await _orderRepository.UpdateAsync(order, autoSave: true);
+
+        _logger.LogInformation(
+            "订单测试报告已过期: OrderId={OrderId}, OrderNo={OrderNo}",
+            order.Id,
+            order.OrderNo);
+    }
+
     public virtual async Task<WorkshopOrderReportFetchRecord> RequestManualTestReportFetchAsync(
         Guid id,
         Guid requestedByUserId)

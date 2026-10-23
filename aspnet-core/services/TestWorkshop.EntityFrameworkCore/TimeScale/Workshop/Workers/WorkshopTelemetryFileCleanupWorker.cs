@@ -3,7 +3,8 @@
 using Microsoft.Extensions.Options;
 
 /// <summary>
-/// 后台任务：定期清理已过期且已完成/失败的遥测任务
+/// 后台任务：定期清理已过期且已完成/失败的遥测任务，
+/// 并删除超过保留期的设备遥测超级表时间分块。
 /// </summary>
 public class WorkshopTelemetryFileCleanupWorker : AsyncPeriodicBackgroundWorkerBase
 {
@@ -15,6 +16,7 @@ public class WorkshopTelemetryFileCleanupWorker : AsyncPeriodicBackgroundWorkerB
 
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<WorkshopTelemetryFileCleanupWorker> _logger;
+    private readonly WorkshopTelemetryOptions _options;
     private readonly TimeSpan _cleanupInterval;
 
     public WorkshopTelemetryFileCleanupWorker(
@@ -26,8 +28,9 @@ public class WorkshopTelemetryFileCleanupWorker : AsyncPeriodicBackgroundWorkerB
     {
         _scopeFactory = scopeFactory;
         _logger = logger;
-        options.Value.Validate();
-        _cleanupInterval = TimeSpan.FromMinutes(options.Value.FileCleanupIntervalMinutes);
+        _options = options.Value;
+        _options.Validate();
+        _cleanupInterval = TimeSpan.FromMinutes(_options.FileCleanupIntervalMinutes);
         Timer.Period = (int)_cleanupInterval.TotalMilliseconds;
     }
 
@@ -35,7 +38,16 @@ public class WorkshopTelemetryFileCleanupWorker : AsyncPeriodicBackgroundWorkerB
     {
         using var scope = _scopeFactory.CreateScope();
         var taskManager = scope.ServiceProvider.GetRequiredService<IWorkshopTelemetryTaskManager>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<TestWorkshopDbContext>();
+        var clock = scope.ServiceProvider.GetRequiredService<IClock>();
 
+        await CleanupExpiredFilesAsync(taskManager);
+        await CleanupExpiredDeviceTelemetryAsync(dbContext, clock.Now);
+    }
+
+    private async Task CleanupExpiredFilesAsync(
+        IWorkshopTelemetryTaskManager taskManager)
+    {
         try
         {
             var cleanedCount = 0;
@@ -64,6 +76,28 @@ public class WorkshopTelemetryFileCleanupWorker : AsyncPeriodicBackgroundWorkerB
         catch (Exception ex)
         {
             _logger.LogError(ex, "清理过期任务时发生异常");
+        }
+    }
+
+    private async Task CleanupExpiredDeviceTelemetryAsync(
+        TestWorkshopDbContext dbContext,
+        DateTime now)
+    {
+        try
+        {
+            var cutoff = now.AddDays(-_options.RetentionDays);
+
+            // 只删除已完整超过保留期的 TimescaleDB 分块，避免对超级表逐行删除。
+            await dbContext.Database.ExecuteSqlInterpolatedAsync(
+                $"""SELECT drop_chunks('"AppWorkshopDeviceTelemetries"', older_than => {cutoff});""");
+
+            _logger.LogInformation(
+                "设备遥测数据清理完成：已删除 {Cutoff:O} 之前的时间分块",
+                cutoff);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "清理设备遥测数据时发生异常");
         }
     }
 }

@@ -259,6 +259,7 @@
     "WorkshopOrder:ReportFetching": "获取中",
     "WorkshopOrder:ReportReady": "已就绪",
     "WorkshopOrder:ReportFailed": "获取失败",
+    "WorkshopOrder:ReportExpired": "已过期",
     "WorkshopOrder:ReportFetchedAt": "报告获取时间",
     "WorkshopOrder:ReportRequiredForAudit": "测试报告尚未获取，暂时不能审核",
     "WorkshopOrder:PreviewReport": "预览报告",

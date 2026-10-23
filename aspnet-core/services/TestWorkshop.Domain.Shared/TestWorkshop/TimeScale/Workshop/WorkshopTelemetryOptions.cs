@@ -6,8 +6,9 @@ namespace TestWorkshop.TimeScale;
 public class WorkshopTelemetryOptions
 {
     /// <summary>
-    /// 遥测任务记录和对应原始 CSV 文件的统一保留天数。
-    /// Task 与 FileObject 使用同一生命周期，到期后由清理 Worker 一起删除。
+    /// 遥测任务记录、对应原始 CSV 文件和设备遥测超级表数据的统一保留天数。
+    /// Task 与 FileObject 到期后由清理 Worker 一起删除；
+    /// 超级表数据按时间分块删除。
     /// </summary>
     public int RetentionDays { get; set; } = 1095;
 

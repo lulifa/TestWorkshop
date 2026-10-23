@@ -259,6 +259,7 @@
     "WorkshopOrder:ReportFetching": "Fetching",
     "WorkshopOrder:ReportReady": "Ready",
     "WorkshopOrder:ReportFailed": "Fetch Failed",
+    "WorkshopOrder:ReportExpired": "Expired",
     "WorkshopOrder:ReportFetchedAt": "Report Fetched At",
     "WorkshopOrder:ReportRequiredForAudit": "The test report has not been fetched and cannot be reviewed yet.",
     "WorkshopOrder:PreviewReport": "Preview Report",

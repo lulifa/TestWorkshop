@@ -148,6 +148,8 @@ DeviceId + Timestamp
 - 采集不到的物理量存 `NULL`；单位不落库（物理量固定，单位在 `TelemetryQuantity` 常量里）。
 - 写入按 `(DeviceId, Timestamp)` 冲突覆盖（`ON CONFLICT DO UPDATE`）。
 - 接收接口：`POST /api/workshop/realtime-data`（匿名，下位机调用）
+- 保留策略：`WorkshopRealtimeDataCleanupWorker` 默认每小时清理三个月以前的
+  `AppWorkshopRealtimeData` 时间分块。
 
   ```json
   {
@@ -292,8 +294,10 @@ migrationBuilder.Sql("""
 1. 物理 CSV 文件
 2. `FileObject` 记录
 3. `WorkshopTelemetryTask` 记录
+4. 超过保留期的 `WorkshopDeviceTelemetries` 时间分块
 
-它不会删除 `WorkshopDeviceTelemetries` 超级表数据。
+设备遥测超级表通过 TimescaleDB `drop_chunks` 清理，不会对超级表逐行执行
+`DELETE`。分块是整块删除，因此实际保留时间可能比配置值多出不足一个分块周期。
 
 ### LogCleanupBackgroundWorker
 
@@ -311,17 +315,18 @@ migrationBuilder.Sql("""
 
 ```json
 "WorkshopTelemetry": {
-  "RetentionDays": 180,
+  "RetentionDays": 1095,
   "FileCleanupIntervalMinutes": 60
 }
 ```
 
 含义：
 
-- `RetentionDays`：遥测任务、FileObject 和原始 CSV 文件的统一保留天数。
+- `RetentionDays`：遥测任务、FileObject、原始 CSV 文件和设备遥测超级表数据的统一保留天数。
 - `FileCleanupIntervalMinutes`：过期文件清理频率。
 - 新任务写入 `ExpiresAt = CreatedAt + RetentionDays`。
 - 修改配置只影响新任务，已有任务仍使用数据库里已有的 `ExpiresAt`。
+- 超级表按 `Timestamp` 删除已完整超过 `RetentionDays` 的时间分块，修改配置后下一轮清理即按新值执行。
 
 实际删除时间约为：
 
@@ -329,11 +334,53 @@ migrationBuilder.Sql("""
 RetentionDays 到 RetentionDays + FileCleanupIntervalMinutes
 ```
 
-当前默认值下约为 180 天到 180 天零 1 小时。
+当前默认值下约为 1095 天到 1095 天零 1 小时。
+
+### WorkshopRealtimeDataCleanupWorker
+
+```text
+执行周期：60 分钟
+保留期限：3 个自然月
+清理对象：AppWorkshopRealtimeData
+```
+
+配置位置：`TestWorkshop.HttpApi.Host/appsettings.json`
+
+```json
+"WorkshopRealtimeData": {
+  "RetentionMonths": 3,
+  "CleanupIntervalMinutes": 60
+}
+```
+
+该 Worker 使用 TimescaleDB `drop_chunks` 删除三个月以前的实时数据时间分块。
+分块是整块删除，因此实际保留时间可能比配置值多出不足一个分块周期。
+
+### WorkshopTestReportCleanupWorker
+
+```text
+执行周期：60 分钟
+保留期限：1095 天
+清理对象：WorkshopTestReport 类型的 FileObject 和对应 Blob 文件
+```
+
+配置位置：`TestWorkshop.HttpApi.Host/appsettings.json`
+
+```json
+"WorkshopTestReport": {
+  "FileRetentionDays": 1095,
+  "FileCleanupIntervalMinutes": 60
+}
+```
+
+报告文件按 `FileObject.CreationTime` 计算保留期。只有同一订单的所有报告文件
+都超过保留期时，才先把订单的报告状态标记为 `Expired`，再删除该订单的全部
+报告文件和 Blob。删除失败时文件记录仍然保留，下一轮会继续重试。
 
 ## 七、超级表数据清理
 
-任务清理不会删除超级表数据，因此超级表仍需单独制定归档和清理策略。
+`WorkshopTelemetryFileCleanupWorker` 已通过 TimescaleDB `drop_chunks` 自动清理
+超过 `RetentionDays` 的设备遥测时间分块。以下命令用于人工查看、归档或应急清理。
 
 ### 1. 查看当前存储量
 

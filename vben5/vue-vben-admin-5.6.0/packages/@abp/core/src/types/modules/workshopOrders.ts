@@ -10,6 +10,7 @@ enum WorkshopOrderStatus {
 }
 
 enum WorkshopTestReportStatus {
+  Expired = 4,
   Failed = 3,
   Fetching = 1,
   NotReady = 0,

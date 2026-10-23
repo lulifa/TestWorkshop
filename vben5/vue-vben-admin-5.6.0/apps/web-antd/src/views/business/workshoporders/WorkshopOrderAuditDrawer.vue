@@ -125,6 +125,9 @@ const reportStatusLabelMap: Record<WorkshopTestReportStatus, string> = {
   [WorkshopTestReportStatus.Failed]: $t(
     'TestWorkshop.WorkshopOrder:ReportFailed',
   ),
+  [WorkshopTestReportStatus.Expired]: $t(
+    'TestWorkshop.WorkshopOrder:ReportExpired',
+  ),
 };
 
 const reportStatusColorMap: Record<WorkshopTestReportStatus, string> = {
@@ -132,6 +135,7 @@ const reportStatusColorMap: Record<WorkshopTestReportStatus, string> = {
   [WorkshopTestReportStatus.Fetching]: 'processing',
   [WorkshopTestReportStatus.Ready]: 'success',
   [WorkshopTestReportStatus.Failed]: 'error',
+  [WorkshopTestReportStatus.Expired]: 'default',
 };
 
 const columns = [

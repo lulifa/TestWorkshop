@@ -15,6 +15,14 @@ public interface IFileObjectRepository : IBasicRepository<FileObject, Guid>
     /// </summary>
     Task<List<FileObject>> GetListAsync(Expression<Func<FileObject, bool>> predicate, Expression<Func<FileObject, object>> orderBy, bool descending = true);
 
+    /// <summary>
+    /// 跨租户查询指定业务类型下超过保留期的文件。
+    /// </summary>
+    Task<List<FileObject>> GetExpiredByOwnerTypeAsync(
+        string ownerType,
+        DateTime cutoff,
+        int maxResultCount,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 按业务类型查询所有文件（支持分页）

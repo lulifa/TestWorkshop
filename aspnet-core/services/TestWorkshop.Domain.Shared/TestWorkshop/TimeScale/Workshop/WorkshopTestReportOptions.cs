@@ -46,6 +46,16 @@ public class WorkshopTestReportOptions
     public long MaxFileSizeBytes { get; set; } = 200 * 1024 * 1024;
 
     /// <summary>
+    /// 报告文件保留天数。
+    /// </summary>
+    public int FileRetentionDays { get; set; } = 1095;
+
+    /// <summary>
+    /// 过期报告文件清理执行间隔（分钟）。
+    /// </summary>
+    public int FileCleanupIntervalMinutes { get; set; } = 60;
+
+    /// <summary>
     /// 处理中记录的超时时间（分钟）。
     /// </summary>
     public int StaleProcessingMinutes { get; set; } = 10;
@@ -75,6 +85,11 @@ public class WorkshopTestReportOptions
         if (MaxFileSizeBytes <= 0 || StaleProcessingMinutes <= 0)
         {
             throw new ArgumentException("WorkshopTestReport 文件大小和超时时间必须大于 0");
+        }
+
+        if (FileRetentionDays <= 0 || FileCleanupIntervalMinutes <= 0)
+        {
+            throw new ArgumentException("WorkshopTestReport 文件保留天数和清理间隔必须大于 0");
         }
     }
 
