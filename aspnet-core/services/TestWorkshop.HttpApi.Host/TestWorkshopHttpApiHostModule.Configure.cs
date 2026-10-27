@@ -289,6 +289,8 @@ public partial class TestWorkshopHttpApiHostModule
         Configure<AbpAspNetCoreAuditingOptions>(options =>
         {
             options.IgnoredUrls.Add("/api/system/auditlog");
+            options.IgnoredUrls.Add("/api/workshop/realtime-data");
+            options.IgnoredUrls.Add("/api/workshop/telemetry/online");
         });
 
     }

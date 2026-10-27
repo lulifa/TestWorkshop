@@ -152,6 +152,7 @@ DeviceId + Timestamp
 - 采集不到的物理量存 `NULL`；单位不落库（物理量固定，单位在 `TelemetryQuantity` 常量里）。
 - 写入按 `(DeviceId, Timestamp)` 冲突覆盖（`ON CONFLICT DO UPDATE`）。
 - 接收接口：`POST /api/workshop/realtime-data`（匿名，下位机调用）
+- 审计：实时数据推送与设备心跳不写入 ABP 审计日志，避免高频请求淹没审计记录。
 - 保留策略：`WorkshopRealtimeDataCleanupWorker` 默认每小时清理三个月以前的
   `AppWorkshopRealtimeData` 时间分块。
 
