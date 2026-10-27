@@ -296,11 +296,7 @@ function onFilter(field: string, value: any) {
     <Grid :table-title="$t('TestWorkshop.DisplayName:AuditLog')">
       <template #clientIpAddress="{ row }">
         <div class="flex min-w-0 flex-wrap items-center gap-1">
-          <Tag
-            v-if="row.extraProperties?.Location"
-            class="m-0"
-            color="blue"
-          >
+          <Tag v-if="row.extraProperties?.Location" class="m-0" color="blue">
             {{ row.extraProperties?.Location }}
           </Tag>
           <span class="break-all font-mono text-xs">
