@@ -1,3 +1,4 @@
+using Volo.Abp.Auditing;
 using Volo.Abp.Timing;
 
 namespace TestWorkshop;
@@ -36,6 +37,7 @@ public class WorkshopRealtimeDataAppService : TestWorkshopAppService, IWorkshopR
     }
 
     [AllowAnonymous]
+    [DisableAuditing]
     public virtual async Task PushAsync(WorkshopRealtimeDataPushInput input)
     {
         if (input.DeviceCode.IsNullOrWhiteSpace())

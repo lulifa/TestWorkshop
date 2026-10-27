@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 
+using Volo.Abp.Auditing;
 using Volo.Abp.Guids;
 using Volo.Abp.Timing;
 
@@ -54,6 +55,7 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
     /// 设备编码未知时直接报错，避免把无效请求登记为在线。
     /// </summary>
     [AllowAnonymous]
+    [DisableAuditing]
     public virtual async Task<TelemetryOnlineResultDto> OnlineAsync(string deviceCode)
     {
         if (deviceCode.IsNullOrWhiteSpace())

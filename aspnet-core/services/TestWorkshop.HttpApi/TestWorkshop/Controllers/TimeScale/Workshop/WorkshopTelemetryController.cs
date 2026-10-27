@@ -1,7 +1,5 @@
 ﻿namespace TestWorkshop;
 
-using Volo.Abp.Auditing;
-
 /// <summary>
 /// 下位机遥测数据及任务管理
 /// </summary>
@@ -28,7 +26,6 @@ public class WorkshopTelemetryController : TestWorkshopController
     /// 下位机心跳：按设备编码登记在线状态；设备编码未知则请求失败
     /// </summary>
     [HttpGet("online")]
-    [DisableAuditing]
     public async Task<TelemetryOnlineResultDto> OnlineAsync([Required] string deviceCode)
     {
         // 心跳是匿名 GET，禁止任何代理/浏览器缓存，避免出现“假在线”
