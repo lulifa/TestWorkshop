@@ -4,10 +4,19 @@ import type {
   WorkshopRealtimeDeviceDto,
 } from '@abp/core';
 
-import { computed, h, onMounted, onUnmounted, ref } from 'vue';
+import {
+  computed,
+  h,
+  onActivated,
+  onDeactivated,
+  onMounted,
+  onUnmounted,
+  ref,
+} from 'vue';
 
 import { Page } from '@vben/common-ui';
 import { $t } from '@vben/locales';
+import { usePreferences } from '@vben/preferences';
 
 import { formatToDateTime, useWorkshopRealtimeDataApi } from '@abp/core';
 import {
@@ -24,6 +33,7 @@ defineOptions({
 });
 
 const { getDashboardApi } = useWorkshopRealtimeDataApi();
+const { keepAlive } = usePreferences();
 
 const data = ref<WorkshopRealtimeDashboardDto>();
 const loading = ref(false);
@@ -132,10 +142,18 @@ function stopAutoRefresh() {
 }
 
 onMounted(async () => {
+  if (!keepAlive.value) {
+    await refresh();
+    startAutoRefresh();
+  }
+});
+
+onActivated(async () => {
   await refresh();
   startAutoRefresh();
 });
 
+onDeactivated(stopAutoRefresh);
 onUnmounted(stopAutoRefresh);
 </script>
 

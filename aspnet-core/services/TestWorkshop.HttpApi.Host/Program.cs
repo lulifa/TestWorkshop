@@ -31,6 +31,9 @@ public class Program
                         .MinimumLevel.Information()
                     #endif
                         .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+                        .MinimumLevel.Override(
+                            "Microsoft.AspNetCore.Hosting.Diagnostics",
+                            LogEventLevel.Warning)
                         .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
                         .Enrich.FromLogContext()
                         .WriteTo.Async(c => c.File(

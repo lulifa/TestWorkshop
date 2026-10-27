@@ -5,10 +5,11 @@ import type { VbenFormProps } from '@vben/common-ui';
 
 import type { VxeGridProps } from '#/adapter/vxe-table';
 
-import { onMounted, onUnmounted } from 'vue';
+import { onActivated, onDeactivated, onMounted, onUnmounted } from 'vue';
 
 import { Page } from '@vben/common-ui';
 import { $t } from '@vben/locales';
+import { usePreferences } from '@vben/preferences';
 
 import {
   formatToDateTime,
@@ -26,6 +27,7 @@ defineOptions({
 });
 
 const { getListApi } = useWorkshopAlarmApi();
+const { keepAlive } = usePreferences();
 
 const alarmTypeOptions = [
   { label: '阈值报警', value: WorkshopAlarmType.Threshold },
@@ -189,18 +191,39 @@ const [Grid, gridApi] = useVbenVxeGrid({
 });
 
 let refreshTimer: ReturnType<typeof setInterval> | undefined;
+let hasActivated = false;
 
-onMounted(() => {
+function startAutoRefresh() {
+  stopAutoRefresh();
   refreshTimer = setInterval(() => {
     void gridApi.query();
   }, 10_000);
-});
+}
 
-onUnmounted(() => {
+function stopAutoRefresh() {
   if (refreshTimer) {
     clearInterval(refreshTimer);
+    refreshTimer = undefined;
+  }
+}
+
+onMounted(() => {
+  if (!keepAlive.value) {
+    void gridApi.query();
+    startAutoRefresh();
   }
 });
+
+onActivated(() => {
+  if (hasActivated) {
+    void gridApi.query();
+  }
+  hasActivated = true;
+  startAutoRefresh();
+});
+
+onDeactivated(stopAutoRefresh);
+onUnmounted(stopAutoRefresh);
 </script>
 
 <template>
