@@ -1,5 +1,7 @@
 namespace TestWorkshop;
 
+using Volo.Abp.Auditing;
+
 /// <summary>
 /// 测试台实时数据接收
 /// </summary>
@@ -17,6 +19,7 @@ public class WorkshopRealtimeDataController : TestWorkshopController
     /// 下位机推送一帧测试台实时数据
     /// </summary>
     [HttpPost]
+    [DisableAuditing]
     public virtual async Task PushAsync(WorkshopRealtimeDataPushInput input)
     {
         await Service.PushAsync(input);
