@@ -182,7 +182,7 @@ const gridOptions: VxeGridProps<AuditLogDto> = {
       slots: { default: 'clientIpAddress' },
       sortable: true,
       title: $t('TestWorkshop.DisplayName:ClientIpAddress'),
-      width: 150,
+      width: 260,
     },
     {
       align: 'left',
@@ -295,10 +295,18 @@ function onFilter(field: string, value: any) {
   <Page auto-content-height>
     <Grid :table-title="$t('TestWorkshop.DisplayName:AuditLog')">
       <template #clientIpAddress="{ row }">
-        <Tag v-if="row.extraProperties?.Location" color="blue">
-          {{ row.extraProperties?.Location }}
-        </Tag>
-        <span>{{ row.clientIpAddress }}</span>
+        <div class="flex min-w-0 flex-wrap items-center gap-1">
+          <Tag
+            v-if="row.extraProperties?.Location"
+            class="m-0"
+            color="blue"
+          >
+            {{ row.extraProperties?.Location }}
+          </Tag>
+          <span class="break-all font-mono text-xs">
+            {{ row.clientIpAddress }}
+          </span>
+        </div>
       </template>
       <template #url="{ row }">
         <div class="flex flex-row">
