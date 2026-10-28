@@ -8,6 +8,7 @@ import { ReloadOutlined } from '@ant-design/icons-vue';
 import { getWeather } from '#/api';
 
 const WEATHER_REFRESH_INTERVAL = 60 * 60 * 1000;
+const weatherRefreshMinutes = WEATHER_REFRESH_INTERVAL / 60_000;
 
 const DEFAULT_WEATHER: WeatherData = {
   city: '未知城市',
@@ -207,6 +208,13 @@ onBeforeUnmount(() => {
         </div>
 
         <div class="ml-auto flex min-w-0 items-center gap-2">
+          <span class="whitespace-nowrap text-xs text-foreground/60">
+            {{
+              $t('page.dashboard.weatherAutoRefreshHint', [
+                weatherRefreshMinutes,
+              ])
+            }}
+          </span>
           <div
             v-if="weather.alerts && weather.alerts.length > 0"
             class="flex min-w-0 max-w-full items-center gap-2 rounded-full border border-border bg-foreground/5 px-2.5 py-1.5 text-sm"

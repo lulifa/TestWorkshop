@@ -28,6 +28,7 @@
     "refresh": "Refresh",
     "dataPending": "Waiting for data",
     "autoRefreshHint": "Refreshes every minute",
+    "weatherAutoRefreshHint": "Auto-refreshes every {0} minutes",
     "allWorkshops": "All Workshops",
     "searchDevice": "Search device name or code"
   },
