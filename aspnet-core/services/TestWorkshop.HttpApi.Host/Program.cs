@@ -34,6 +34,15 @@ public class Program
                         .MinimumLevel.Override(
                             "Microsoft.AspNetCore.Hosting.Diagnostics",
                             LogEventLevel.Warning)
+                        .MinimumLevel.Override(
+                            "Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker",
+                            LogEventLevel.Warning)
+                        .MinimumLevel.Override(
+                            "Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor",
+                            LogEventLevel.Warning)
+                        .MinimumLevel.Override(
+                            "Microsoft.AspNetCore.Routing.EndpointMiddleware",
+                            LogEventLevel.Warning)
                         .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
                         .Enrich.FromLogContext()
                         .WriteTo.Async(c => c.File(
