@@ -9,7 +9,6 @@ import { onActivated, onDeactivated, onMounted, onUnmounted } from 'vue';
 
 import { Page } from '@vben/common-ui';
 import { $t } from '@vben/locales';
-import { usePreferences } from '@vben/preferences';
 
 import {
   formatToDateTime,
@@ -27,7 +26,6 @@ defineOptions({
 });
 
 const { getListApi } = useWorkshopAlarmApi();
-const { keepAlive } = usePreferences();
 
 const alarmTypeOptions = [
   { label: '阈值报警', value: WorkshopAlarmType.Threshold },
@@ -191,7 +189,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
 });
 
 let refreshTimer: ReturnType<typeof setInterval> | undefined;
-let hasActivated = false;
+let hasDeactivated = false;
 
 function startAutoRefresh() {
   stopAutoRefresh();
@@ -208,21 +206,20 @@ function stopAutoRefresh() {
 }
 
 onMounted(() => {
-  if (!keepAlive.value) {
+  startAutoRefresh();
+});
+
+onActivated(() => {
+  if (hasDeactivated) {
     void gridApi.query();
     startAutoRefresh();
   }
 });
 
-onActivated(() => {
-  if (hasActivated) {
-    void gridApi.query();
-  }
-  hasActivated = true;
-  startAutoRefresh();
+onDeactivated(() => {
+  hasDeactivated = true;
+  stopAutoRefresh();
 });
-
-onDeactivated(stopAutoRefresh);
 onUnmounted(stopAutoRefresh);
 </script>
 

@@ -16,7 +16,6 @@ import {
 
 import { Page } from '@vben/common-ui';
 import { $t } from '@vben/locales';
-import { usePreferences } from '@vben/preferences';
 
 import { formatToDateTime, useWorkshopRealtimeDataApi } from '@abp/core';
 import {
@@ -33,13 +32,13 @@ defineOptions({
 });
 
 const { getDashboardApi } = useWorkshopRealtimeDataApi();
-const { keepAlive } = usePreferences();
 
 const data = ref<WorkshopRealtimeDashboardDto>();
 const loading = ref(false);
 const searchText = ref('');
 const selectedWorkshop = ref('all');
 let refreshTimer: ReturnType<typeof setInterval> | undefined;
+let hasDeactivated = false;
 
 const devices = computed(() => data.value?.devices ?? []);
 const workshopGroups = computed(() => {
@@ -142,18 +141,21 @@ function stopAutoRefresh() {
 }
 
 onMounted(async () => {
-  if (!keepAlive.value) {
+  await refresh();
+  startAutoRefresh();
+});
+
+onActivated(async () => {
+  if (hasDeactivated) {
     await refresh();
     startAutoRefresh();
   }
 });
 
-onActivated(async () => {
-  await refresh();
-  startAutoRefresh();
+onDeactivated(() => {
+  hasDeactivated = true;
+  stopAutoRefresh();
 });
-
-onDeactivated(stopAutoRefresh);
 onUnmounted(stopAutoRefresh);
 </script>
 
