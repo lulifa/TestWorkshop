@@ -57,7 +57,9 @@ const previewUrl = ref('');
 const previewContentType = ref('');
 const previewFiles = ref<WorkshopOrderReportFileDto[]>([]);
 const previewFileId = ref<string>();
-const auditResult = ref<WorkshopOrderAuditResult>();
+const auditResult = ref<WorkshopOrderAuditResult>(
+  WorkshopOrderAuditResult.Approved,
+);
 const maintenanceSuggestion = ref('');
 const isPreviewPdf = computed(
   () =>
@@ -179,7 +181,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
       return;
     }
     order.value = drawerApi.getData<WorkshopOrderDto>();
-    auditResult.value = undefined;
+    auditResult.value = WorkshopOrderAuditResult.Approved;
     maintenanceSuggestion.value = '';
     records.value = [];
     previewFiles.value = [];
@@ -223,7 +225,7 @@ async function onSubmitAudit() {
     order.value = updated;
     emits('change', updated);
     message.success($t('AbpUi.SavedSuccessfully'));
-    auditResult.value = undefined;
+    auditResult.value = WorkshopOrderAuditResult.Approved;
     maintenanceSuggestion.value = '';
     await loadDetail();
   } finally {
