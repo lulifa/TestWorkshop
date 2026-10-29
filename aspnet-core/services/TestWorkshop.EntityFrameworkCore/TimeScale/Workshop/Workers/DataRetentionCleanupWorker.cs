@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Options;
 using Volo.Abp.Domain.Entities;
+using Volo.Abp.Uow;
 
 namespace TestWorkshop;
 
@@ -38,6 +39,11 @@ public class DataRetentionCleanupWorker : AsyncPeriodicBackgroundWorkerBase
         {
             using var scope = _scopeFactory.CreateScope();
             var serviceProvider = scope.ServiceProvider;
+            var unitOfWorkManager =
+                serviceProvider.GetRequiredService<IUnitOfWorkManager>();
+            using var uow = unitOfWorkManager.Begin(
+                requiresNew: true,
+                isTransactional: false);
             var clock = serviceProvider.GetRequiredService<IClock>();
             var auditLogRepository =
                 serviceProvider.GetRequiredService<IRepository<AuditLog, Guid>>();
@@ -77,6 +83,7 @@ public class DataRetentionCleanupWorker : AsyncPeriodicBackgroundWorkerBase
                         && item.ClearedAt.Value < clearedAlarmCutoff,
                 ct);
 
+            await uow.CompleteAsync(ct);
             _logger.LogInformation("数据保留清理任务执行完成");
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
