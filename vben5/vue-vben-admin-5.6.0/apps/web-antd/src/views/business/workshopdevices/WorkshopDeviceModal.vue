@@ -77,7 +77,7 @@ const formOptions: VbenFormProps = {
       componentProps: {
         allowClear: false,
         mode: 'tree',
-        placeholder: '请选择车间',
+        placeholder: $t('page.business.selectWorkshop'),
       },
       fieldName: 'organizationUnitId',
       label: $t('TestWorkshop.DisplayName:OrganizationUnit'),

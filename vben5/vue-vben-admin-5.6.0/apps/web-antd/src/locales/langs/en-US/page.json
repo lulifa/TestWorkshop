@@ -34,6 +34,27 @@
   },
   "business": {
     "title": "Business",
+    "all": "All",
+    "allWorkshops": "All Workshops",
+    "selectWorkshop": "Select Workshop",
+    "alarm": {
+      "type": "Alarm Type",
+      "types": {
+        "threshold": "Threshold Alarm",
+        "relation": "Relation Alarm",
+        "device": "Device Alarm",
+        "communication": "Communication Alarm"
+      },
+      "status": "Status",
+      "statuses": {
+        "active": "Active",
+        "cleared": "Cleared"
+      },
+      "device": "Test Bench",
+      "content": "Alarm Content",
+      "startedAt": "Occurred At",
+      "clearedAt": "Recovered At"
+    },
     "notifications": {
       "broadcast": "My Broadcasts",
       "message": "My Messages"

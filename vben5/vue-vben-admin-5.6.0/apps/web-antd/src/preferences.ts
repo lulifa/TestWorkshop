@@ -40,7 +40,7 @@ export const overridesPreferences = defineOverridesPreferences({
     semiDarkSidebar: false,
   },
   widget: {
-    languageToggle: false,
+    languageToggle: true,
     notification: true,
     themeToggle: false,
     timezone: false,

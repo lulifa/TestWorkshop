@@ -162,7 +162,6 @@ const formOptions: VbenFormProps = {
       componentProps: {
         allowClear: true,
         mode: 'tree',
-        placeholder: '全部车间',
       },
       fieldName: 'organizationUnitId',
       formItemClass: 'col-span-1 items-baseline',

@@ -28,22 +28,42 @@ defineOptions({
 const { getListApi } = useWorkshopAlarmApi();
 
 const alarmTypeOptions = [
-  { label: '阈值报警', value: WorkshopAlarmType.Threshold },
-  { label: '关联报警', value: WorkshopAlarmType.Relation },
-  { label: '设备报警', value: WorkshopAlarmType.Device },
-  { label: '通信报警', value: WorkshopAlarmType.Communication },
+  {
+    label: $t('page.business.alarm.types.threshold'),
+    value: WorkshopAlarmType.Threshold,
+  },
+  {
+    label: $t('page.business.alarm.types.relation'),
+    value: WorkshopAlarmType.Relation,
+  },
+  {
+    label: $t('page.business.alarm.types.device'),
+    value: WorkshopAlarmType.Device,
+  },
+  {
+    label: $t('page.business.alarm.types.communication'),
+    value: WorkshopAlarmType.Communication,
+  },
 ];
 
 const statusOptions = [
-  { label: '进行中', value: WorkshopAlarmStatus.Active },
-  { label: '已恢复', value: WorkshopAlarmStatus.Cleared },
+  {
+    label: $t('page.business.alarm.statuses.active'),
+    value: WorkshopAlarmStatus.Active,
+  },
+  {
+    label: $t('page.business.alarm.statuses.cleared'),
+    value: WorkshopAlarmStatus.Cleared,
+  },
 ];
 
 const alarmTypeLabels: Record<number, string> = {
-  [WorkshopAlarmType.Threshold]: '阈值报警',
-  [WorkshopAlarmType.Relation]: '关联报警',
-  [WorkshopAlarmType.Device]: '设备报警',
-  [WorkshopAlarmType.Communication]: '通信报警',
+  [WorkshopAlarmType.Threshold]: $t('page.business.alarm.types.threshold'),
+  [WorkshopAlarmType.Relation]: $t('page.business.alarm.types.relation'),
+  [WorkshopAlarmType.Device]: $t('page.business.alarm.types.device'),
+  [WorkshopAlarmType.Communication]: $t(
+    'page.business.alarm.types.communication',
+  ),
 };
 
 const formOptions: VbenFormProps = {
@@ -60,7 +80,7 @@ const formOptions: VbenFormProps = {
       componentProps: {
         allowClear: true,
         mode: 'tree',
-        placeholder: '全部车间',
+        placeholder: $t('page.business.allWorkshops'),
       },
       fieldName: 'organizationUnitId',
       formItemClass: 'col-span-1 items-baseline',
@@ -72,22 +92,22 @@ const formOptions: VbenFormProps = {
       componentProps: {
         allowClear: true,
         options: alarmTypeOptions,
-        placeholder: '全部',
+        placeholder: $t('page.business.all'),
       },
       fieldName: 'alarmType',
       formItemClass: 'col-span-1 items-baseline',
-      label: '报警类型',
+      label: $t('page.business.alarm.type'),
     },
     {
       component: 'Select',
       componentProps: {
         allowClear: true,
         options: statusOptions,
-        placeholder: '全部',
+        placeholder: $t('page.business.all'),
       },
       fieldName: 'status',
       formItemClass: 'col-span-1 items-baseline',
-      label: '状态',
+      label: $t('page.business.alarm.status'),
     },
     {
       component: 'RangePicker',
@@ -96,7 +116,7 @@ const formOptions: VbenFormProps = {
       },
       fieldName: 'timeRange',
       formItemClass: 'col-span-1 items-baseline',
-      label: '发生时间',
+      label: $t('page.business.alarm.startedAt'),
     },
   ],
   showCollapseButton: false,
@@ -116,38 +136,38 @@ const gridOptions: VxeGridProps<WorkshopAlarmDto> = {
       field: 'alarmType',
       minWidth: 110,
       slots: { default: 'alarmType' },
-      title: '报警类型',
+      title: $t('page.business.alarm.type'),
     },
     {
       field: 'deviceCode',
       minWidth: 140,
-      title: '测试台',
+      title: $t('page.business.alarm.device'),
     },
     {
       field: 'content',
       minWidth: 160,
-      title: '报警内容',
+      title: $t('page.business.alarm.content'),
     },
     {
       field: 'startedAt',
       formatter: ({ cellValue }) =>
         cellValue ? formatToDateTime(cellValue) : '',
       minWidth: 170,
-      title: '发生时间',
+      title: $t('page.business.alarm.startedAt'),
     },
     {
       align: 'center',
       field: 'status',
       minWidth: 100,
       slots: { default: 'status' },
-      title: '状态',
+      title: $t('page.business.alarm.status'),
     },
     {
       field: 'clearedAt',
       formatter: ({ cellValue }) =>
         cellValue ? formatToDateTime(cellValue) : '',
       minWidth: 170,
-      title: '恢复时间',
+      title: $t('page.business.alarm.clearedAt'),
     },
   ],
   height: 'auto',
@@ -237,7 +257,11 @@ onUnmounted(stopAutoRefresh);
             row.status === WorkshopAlarmStatus.Active ? 'error' : 'default'
           "
         >
-          {{ row.status === WorkshopAlarmStatus.Active ? '进行中' : '已恢复' }}
+          {{
+            row.status === WorkshopAlarmStatus.Active
+              ? $t('page.business.alarm.statuses.active')
+              : $t('page.business.alarm.statuses.cleared')
+          }}
         </Tag>
       </template>
     </Grid>

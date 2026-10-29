@@ -3,6 +3,8 @@ import type { OrganizationUnitDto } from '@abp/core';
 
 import { computed, onMounted, ref } from 'vue';
 
+import { $t } from '@vben/locales';
+
 import { listToTree, useWorkshopDeviceApi } from '@abp/core';
 import { Select, TreeSelect } from 'ant-design-vue';
 
@@ -17,7 +19,7 @@ type OrganizationUnitNode = OrganizationUnitDto & {
   children: OrganizationUnitNode[];
 };
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     allowClear?: boolean;
     disabled?: boolean;
@@ -30,7 +32,7 @@ withDefaults(
     disabled: false,
     mode: 'flat',
     modelValue: undefined,
-    placeholder: '全部车间',
+    placeholder: undefined,
   },
 );
 
@@ -38,6 +40,10 @@ const emit = defineEmits<{
   change: [value?: string];
   'update:modelValue': [value?: string];
 }>();
+
+const resolvedPlaceholder = computed(
+  () => props.placeholder || $t('page.business.allWorkshops'),
+);
 
 const { getOrganizationUnitsApi } = useWorkshopDeviceApi();
 const items = ref<OrganizationUnitDto[]>([]);
@@ -104,7 +110,7 @@ function onUpdate(value: unknown) {
     :allow-clear="allowClear"
     :disabled="disabled"
     :loading="loading"
-    :placeholder="placeholder"
+    :placeholder="resolvedPlaceholder"
     :show-search="true"
     :tree-data="treeData"
     :tree-default-expand-all="true"
@@ -119,7 +125,7 @@ function onUpdate(value: unknown) {
     :disabled="disabled"
     :loading="loading"
     :options="flatOptions"
-    :placeholder="placeholder"
+    :placeholder="resolvedPlaceholder"
     :show-search="true"
     option-filter-prop="label"
     :value="modelValue"

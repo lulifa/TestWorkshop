@@ -34,6 +34,27 @@
   },
   "business": {
     "title": "业务管理",
+    "all": "全部",
+    "allWorkshops": "全部车间",
+    "selectWorkshop": "请选择车间",
+    "alarm": {
+      "type": "报警类型",
+      "types": {
+        "threshold": "阈值报警",
+        "relation": "关联报警",
+        "device": "设备报警",
+        "communication": "通信报警"
+      },
+      "status": "状态",
+      "statuses": {
+        "active": "进行中",
+        "cleared": "已恢复"
+      },
+      "device": "测试台",
+      "content": "报警内容",
+      "startedAt": "发生时间",
+      "clearedAt": "恢复时间"
+    },
     "notifications": {
       "broadcast": "我的通告",
       "message": "我的消息"
