@@ -46,6 +46,7 @@ import {
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { WorkshopSelect } from '#/components/workshop-select';
+import { createYearRangePresets } from '#/utils/year-range-presets';
 
 defineOptions({
   name: 'WorkshopOrderManagement',
@@ -62,6 +63,7 @@ const {
 } = useWorkshopOrderApi();
 const MenuItem = Menu.Item;
 const abpStore = useAbpStore();
+const yearRangePresets = createYearRangePresets();
 
 const currentRoles = computed(() => {
   return abpStore.application?.currentUser.roles ?? [];
@@ -156,6 +158,13 @@ const formOptions: VbenFormProps = {
       class: 'w-full',
     },
   },
+  fieldMappingTime: [
+    [
+      'creationTimeRange',
+      ['startTime', 'endTime'],
+      (value) => formatToDateTime(value),
+    ],
+  ],
   schema: [
     {
       component: WorkshopSelect,
@@ -186,6 +195,18 @@ const formOptions: VbenFormProps = {
       fieldName: 'status',
       formItemClass: 'col-span-1 items-baseline',
       label: $t('TestWorkshop.WorkshopOrder:Status'),
+    },
+    {
+      component: 'RangePicker',
+      componentProps: {
+        allowClear: true,
+        placeholder: [$t('page.business.allTime'), $t('page.business.allTime')],
+        presets: yearRangePresets,
+        showTime: true,
+      },
+      fieldName: 'creationTimeRange',
+      formItemClass: 'col-span-2 items-baseline',
+      label: $t('TestWorkshop.DisplayName:CreationTime'),
     },
   ],
   showCollapseButton: false,
@@ -229,6 +250,15 @@ const gridOptions: VxeGridProps<WorkshopOrderDto> = {
       title: $t('TestWorkshop.WorkshopOrder:Status'),
     },
     {
+      align: 'center',
+      field: 'creationTime',
+      formatter: ({ cellValue }) => {
+        return cellValue ? formatToDateTime(cellValue) : '-';
+      },
+      minWidth: 180,
+      title: $t('TestWorkshop.DisplayName:CreationTime'),
+    },
+    {
       field: 'requiredCompletionTime',
       formatter: ({ cellValue }) => {
         return cellValue ? formatToDateTime(cellValue) : '-';
@@ -268,11 +298,13 @@ const gridOptions: VxeGridProps<WorkshopOrderDto> = {
       query: async ({ page, sort }, formValues) => {
         const values = formValues as Record<string, any>;
         return await getListApi({
+          endTime: values?.endTime,
           maxResultCount: page.pageSize,
           orderNo: values?.orderNo,
           organizationUnitId: values?.organizationUnitId,
           skipCount: (page.currentPage - 1) * page.pageSize,
           sorting: sort.order ? `${sort.field} ${sort.order}` : undefined,
+          startTime: values?.startTime,
           status: values?.status,
         });
       },
@@ -281,10 +313,12 @@ const gridOptions: VxeGridProps<WorkshopOrderDto> = {
         const values = formValues as Record<string, any>;
         const { sort } = params;
         return await getListApi({
+          endTime: values?.endTime,
           isPaged: false,
           orderNo: values?.orderNo,
           organizationUnitId: values?.organizationUnitId,
           sorting: sort.order ? `${sort.field} ${sort.order}` : undefined,
+          startTime: values?.startTime,
           status: values?.status,
         });
       },

@@ -20,12 +20,14 @@ import { Tag } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { WorkshopSelect } from '#/components/workshop-select';
+import { createYearRangePresets } from '#/utils/year-range-presets';
 
 defineOptions({
   name: 'WorkshopAlarmManagement',
 });
 
 const { getListApi } = useWorkshopAlarmApi();
+const yearRangePresets = createYearRangePresets();
 
 const alarmTypeOptions = [
   {
@@ -112,6 +114,9 @@ const formOptions: VbenFormProps = {
     {
       component: 'RangePicker',
       componentProps: {
+        allowClear: true,
+        placeholder: [$t('page.business.allTime'), $t('page.business.allTime')],
+        presets: yearRangePresets,
         valueFormat: 'YYYY-MM-DD HH:mm:ss',
       },
       fieldName: 'timeRange',

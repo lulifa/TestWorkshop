@@ -35,6 +35,7 @@
   "business": {
     "title": "业务管理",
     "all": "全部",
+    "allTime": "全部时间",
     "allWorkshops": "全部车间",
     "selectWorkshop": "请选择车间",
     "alarm": {

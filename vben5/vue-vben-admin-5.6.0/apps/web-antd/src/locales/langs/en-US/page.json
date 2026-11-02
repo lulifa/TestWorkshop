@@ -35,6 +35,7 @@
   "business": {
     "title": "Business",
     "all": "All",
+    "allTime": "All Time",
     "allWorkshops": "All Workshops",
     "selectWorkshop": "Select Workshop",
     "alarm": {

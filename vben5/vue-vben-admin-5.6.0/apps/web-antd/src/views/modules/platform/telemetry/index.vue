@@ -31,6 +31,7 @@ import { Button, message, Modal, Space, Tag, Tooltip } from 'ant-design-vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { useFilePreview } from '#/components/file-preview';
 import { WorkshopSelect } from '#/components/workshop-select';
+import { createYearRangePresets } from '#/utils/year-range-presets';
 
 defineOptions({
   name: 'WorkshopTelemetryManagement',
@@ -39,6 +40,7 @@ defineOptions({
 const { deleteApi, deleteManyApi, getListApi, getStatisticsApi, retryApi } =
   useWorkshopTelemetryApi();
 const { getApi: getFileApi } = useFileApi();
+const yearRangePresets = createYearRangePresets();
 
 const statistics = ref<WorkshopTelemetryStatisticsDto>();
 const selectedRows = ref<WorkshopTelemetryTaskDto[]>([]);
@@ -214,11 +216,14 @@ const formOptions: VbenFormProps = {
     {
       component: 'RangePicker',
       componentProps: {
+        allowClear: true,
+        placeholder: [$t('page.business.allTime'), $t('page.business.allTime')],
+        presets: yearRangePresets,
         showTime: true,
       },
       fieldName: 'createdAtRange',
       formItemClass: 'col-span-2 items-baseline',
-      label: $t('TestWorkshop.Telemetry:TimeRange'),
+      label: $t('TestWorkshop.DisplayName:CreatedAt'),
     },
   ],
   showCollapseButton: false,
