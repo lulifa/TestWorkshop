@@ -166,6 +166,33 @@ function buildSeriesData(values: number[], startTimestamp: number) {
   ]);
 }
 
+function getValueAtTimestamp(values: number[], timestamp: number) {
+  const currentDurationMs = durationMs.value;
+  const currentStartTimestamp = startTimestamp.value;
+  if (
+    values.length === 0 ||
+    currentDurationMs <= 0 ||
+    Number.isNaN(currentStartTimestamp)
+  ) {
+    return undefined;
+  }
+  if (values.length === 1) {
+    return Number(values[0]);
+  }
+
+  const index = Math.max(
+    0,
+    Math.min(
+      values.length - 1,
+      Math.round(
+        ((timestamp - currentStartTimestamp) / currentDurationMs) *
+          (values.length - 1),
+      ),
+    ),
+  );
+  return Number(values[index]);
+}
+
 function clearMeasurement() {
   measurementPoints.value = [];
   updateMeasurementOverlay();
@@ -345,15 +372,16 @@ async function renderChart() {
       },
     ],
     grid: {
-      bottom: 56,
+      bottom: 64,
       containLabel: true,
-      left: 16,
-      right: 24,
-      top: 20,
+      left: 64,
+      right: 32,
+      top: 28,
     },
     series: [...baseSeries, ...measurementSeries],
     tooltip: {
       axisPointer: {
+        snap: true,
         type: 'line',
       },
       formatter: (params) => {
@@ -367,18 +395,35 @@ async function renderChart() {
             ? Number(firstValue[0])
             : Number.NaN;
 
-        const rows = items
-          .map((item) => {
-            const channelType = item.seriesName ?? '';
-            const unit = getChannelUnit(channelType);
-            const itemValue = Array.isArray(item.value)
-              ? Number(item.value[1])
-              : Number(item.value);
-            return `${item.marker ?? ''}${escapeHtml(channelType)}: ${
-              Number.isFinite(itemValue) ? itemValue : '-'
-            }${unit ? ` ${escapeHtml(unit)}` : ''}`;
-          })
-          .join('<br/>');
+        const rows = Number.isFinite(timestamp)
+          ? props.channels
+              .map((channel, index) => {
+                const value = getValueAtTimestamp(
+                  channel.values ?? [],
+                  timestamp,
+                );
+                const unit = getChannelUnit(channel.channelType);
+                return `<span style="display:inline-block;width:8px;height:8px;border-radius:9999px;background:${getChannelColor(
+                  index,
+                )};margin-right:6px"></span>${escapeHtml(
+                  channel.channelType,
+                )}: ${Number.isFinite(value) ? value : '-'}${
+                  unit ? ` ${escapeHtml(unit)}` : ''
+                }`;
+              })
+              .join('<br/>')
+          : items
+              .map((item) => {
+                const channelType = item.seriesName ?? '';
+                const unit = getChannelUnit(channelType);
+                const itemValue = Array.isArray(item.value)
+                  ? Number(item.value[1])
+                  : Number(item.value);
+                return `${item.marker ?? ''}${escapeHtml(channelType)}: ${
+                  Number.isFinite(itemValue) ? itemValue : '-'
+                }${unit ? ` ${escapeHtml(unit)}` : ''}`;
+              })
+              .join('<br/>');
 
         if (!Number.isFinite(timestamp)) {
           return rows;
@@ -414,6 +459,9 @@ async function renderChart() {
         },
     yAxis: {
       name: $t('page.business.graphChannelValue'),
+      nameGap: 44,
+      nameLocation: 'middle',
+      nameRotate: 90,
       scale: true,
       type: 'value',
     },

@@ -125,7 +125,7 @@ function getGroupTitle(group: WorkshopTelemetryGraphGroupDto) {
           <WorkshopOrderGraphChart
             :channels="group.channels"
             :duration-ms="group.durationMs"
-            height="46vh"
+            height="56vh"
             :start-time="group.startTime ?? group.timestamp"
           />
         </div>
