@@ -16,14 +16,14 @@ const emits = defineEmits<{
 }>();
 
 const channelTypeOptions = [
-  { label: '先导驱动反馈 (PilotDriveFb)', value: 'PilotDriveFb' },
-  { label: 'FIVA 阀反馈电流 (FivaFbCurrent)', value: 'FivaFbCurrent' },
-  { label: '柱塞反馈 (PlungerFb)', value: 'PlungerFb' },
-  { label: '出口工作压力 (FopPressure)', value: 'FopPressure' },
-  { label: '背压 (BackPressure)', value: 'BackPressure' },
+  { label: '控制给定指令 (CMD)', value: 'CMD' },
+  { label: '先导驱动反馈 (Drive)', value: 'Drive' },
+  { label: 'FIVA 阀反馈 (FivaFB)', value: 'FivaFB' },
   { label: '流量 (Flow)', value: 'Flow' },
-  { label: '控制给定指令 (Cmd)', value: 'Cmd' },
-  { label: '先导位置反馈 (PilotPosFb)', value: 'PilotPosFb' },
+  { label: '出口工作压力 (FOP)', value: 'FOP' },
+  { label: '负载压力 (LoadPress)', value: 'LoadPress' },
+  { label: '先导反馈 (PilotFB)', value: 'PilotFB' },
+  { label: '柱塞反馈 (Plunger)', value: 'Plunger' },
 ];
 
 const { getListApi: getDeviceListApi } = useWorkshopDeviceApi();

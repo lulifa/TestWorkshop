@@ -27,6 +27,12 @@ public class WorkshopTelemetryGraphGroupDto
 {
     public DateTime Timestamp { get; set; }
 
+    public DateTime StartTime { get; set; }
+
+    public DateTime EndTime { get; set; }
+
+    public long DurationMs { get; set; }
+
     public List<WorkshopTelemetryGraphChannelDto> Channels { get; set; } = new();
 }
 

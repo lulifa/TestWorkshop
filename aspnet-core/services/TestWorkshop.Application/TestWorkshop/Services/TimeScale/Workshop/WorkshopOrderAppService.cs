@@ -487,23 +487,38 @@ public class WorkshopOrderAppService : TestWorkshopAppService, IWorkshopOrderApp
         var taskIds = taskResult.Items.Select(x => x.Id).ToList();
         var telemetries = await _telemetryRepository.GetListByTaskIdsAsync(taskIds);
 
-        // 联合主键是 (DeviceId, Timestamp, ChannelType)：
-        // 一张图谱 = 一个 (DeviceId, Timestamp) 分组，组内每个 ChannelType 一条曲线。
+        // 一张图谱 = 一个采集时间和测试时间段分组，组内每个 ChannelType 一条曲线。
         var graphs = telemetries
-            .GroupBy(x => new { x.DeviceId, x.Timestamp })
-            .OrderBy(x => x.Key.Timestamp)
-            .Select(group => new WorkshopTelemetryGraphGroupDto
+            .GroupBy(x => new
             {
-                Timestamp = group.Key.Timestamp,
-                Channels = group
-                    .OrderBy(x => x.ChannelType)
-                    .Select(x => new WorkshopTelemetryGraphChannelDto
-                    {
-                        ChannelType = x.ChannelType,
-                        SampleCount = x.Value?.Length ?? 0,
-                        Values = x.Value
-                    })
-                    .ToList()
+                x.DeviceId,
+                x.Timestamp,
+                x.StartTime,
+                x.EndTime
+            })
+            .OrderBy(x => x.Key.Timestamp)
+            .ThenBy(x => x.Key.StartTime)
+            .Select(group =>
+            {
+                var startTime = group.Key.StartTime ?? group.Key.Timestamp;
+                var endTime = group.Key.EndTime ?? group.Key.Timestamp;
+
+                return new WorkshopTelemetryGraphGroupDto
+                {
+                    Timestamp = group.Key.Timestamp,
+                    StartTime = startTime,
+                    EndTime = endTime,
+                    DurationMs = Math.Max(0, (long)(endTime - startTime).TotalMilliseconds),
+                    Channels = group
+                        .OrderBy(x => x.ChannelType)
+                        .Select(x => new WorkshopTelemetryGraphChannelDto
+                        {
+                            ChannelType = x.ChannelType,
+                            SampleCount = x.Value?.Length ?? 0,
+                            Values = x.Value
+                        })
+                        .ToList()
+                };
             })
             .ToList();
 

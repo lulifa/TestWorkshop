@@ -90,6 +90,9 @@ interface WorkshopTelemetryGraphChannelDto {
 
 interface WorkshopTelemetryGraphGroupDto {
   channels: WorkshopTelemetryGraphChannelDto[];
+  durationMs: number;
+  endTime?: string;
+  startTime?: string;
   timestamp: string;
 }
 

@@ -6,7 +6,7 @@
 public class WorkshopTelemetryFileInput
 {
     /// <summary>
-    /// 通道类型（如 PilotDriveFb）
+    /// 通道类型（如 Drive）
     /// </summary>
     [Required]
     [DynamicStringLength(typeof(TestWorkshopConsts), nameof(TestWorkshopConsts.MaxLength128))]

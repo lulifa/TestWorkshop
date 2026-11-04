@@ -2,6 +2,7 @@
 import type {
   WorkshopOrderDto,
   WorkshopOrderTelemetryGraphDto,
+  WorkshopTelemetryGraphGroupDto,
 } from '@abp/core';
 
 import { computed, ref } from 'vue';
@@ -52,8 +53,13 @@ const [Drawer, drawerApi] = useVbenDrawer({
   title: $t('page.business.orderGraph'),
 });
 
-function getGroupTitle(timestamp: string) {
-  return timestamp ? formatToDateTime(timestamp) : '-';
+function getGroupTitle(group: WorkshopTelemetryGraphGroupDto) {
+  const startTime = group.startTime ?? group.timestamp;
+  const endTime = group.endTime ?? group.timestamp;
+  if (!startTime || !endTime) {
+    return '-';
+  }
+  return `${formatToDateTime(startTime)} ~ ${formatToDateTime(endTime)}`;
 }
 </script>
 
@@ -105,18 +111,23 @@ function getGroupTitle(timestamp: string) {
       <div v-else class="flex flex-col gap-4">
         <div
           v-for="group in graphs"
-          :key="group.timestamp"
+          :key="`${group.timestamp}-${group.startTime}-${group.endTime}`"
           class="rounded-md border border-border px-3 py-3"
         >
           <div class="mb-1 flex items-center justify-between px-1">
             <span class="text-sm font-medium">
-              {{ getGroupTitle(group.timestamp) }}
+              {{ getGroupTitle(group) }}
             </span>
             <span class="text-xs text-gray-400">
               {{ group.channels.length }}
             </span>
           </div>
-          <WorkshopOrderGraphChart :channels="group.channels" height="46vh" />
+          <WorkshopOrderGraphChart
+            :channels="group.channels"
+            :duration-ms="group.durationMs"
+            height="46vh"
+            :start-time="group.startTime ?? group.timestamp"
+          />
         </div>
       </div>
     </div>

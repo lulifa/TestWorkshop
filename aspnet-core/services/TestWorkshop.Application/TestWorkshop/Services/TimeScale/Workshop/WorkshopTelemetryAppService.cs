@@ -366,11 +366,10 @@ public class WorkshopTelemetryAppService : TestWorkshopAppService, IWorkshopTele
                 : input.TestInfo.StartTime,
             "测试开始时间");
 
-        var endTimeText = input.TestInfo.EndTime2.IsNullOrWhiteSpace()
-            ? input.TestInfo.EndTime
-            : input.TestInfo.EndTime2;
         var endTime = ParseTelemetryTime(
-            endTimeText.IsNullOrWhiteSpace() ? input.FileTime : endTimeText,
+            input.TestInfo.EndTime.IsNullOrWhiteSpace()
+                ? input.FileTime
+                : input.TestInfo.EndTime,
             "测试结束时间");
 
         if (endTime < startTime)

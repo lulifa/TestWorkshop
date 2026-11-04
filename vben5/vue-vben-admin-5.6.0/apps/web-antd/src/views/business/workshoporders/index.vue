@@ -69,6 +69,8 @@ const currentRoles = computed(() => {
   return abpStore.application?.currentUser.roles ?? [];
 });
 
+const isAdmin = computed(() => currentRoles.value.includes('admin'));
+
 // 订单只能由调度或管理员新建/编辑
 const canManageOrder = computed(() => {
   return currentRoles.value.some((role) =>
@@ -680,6 +682,7 @@ onMounted(() => {
               {{ $t('TestWorkshop.WorkshopOrder:EndTest') }}
             </Button>
             <Button
+              v-if="isAdmin"
               :icon="h(EyeOutlined)"
               size="small"
               type="text"

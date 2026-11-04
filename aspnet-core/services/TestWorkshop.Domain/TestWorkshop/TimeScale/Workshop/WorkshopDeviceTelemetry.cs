@@ -54,14 +54,14 @@ public class WorkshopDeviceTelemetry
     /// <summary>
     /// 通道类型
     /// 可选值：
-    /// "PilotDriveFb" = "先导驱动反馈"
-    /// "FivaFbCurrent" = "FIVA 阀反馈电流"
-    /// "PlungerFb"     = "柱塞反馈"
-    /// "FopPressure"   = "出口工作压力"
-    /// "BackPressure"  = "背压"
+    /// "CMD"           = "控制给定指令"
+    /// "Drive"         = "先导驱动反馈"
+    /// "FivaFB"        = "FIVA 阀反馈"
+    /// "Plunger"       = "柱塞反馈"
+    /// "FOP"           = "出口工作压力"
+    /// "LoadPress"     = "负载压力"
     /// "Flow"          = "流量"
-    /// "Cmd"           = "控制给定指令"
-    /// "PilotPosFb"    = "先导位置反馈"
+    /// "PilotFB"       = "先导反馈"
     /// </summary>
     public string ChannelType { get; set; }
 
