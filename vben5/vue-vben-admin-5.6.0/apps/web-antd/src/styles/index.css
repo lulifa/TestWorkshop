@@ -1,12 +1,32 @@
 :root {
-  --background-deep: 210 42% 97%;
-  --border: 214 28% 89%;
+  --background: 207 38% 92%;
+  --background-deep: 207 38% 86%;
+  --card: 207 40% 94%;
+  --card-foreground: 211 45% 16%;
+  --foreground: 211 45% 16%;
+  --popover: 207 42% 96%;
+  --popover-foreground: 211 45% 16%;
+  --muted: 207 32% 87%;
+  --muted-foreground: 211 20% 44%;
+  --secondary: 207 32% 88%;
+  --secondary-foreground: 211 45% 16%;
+  --accent: 207 35% 85%;
+  --accent-foreground: 211 45% 16%;
+  --border: 207 28% 72%;
+  --input: 207 30% 74%;
+  --input-background: 207 42% 96%;
   --font-family:
     'Noto Sans SC', 'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif;
-  --primary: 215 100% 54%;
+  --primary: 213 92% 46%;
   --primary-foreground: 0 0% 100%;
   --radius: 0.5rem;
-  --ring: 215 100% 54%;
+  --ring: 213 92% 46%;
+  --workshop-canvas: #c7d9e7;
+  --workshop-line: #a9c1d4;
+  --workshop-navy-950: #0a2b47;
+  --workshop-navy-900: #0f3d63;
+  --workshop-navy-800: #164f7d;
+  --workshop-steel: #205f91;
 }
 
 body {
@@ -16,17 +36,21 @@ body {
 
 aside.bg-sidebar,
 aside.bg-sidebar-deep {
-  --accent: 216deg 69% 34%;
+  --accent: 208deg 73% 38%;
   --accent-foreground: 0deg 0% 100%;
-  --border: 216deg 69% 45%;
+  --border: 209deg 58% 29%;
   --foreground: 0deg 0% 100%;
-  --menu: 216deg 70% 39%;
-  --sidebar: 216deg 70% 39%;
-  --sidebar-deep: 216deg 72% 34%;
+  --menu: 210deg 74% 22%;
+  --sidebar: 210deg 74% 22%;
+  --sidebar-deep: 211deg 77% 18%;
 
-  background: #1e5aa8 !important;
-  border-right-color: #2e6dbf !important;
-  box-shadow: 7px 0 26px hsl(216deg 70% 24% / 16%);
+  background: linear-gradient(
+    180deg,
+    var(--workshop-navy-900) 0%,
+    var(--workshop-navy-950) 100%
+  ) !important;
+  border-right-color: #183a58 !important;
+  box-shadow: 7px 0 28px hsl(215deg 54% 8% / 24%);
 }
 
 .ant-app aside .vben-menu {
@@ -35,30 +59,36 @@ aside.bg-sidebar-deep {
 
 .ant-app aside .vben-menu-item,
 .ant-app aside .vben-sub-menu-content {
-  color: hsl(210deg 100% 97% / 84%);
+  color: #b8cadb;
 }
 
 .ant-app aside .vben-menu-item:not(.is-active):hover,
 .ant-app aside .vben-sub-menu-content:hover {
   color: #fff !important;
-  background: hsl(0deg 0% 100% / 10%) !important;
+  background: hsl(207deg 95% 72% / 10%) !important;
 }
 
 .ant-app aside .vben-menu-item.is-active {
-  color: #1d4ed8 !important;
-  background: #eaf3ff !important;
-  border: 1px solid hsl(0deg 0% 100% / 70%);
-  box-shadow: 0 6px 18px hsl(216deg 70% 20% / 18%);
+  color: #f7fbff !important;
+  background: linear-gradient(
+    90deg,
+    hsl(207deg 92% 58% / 24%),
+    hsl(207deg 92% 58% / 8%)
+  ) !important;
+  border: 1px solid hsl(207deg 88% 67% / 22%);
+  box-shadow:
+    inset 0 1px 0 hsl(0deg 0% 100% / 6%),
+    0 6px 18px hsl(215deg 65% 16% / 22%);
 }
 
 .ant-app aside .vben-menu-item.is-active .vben-menu__icon,
 .ant-app aside .vben-sub-menu.is-active > .vben-sub-menu-content {
-  color: #1d4ed8 !important;
+  color: #66b8ff !important;
 }
 
 .ant-app aside .vben-sub-menu.is-active > .vben-sub-menu-content {
   color: #fff !important;
-  background: hsl(0deg 0% 100% / 8%);
+  background: hsl(207deg 95% 72% / 8%);
 }
 
 .ant-app aside .vben-menu-item.is-active::before {
@@ -68,9 +98,9 @@ aside.bg-sidebar-deep {
   width: 3px;
   height: 20px;
   content: '';
-  background: #38bdf8;
+  background: #52b7ff;
   border-radius: 0 4px 4px 0;
-  box-shadow: 0 0 10px hsl(199deg 95% 60% / 72%);
+  box-shadow: 0 0 12px hsl(203deg 100% 66% / 82%);
 }
 
 .ant-app aside .vben-logo span {
@@ -78,57 +108,63 @@ aside.bg-sidebar-deep {
 }
 
 .ant-app header.bg-header {
-  --accent: 211deg 82% 91%;
-  --accent-foreground: 218deg 58% 24%;
-  --border: 210deg 56% 88%;
-  --foreground: 217deg 52% 21%;
+  --accent: 208deg 72% 27%;
+  --accent-foreground: 210deg 33% 96%;
+  --border: 211deg 52% 29%;
+  --foreground: 210deg 33% 96%;
 
-  background: #f8fbff !important;
-  border-bottom-color: #d8e5f4 !important;
-  box-shadow: 0 6px 20px hsl(216deg 55% 38% / 8%);
-  backdrop-filter: blur(14px);
+  color: #dbe8f3;
+  background: var(--workshop-navy-900) !important;
+  border-bottom-color: #183a58 !important;
+  box-shadow: 0 8px 24px hsl(215deg 62% 16% / 22%);
+  backdrop-filter: none;
 }
 
 .ant-app header [class~='text-foreground/80'] {
-  color: hsl(216deg 42% 34%);
+  color: #a9bdd0;
+}
+
+.ant-app header [class~='text-foreground/80']:hover,
+.ant-app header button:hover {
+  color: #f7fbff !important;
 }
 
 .ant-app header [class*='md:bg-accent'] {
-  color: #315477;
-  background: hsl(0deg 0% 100% / 82%) !important;
-  border: 1px solid #d5e5f8;
+  color: #d4e3ef;
+  background: hsl(210deg 64% 70% / 8%) !important;
+  border: 1px solid #274763;
 }
 
 .ant-app header [class*='md:bg-accent']:hover {
-  background: #fff !important;
+  background: hsl(210deg 64% 70% / 13%) !important;
 }
 
 .ant-app header [class*='md:bg-accent'] [class~='text-muted-foreground'],
 .ant-app header [class*='md:bg-accent'] kbd {
-  color: #47678f !important;
+  color: #9eb5c8 !important;
 }
 
 .ant-app header [class*='md:bg-accent'] .bg-background {
-  color: #315477 !important;
-  background: #edf5ff !important;
-  border-color: #c9dcf2 !important;
+  color: #c8d9e7 !important;
+  background: hsl(210deg 64% 70% / 9%) !important;
+  border-color: #34536d !important;
 }
 
 .ant-app header .lucide-search {
-  color: #315477 !important;
+  color: #a9bdd0 !important;
 }
 
 .ant-app header .bell-button .bg-primary {
-  background: #2563eb !important;
-  box-shadow: 0 0 0 2px #e8f2ff;
+  background: #2c91e8 !important;
+  box-shadow: 0 0 0 2px #153451;
 }
 
 .ant-app header .vben-breadcrumb ol {
-  padding: 5px 10px;
-  color: #5b789a;
-  background: hsl(0deg 0% 100% / 62%);
-  border: 1px solid #d5e5f8;
-  border-radius: 8px;
+  padding: 5px 0;
+  color: #a9bdd0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
 }
 
 .ant-app header .vben-breadcrumb a,
@@ -137,61 +173,81 @@ aside.bg-sidebar-deep {
 }
 
 .ant-app header .vben-breadcrumb li:hover {
-  color: #1d4ed8;
+  color: #f7fbff;
 }
 
 .ant-app header .vben-breadcrumb [aria-current='page'] {
   font-weight: 600;
-  color: #163a66 !important;
+  color: #f7fbff !important;
 }
 
 .ant-app header .vben-breadcrumb svg {
-  color: #8ca6c4;
+  color: #7290aa;
 }
 
 .ant-app section.bg-background {
-  background: hsl(210deg 40% 99%) !important;
+  background: var(--workshop-navy-900) !important;
+  border-bottom-color: #183a58 !important;
 }
 
 .tabs-chrome__item.is-active .tabs-chrome__background-content {
-  background: hsl(var(--primary) / 12%) !important;
+  background: #1b5b8c !important;
+  box-shadow: inset 0 1px 0 #4389ba;
 }
 
 .tabs-chrome__item.is-active .tabs-chrome__background-before,
 .tabs-chrome__item.is-active .tabs-chrome__background-after {
-  fill: hsl(var(--primary) / 12%) !important;
+  fill: #1b5b8c !important;
 }
 
 .tabs-chrome__item.is-active .tabs-chrome__item-main {
   font-weight: 600;
-  color: hsl(var(--primary)) !important;
+  color: #f7fbff !important;
+}
+
+.tabs-chrome__item-main {
+  color: #9db3c7 !important;
+}
+
+.tabs-chrome__item-main:hover {
+  color: #e4eef6 !important;
 }
 
 .ant-app main.bg-background-deep {
-  background:
-    radial-gradient(
-      circle at 100% 0%,
-      hsl(212deg 100% 70% / 8%),
-      transparent 28rem
-    ),
-    hsl(var(--background-deep));
+  background-color: var(--workshop-canvas);
+  background-image:
+    linear-gradient(hsl(209deg 55% 39% / 10%) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(209deg 55% 39% / 10%) 1px, transparent 1px);
+  background-size: 32px 32px;
 }
 
 .card-box,
 .ant-card {
-  border-color: hsl(214deg 30% 90%);
-  box-shadow: 0 12px 34px hsl(215deg 45% 24% / 5%);
+  border-color: var(--workshop-line);
+  background-color: hsl(var(--card));
+  box-shadow: 0 12px 30px hsl(211deg 45% 25% / 10%);
+}
+
+.ant-app .bg-white {
+  background-color: hsl(var(--card)) !important;
 }
 
 .ant-btn-primary {
-  box-shadow: 0 6px 16px hsl(var(--primary) / 20%);
+  box-shadow: 0 6px 16px hsl(var(--primary) / 18%);
 }
 
 .ant-input,
 .ant-input-affix-wrapper,
 .ant-select-selector,
 .ant-picker {
+  background-color: hsl(var(--input-background)) !important;
+  border-color: hsl(var(--input)) !important;
   border-radius: 8px !important;
+}
+
+.ant-input::placeholder,
+.ant-select-selection-placeholder {
+  color: hsl(var(--muted-foreground)) !important;
 }
 
 .ant-form-item-label > label {
@@ -200,22 +256,47 @@ aside.bg-sidebar-deep {
 
 .vxe-table {
   --vxe-font-family: var(--font-family);
-  --vxe-ui-font-color: hsl(216deg 24% 28%);
-  --vxe-ui-table-border-color: hsl(214deg 30% 91%);
+  --vxe-ui-font-color: hsl(var(--foreground));
+  --vxe-ui-table-border-color: hsl(var(--border));
+  --vxe-ui-layout-background-color: hsl(var(--card));
+  --vxe-ui-table-header-background-color: #c2d8e8;
+  --vxe-ui-table-row-hover-background-color: #d8e8f3;
 }
 
 .vxe-table .vxe-header--column {
   font-weight: 600;
-  color: hsl(216deg 26% 35%);
-  background: #eff6ff;
+  color: #183b59;
+  background: #c2d8e8;
 }
 
 .vxe-table .vxe-body--row:hover {
-  background: hsl(214deg 100% 98%);
+  background: #d8e8f3;
+}
+
+.ant-app .ant-table-wrapper .ant-table {
+  background: hsl(var(--card));
+}
+
+.ant-app .ant-table-wrapper .ant-table-thead > tr > th {
+  color: #183b59;
+  background: #c2d8e8;
+  border-bottom-color: hsl(var(--border));
+}
+
+.ant-app .ant-table-wrapper .ant-table-tbody > tr > td {
+  border-bottom-color: hsl(var(--border));
+}
+
+.ant-app .ant-table-wrapper .ant-table-tbody > tr.ant-table-row:hover > td {
+  background: #d8e8f3;
 }
 
 @media (max-width: 768px) {
   .ant-app main.bg-background-deep {
-    background: hsl(var(--background-deep));
+    background-color: var(--workshop-canvas);
+    background-image:
+      linear-gradient(hsl(209deg 55% 39% / 9%) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(209deg 55% 39% / 9%) 1px, transparent 1px);
+    background-size: 28px 28px;
   }
 }

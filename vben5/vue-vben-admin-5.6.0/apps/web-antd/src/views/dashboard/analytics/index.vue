@@ -162,10 +162,10 @@ onUnmounted(stopAutoRefresh);
 <template>
   <Page auto-content-height>
     <div
-      class="dashboard-shell flex h-full min-h-0 flex-col gap-5 overflow-hidden p-5 text-slate-900"
+      class="dashboard-shell flex h-full min-h-0 flex-col gap-5 overflow-hidden p-5 text-slate-800"
     >
       <header
-        class="flex flex-col gap-4 border-b border-slate-200/80 pb-4 lg:flex-row lg:items-end lg:justify-between"
+        class="flex flex-col gap-4 border-b border-slate-300/70 pb-4 lg:flex-row lg:items-end lg:justify-between"
       >
         <div class="min-w-0">
           <div class="flex flex-wrap items-center gap-3">
@@ -181,17 +181,17 @@ onUnmounted(stopAutoRefresh);
               {{ $t('page.dashboard.realtimeTitle') }}
             </h1>
             <span
-              class="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-[11px] font-medium text-blue-700"
+              class="inline-flex items-center rounded-full border border-blue-200 bg-blue-100/70 px-2.5 py-1 text-[11px] font-medium text-blue-700"
             >
               LIVE
             </span>
           </div>
-          <p class="mt-1 text-sm text-slate-500">
+          <p class="mt-1 text-sm text-slate-600">
             {{ $t('page.dashboard.realtimeSubtitle') }}
           </p>
         </div>
         <div class="flex flex-wrap items-center gap-3">
-          <span class="text-xs text-slate-400">
+          <span class="text-xs text-slate-500">
             {{ $t('page.dashboard.autoRefreshHint') }}
           </span>
           <Button
@@ -206,37 +206,33 @@ onUnmounted(stopAutoRefresh);
       </header>
 
       <div
-        class="grid grid-cols-1 divide-y divide-slate-200/80 rounded-lg border border-slate-200 bg-white shadow-sm sm:grid-cols-3 sm:divide-x sm:divide-y-0"
+        class="grid grid-cols-1 divide-y divide-[#2b638f] overflow-hidden rounded-lg border border-[#164d78] bg-[#0f3d63] shadow-[0_20px_50px_rgba(24,65,100,0.18)] sm:grid-cols-3 sm:divide-x sm:divide-y-0"
       >
         <div class="px-5 py-4">
-          <div class="flex items-center gap-2 text-xs text-slate-500">
-            <WifiOutlined class="text-blue-600" />
+          <div class="flex items-center gap-2 text-xs text-slate-300">
+            <WifiOutlined class="text-emerald-400" />
             {{ $t('page.dashboard.onlineDevices') }}
           </div>
-          <div
-            class="mt-1.5 text-2xl font-semibold tabular-nums text-slate-900"
-          >
+          <div class="mt-1.5 text-2xl font-semibold tabular-nums text-white">
             {{ onlineDeviceCount }}
           </div>
         </div>
         <div class="px-5 py-4">
-          <div class="flex items-center gap-2 text-xs text-slate-500">
-            <ApartmentOutlined class="text-blue-600" />
+          <div class="flex items-center gap-2 text-xs text-slate-300">
+            <ApartmentOutlined class="text-sky-400" />
             {{ $t('page.dashboard.workshopCount') }}
           </div>
-          <div
-            class="mt-1.5 text-2xl font-semibold tabular-nums text-slate-900"
-          >
+          <div class="mt-1.5 text-2xl font-semibold tabular-nums text-white">
             {{ workshopCount }}
           </div>
         </div>
         <div class="px-5 py-4">
-          <div class="flex items-center gap-2 text-xs text-slate-500">
-            <ClockCircleOutlined class="text-blue-600" />
+          <div class="flex items-center gap-2 text-xs text-slate-300">
+            <ClockCircleOutlined class="text-amber-400" />
             {{ $t('page.dashboard.lastUpdated') }}
           </div>
           <div
-            class="mt-1.5 truncate text-lg font-semibold tabular-nums text-slate-900"
+            class="mt-1.5 truncate text-lg font-semibold tabular-nums text-sky-100"
           >
             {{ formatTime(data?.generatedAt) }}
           </div>
@@ -245,15 +241,15 @@ onUnmounted(stopAutoRefresh);
 
       <div class="flex min-h-0 flex-1 gap-4">
         <aside
-          class="hidden w-[230px] shrink-0 flex-col rounded-lg border border-slate-200 bg-white shadow-sm lg:flex"
+          class="hidden w-[230px] shrink-0 flex-col rounded-lg border border-[#b5cadb] bg-[#e3eef7] shadow-[0_18px_40px_rgba(31,71,104,0.12)] lg:flex"
         >
-          <div class="border-b border-slate-100 p-2">
+          <div class="border-b border-[#c2d4e2] p-2">
             <button
               class="flex w-full items-center justify-between rounded-md border px-3 py-2 text-left text-sm transition-colors"
               :class="
                 selectedWorkshop === 'all'
-                  ? 'border-blue-200 bg-blue-50 text-blue-700'
-                  : 'border-transparent text-slate-600 hover:bg-slate-50'
+                  ? 'border-[#1b5b8c] bg-[#1a5a8a] text-white shadow-sm'
+                  : 'border-transparent text-slate-600 hover:bg-[#d5e6f2] hover:text-slate-900'
               "
               type="button"
               @click="selectedWorkshop = 'all'"
@@ -274,8 +270,8 @@ onUnmounted(stopAutoRefresh);
               class="flex w-full items-center justify-between rounded-md border px-3 py-2 text-left text-sm transition-colors"
               :class="
                 selectedWorkshop === workshop.name
-                  ? 'border-blue-200 bg-blue-50 text-blue-700'
-                  : 'border-transparent text-slate-600 hover:bg-slate-50'
+                  ? 'border-[#1b5b8c] bg-[#1a5a8a] text-white shadow-sm'
+                  : 'border-transparent text-slate-600 hover:bg-[#d5e6f2] hover:text-slate-900'
               "
               type="button"
               @click="selectedWorkshop = workshop.name"
@@ -292,8 +288,8 @@ onUnmounted(stopAutoRefresh);
               class="shrink-0 rounded-full border px-3 py-1.5 text-xs"
               :class="
                 selectedWorkshop === 'all'
-                  ? 'border-blue-200 bg-blue-50 text-blue-700'
-                  : 'border-slate-200 bg-white text-slate-600'
+                  ? 'border-[#1b5b8c] bg-[#1a5a8a] text-white'
+                  : 'border-[#b5cadb] bg-[#e3eef7] text-slate-600'
               "
               type="button"
               @click="selectedWorkshop = 'all'"
@@ -307,8 +303,8 @@ onUnmounted(stopAutoRefresh);
               class="shrink-0 rounded-full border px-3 py-1.5 text-xs"
               :class="
                 selectedWorkshop === workshop.name
-                  ? 'border-blue-200 bg-blue-50 text-blue-700'
-                  : 'border-slate-200 bg-white text-slate-600'
+                  ? 'border-[#1b5b8c] bg-[#1a5a8a] text-white'
+                  : 'border-[#b5cadb] bg-[#e3eef7] text-slate-600'
               "
               type="button"
               @click="selectedWorkshop = workshop.name"
@@ -324,7 +320,7 @@ onUnmounted(stopAutoRefresh);
                   ? $t('page.dashboard.allWorkshops')
                   : selectedWorkshop
               }}
-              <span class="ml-1 text-xs font-normal text-slate-400">
+              <span class="ml-1 text-xs font-normal text-slate-500">
                 {{ filteredDevices.length }}
               </span>
             </div>
@@ -346,7 +342,7 @@ onUnmounted(stopAutoRefresh);
                 v-if="!loading && filteredDevices.length === 0"
                 class="flex min-h-[420px] flex-col items-center justify-center gap-3 text-slate-500"
               >
-                <WifiOutlined class="text-4xl text-slate-300" />
+                <WifiOutlined class="text-4xl text-slate-400" />
                 <div class="text-sm">
                   {{ $t('page.dashboard.noOnlineDevices') }}
                 </div>
@@ -359,8 +355,12 @@ onUnmounted(stopAutoRefresh);
                 <article
                   v-for="device in filteredDevices"
                   :key="device.deviceId"
-                  class="relative overflow-hidden rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-sky-300 hover:shadow-lg"
+                  class="relative overflow-hidden rounded-lg border border-[#b6cbdb] bg-[#e6f0f8] p-4 pl-5 shadow-[0_14px_32px_rgba(31,71,104,0.10)] transition-all hover:-translate-y-0.5 hover:border-sky-500/60 hover:bg-[#eef6fb]"
                 >
+                  <div
+                    class="absolute inset-y-0 left-0 w-1 bg-emerald-500"
+                    aria-hidden="true"
+                  ></div>
                   <div
                     class="absolute inset-x-0 top-0 h-px bg-blue-500/50"
                     aria-hidden="true"
@@ -382,18 +382,18 @@ onUnmounted(stopAutoRefresh);
                         class="mt-1.5 flex min-w-0 items-center gap-2 text-xs"
                       >
                         <span
-                          class="truncate font-mono text-slate-400"
+                          class="truncate font-mono text-slate-500"
                           :title="device.deviceCode"
                         >
                           {{ device.deviceCode }}
                         </span>
-                        <span class="truncate text-blue-600">
+                        <span class="truncate text-sky-700">
                           {{ device.organizationUnitName || '-' }}
                         </span>
                       </div>
                     </div>
                     <span
-                      class="shrink-0 rounded border border-blue-100 bg-blue-50 px-2.5 py-1 text-[11px] font-medium text-blue-700"
+                      class="shrink-0 rounded border border-sky-200 bg-sky-100/70 px-2.5 py-1 text-[11px] font-medium text-sky-700"
                     >
                       {{ device.deviceTypeName || device.deviceType }}
                     </span>
@@ -401,39 +401,39 @@ onUnmounted(stopAutoRefresh);
 
                   <div class="mt-4 grid grid-cols-3 gap-2.5">
                     <div
-                      class="rounded-md border border-slate-100 bg-slate-50 px-3 py-2.5"
+                      class="rounded-md border border-white/70 bg-[#d5e5f1] px-3 py-2.5"
                     >
-                      <div class="text-xs text-slate-500">
+                      <div class="text-xs text-slate-600">
                         {{ $t('page.dashboard.pressure') }}
                       </div>
                       <div
-                        class="mt-1.5 truncate text-2xl font-semibold tabular-nums text-blue-600"
+                        class="mt-1.5 truncate text-2xl font-semibold tabular-nums text-sky-700"
                       >
                         {{ formatMetric(device.pressure) }}
                       </div>
                       <div class="text-[11px] text-slate-500">MPa</div>
                     </div>
                     <div
-                      class="rounded-md border border-slate-100 bg-slate-50 px-3 py-2.5"
+                      class="rounded-md border border-white/70 bg-[#d5e5f1] px-3 py-2.5"
                     >
-                      <div class="text-xs text-slate-500">
+                      <div class="text-xs text-slate-600">
                         {{ $t('page.dashboard.flow') }}
                       </div>
                       <div
-                        class="mt-1.5 truncate text-2xl font-semibold tabular-nums text-emerald-600"
+                        class="mt-1.5 truncate text-2xl font-semibold tabular-nums text-emerald-700"
                       >
                         {{ formatMetric(device.flow) }}
                       </div>
                       <div class="text-[11px] text-slate-500">L/min</div>
                     </div>
                     <div
-                      class="rounded-md border border-slate-100 bg-slate-50 px-3 py-2.5"
+                      class="rounded-md border border-white/70 bg-[#d5e5f1] px-3 py-2.5"
                     >
-                      <div class="text-xs text-slate-500">
+                      <div class="text-xs text-slate-600">
                         {{ $t('page.dashboard.temperature') }}
                       </div>
                       <div
-                        class="mt-1.5 truncate text-2xl font-semibold tabular-nums text-amber-600"
+                        class="mt-1.5 truncate text-2xl font-semibold tabular-nums text-amber-700"
                       >
                         {{ formatMetric(device.temperature) }}
                       </div>
@@ -442,7 +442,7 @@ onUnmounted(stopAutoRefresh);
                   </div>
 
                   <div
-                    class="mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-t border-slate-100 pt-3 text-[11px] text-slate-500"
+                    class="mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-t border-[#c0d2df] pt-3 text-[11px] text-slate-500"
                   >
                     <div class="flex items-center gap-1.5">
                       <ClockCircleOutlined />
@@ -475,11 +475,6 @@ onUnmounted(stopAutoRefresh);
 
 <style scoped>
 .dashboard-shell {
-  background-color: #f3f8fd;
-  background-image: radial-gradient(
-    rgba(37, 99, 235, 0.08) 1px,
-    transparent 1px
-  );
-  background-size: 22px 22px;
+  background: transparent;
 }
 </style>
