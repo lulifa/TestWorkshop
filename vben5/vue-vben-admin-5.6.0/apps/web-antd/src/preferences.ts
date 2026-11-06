@@ -28,6 +28,7 @@ export const overridesPreferences = defineOverridesPreferences({
   },
   sidebar: {
     width: 232,
+    collapsed: true,
   },
   tabbar: {
     height: 40,
