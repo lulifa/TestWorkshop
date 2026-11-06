@@ -28,8 +28,8 @@ export const overridesPreferences = defineOverridesPreferences({
   },
   sidebar: {
     width: 232,
-    collapsed: true,
-    expandOnHover: false,
+    // collapsed: true,
+    // expandOnHover: false,
   },
   tabbar: {
     height: 40,
