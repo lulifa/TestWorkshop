@@ -1,6 +1,3 @@
-using TestWorkshop.TimeScale;
-using Volo.Abp.AuditLogging;
-
 namespace TestWorkshop;
 
 public class TestWorkshopApplicationAutoMapperProfile : Profile

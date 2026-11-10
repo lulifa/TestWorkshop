@@ -1,10 +1,4 @@
-﻿using System.Reflection;
-
-using Volo.Abp.Auditing;
-using Volo.Abp.Guids;
-using Volo.Abp.Timing;
-
-namespace TestWorkshop;
+﻿namespace TestWorkshop;
 
 /// <summary>
 /// 遥测服务应用

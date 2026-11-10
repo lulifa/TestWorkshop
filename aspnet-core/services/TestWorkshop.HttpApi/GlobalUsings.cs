@@ -8,6 +8,7 @@ global using System;
 global using System.Collections.Generic;
 global using System.ComponentModel.DataAnnotations;
 global using System.Threading.Tasks;
+global using TestWorkshop.TimeScale;
 global using Volo.Abp;
 global using Volo.Abp.Account;
 global using Volo.Abp.Application.Dtos;

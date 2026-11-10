@@ -17,6 +17,6 @@ public enum DeviceTypeEnum
     /// <summary>
     /// 传感器
     /// </summary>
-    SEN = 4
+    SENSOR = 4
 }
 
