@@ -1,4 +1,4 @@
-﻿{
+{
   "culture": "zh-Hans",
   "texts": {
     "AppName": "TestWorkshop",
@@ -344,7 +344,7 @@
     "Telemetry:NoExtraProperties": "没有扩展参数",
     "Telemetry:Replaced": "已替换",
     "DeviceType:FIVA": "FIVA",
-    "DeviceType:PUMP": "水泵",
+    "DeviceType:PUMP": "液压泵",
     "DeviceType:ICU": "ICU",
     "DeviceType:SENSOR": "传感器",
     "Permission:Notification": "通告消息",
