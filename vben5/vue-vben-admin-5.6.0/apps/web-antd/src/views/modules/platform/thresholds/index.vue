@@ -11,6 +11,8 @@ import { Page } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 
 import {
+  hasRole,
+  RoleConstants,
   useAbpStore,
   useWorkshopDeviceApi,
   useWorkshopThresholdApi,
@@ -35,8 +37,8 @@ const { getTypesApi } = useWorkshopDeviceApi();
 const { getByDeviceTypeApi, saveApi } = useWorkshopThresholdApi();
 
 const abpStore = useAbpStore();
-const isAdmin = computed(
-  () => abpStore.application?.currentUser.roles?.includes('admin') ?? false,
+const isAdmin = computed(() =>
+  hasRole(abpStore.application?.currentUser.roles, RoleConstants.Admin),
 );
 
 const deviceTypes = ref<

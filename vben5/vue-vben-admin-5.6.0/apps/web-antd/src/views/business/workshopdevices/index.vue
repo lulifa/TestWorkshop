@@ -19,6 +19,8 @@ import { $t } from '@vben/locales';
 import {
   DeviceType,
   formatToDateTime,
+  hasRole,
+  RoleConstants,
   useAbpStore,
   useWorkshopDeviceApi,
 } from '@abp/core';
@@ -41,8 +43,8 @@ defineOptions({
 const { deleteApi, getListApi, getOrganizationUnitsApi, getTypesApi } =
   useWorkshopDeviceApi();
 const abpStore = useAbpStore();
-const isAdmin = computed(
-  () => abpStore.application?.currentUser.roles?.includes('admin') ?? false,
+const isAdmin = computed(() =>
+  hasRole(abpStore.application?.currentUser.roles, RoleConstants.Admin),
 );
 
 const organizationUnits = ref<OrganizationUnitDto[]>([]);

@@ -14,6 +14,9 @@ import { downloadFileFromBlob } from '@vben/utils';
 
 import {
   formatToDateTime,
+  hasAnyRole,
+  hasRole,
+  RoleConstants,
   useAbpStore,
   useWorkshopOrderApi,
   WorkshopOrderStatus,
@@ -69,36 +72,46 @@ const currentRoles = computed(() => {
   return abpStore.application?.currentUser.roles ?? [];
 });
 
-const isAdmin = computed(() => currentRoles.value.includes('admin'));
+const testOperatorRoles = [
+  RoleConstants.Admin,
+  RoleConstants.Supervisor,
+  RoleConstants.Tester,
+] as const;
+
+const isAdmin = computed(() =>
+  hasRole(currentRoles.value, RoleConstants.Admin),
+);
 
 // 订单只能由调度或管理员新建/编辑
 const canManageOrder = computed(() => {
-  return currentRoles.value.some((role) =>
-    ['admin', 'dispatcher'].includes(role),
-  );
+  return hasAnyRole(currentRoles.value, [
+    RoleConstants.Admin,
+    RoleConstants.Dispatcher,
+  ]);
 });
 const canOperate = computed(() => {
   // 开始/结束测试：管理员、车间主管、测试工程师
-  return currentRoles.value.some((role) =>
-    ['admin', 'supervisor', 'tester'].includes(role),
-  );
+  return hasAnyRole(currentRoles.value, testOperatorRoles);
 });
 const canCancel = computed(() => {
   // 取消订单与开始/结束测试同一套角色：管理员、车间主管、测试工程师
-  return currentRoles.value.some((role) =>
-    ['admin', 'supervisor', 'tester'].includes(role),
-  );
+  return hasAnyRole(currentRoles.value, testOperatorRoles);
 });
 const canAudit = computed(() => {
-  return currentRoles.value.some((role) => ['admin', 'auditor'].includes(role));
+  return hasAnyRole(currentRoles.value, [
+    RoleConstants.Admin,
+    RoleConstants.Auditor,
+  ]);
 });
 const canDownloadAllReports = computed(() => {
-  return currentRoles.value.some((role) =>
-    ['admin', 'auditor', 'dispatcher'].includes(role),
-  );
+  return hasAnyRole(currentRoles.value, [
+    RoleConstants.Admin,
+    RoleConstants.Auditor,
+    RoleConstants.Dispatcher,
+  ]);
 });
 const isProjectSupervisor = computed(() => {
-  return currentRoles.value.includes('projectSupervisor');
+  return hasRole(currentRoles.value, RoleConstants.ProjectSupervisor);
 });
 
 const statusOptions = [

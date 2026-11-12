@@ -3,6 +3,7 @@ export * from './auth';
 export * from './date';
 export * from './is';
 export * from './permission';
+export * from './role';
 export * from './string';
 export * from './table';
 export * from './tree';

@@ -12,6 +12,8 @@ import { $t } from '@vben/locales';
 
 import {
   formatToDateTime,
+  hasAnyRole,
+  RoleConstants,
   useAbpStore,
   useWorkshopOrderApi,
   WorkshopOrderAuditResult,
@@ -74,7 +76,7 @@ const roles = computed(() => {
   return abpStore.application?.currentUser.roles ?? [];
 });
 const canAudit = computed(() => {
-  return roles.value.some((role) => ['admin', 'auditor'].includes(role));
+  return hasAnyRole(roles.value, [RoleConstants.Admin, RoleConstants.Auditor]);
 });
 const canSubmitAudit = computed(() => {
   return (
